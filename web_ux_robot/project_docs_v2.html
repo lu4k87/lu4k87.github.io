@@ -16,7 +16,7 @@
 <meta name="twitter:title" content="UX Robot · Projekt-Doku">
 <meta name="twitter:description" content="Zehn Steuerwege, Digital Twin, KI-Assistenz und Evaluation für den xArm Lite 6.">
 <meta name="twitter:image" content="https://lu4k87.github.io/web_ux_robot/img/project_docs/rcu_viewport.jpg">
-<title>Projekt-Doku v2 · UX Robot</title>
+<title>Projekt-Doku v2 (Entwurf) · UX Robot</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="css/landing.css">
 <style>
@@ -1085,7 +1085,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
   <section class="hero dark-zone" aria-label="Abstract">
     <div class="wrap hero-inner">
       <div class="hero-head">
-        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span><span data-en="Project docs v2 · Restructured">Projekt-Doku v2 · Neu gegliedert</span></span>
+        <span class="badge"><span class="bi-s"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg></span><span data-en="Project docs v2 · Draft">Projekt-Doku v2 · Entwurf</span></span>
         <h1>
           <span class="h1-name">UX Robot</span>
           <span class="h1-claim" data-en="&lt;span class=&quot;ln&quot;&gt;&lt;span&gt;The human leads.&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;ln&quot;&gt;&lt;span&gt;&lt;em&gt;The AI assists.&lt;/em&gt;&lt;/span&gt;&lt;/span&gt;"><span class="ln"><span>Der Mensch führt.</span></span> <span class="ln"><span><em>Die KI assistiert.</em></span></span></span>
@@ -1250,7 +1250,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <li><b data-en="Motion">Bewegung</b><small data-en="twin or hardware">Twin oder Hardware</small></li>
               </ol>
             </div>
-            <p class="tm-estop"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="&lt;b&gt;Software stop is available&lt;/b&gt; through every control mode; the physical emergency-stop remains separate"><b>Software-Stopp ist über jeden Steuerweg verfügbar</b>; der physische Not-Halt bleibt davon getrennt</span></p>
+            <p class="tm-estop"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg><span data-en="&lt;b&gt;Software stop is available&lt;/b&gt; through every control mode; the physical E-STOP button remains separate"><b>Software-Stopp ist über jeden Steuerweg verfügbar</b>; der physische E-STOP-Taster bleibt davon getrennt</span></p>
             <div class="tm-pick" role="group" aria-labelledby="tm-pick-l">
               <span class="tm-pick-l" id="tm-pick-l"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg><span data-en="Pick a control mode: the relevant checks vary by path">Steuerweg wählen: Die relevanten Prüfungen unterscheiden sich je Weg</span></span>
               <button type="button" class="tm-tab" data-m="gamepad" aria-pressed="false" style="--hue: var(--accent)"><svg class="ico" aria-hidden="true"><use href="#i-pad"/></svg><span>Gamepad</span></button>
@@ -1428,7 +1428,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
                 <li><b data-en="Confirmation:">Bestätigung:</b> <span data-en="Structured action list (&amp;ldquo;Planned actions&amp;rdquo;) presented in UI; human confirms execution.">Strukturierte Aktionsliste („Planned actions“) in der UI; Bediener bestätigt Ausführung per <i>Execute</i>.</span></li>
                 <li><b data-en="Motion:">Bewegung:</b> <span data-en="Sequential execution of the skills (pick, place, gripper, palletize) through the motion handler.">Sequenzielle Ausführung der Skills (pick, place, gripper, palletize) über den Motion Handler.</span></li>
                 <li><b data-en="Abort:">Abbruch:</b> <span data-en="&lt;i&gt;Abort&lt;/i&gt; button in chat, automatic slip check with recovery plan, or the E-STOP."><i>Abort</i>-Taste im Chat, automatische Schlupfprüfung mit Rettungsplan oder E-STOP.</span></li>
-                <li><b data-en="Recording:">Aufzeichnung:</b> <span data-en="Full dialog transcript, LLM plan, replan events, grasp outcome and durations saved in evaluation log.">Kompletter Dialog, LLM-Plan, Replan-Ereignisse, Greiferfolg und Laufzeiten im Evaluationsprotokoll.</span></li>
+                <li><b data-en="Recording:">Aufzeichnung:</b> <span data-en="Full dialog transcript, AI agent plan, replan events, grasp outcome and durations saved in evaluation log.">Kompletter Dialog, Plan des KI-Agenten, Replan-Ereignisse, Greiferfolg und Laufzeiten im Evaluationsprotokoll.</span></li>
               </ol>
             </article>
           </div>
@@ -1523,7 +1523,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
             <p data-en="From input filter to physical stop: safeguards matched to each command path.">Vom Eingabefilter bis zum Stopp: passgenaue Schutzstufen für jeden Befehlsweg.</p>
           </div>
           <ol class="safety-chain">
-            <li class="safety-step"><span class="sn">01</span><b data-en="Control lock and heartbeat">Control-Lock und Heartbeat</b><small data-en="Stop after 0.4 s without signal">Stopp nach 0,4 s ohne Signal</small></li>
+            <li class="safety-step"><span class="sn">01</span><b data-en="Control lock and heartbeat">Control-Lock und Heartbeat</b><small data-en="Stop without signal: gamepad 0.4&amp;nbsp;s, jogging 1.0&amp;nbsp;s (Robot | Hardware)">Stopp ohne Signal: Gamepad 0,4&nbsp;s, Jogging 1,0&nbsp;s (Robot | Hardware)</small></li>
             <li class="safety-step"><span class="sn">02</span><b data-en="Limits for Robot | Hardware and Robot | Digital Twin">Grenzen für Robot | Hardware und Robot | Digital Twin</b><small data-en="Speed limit, enable">Tempo-Limit, Freigabe</small></li>
             <li class="safety-step"><span class="sn">03</span><b data-en="Collision pre-check">Kollisionsvorprüfung</b><small data-en="0.25 s forward">0,25 s voraus</small></li>
             <li class="safety-step"><span class="sn">04</span><b>MoveIt Servo</b><small data-en="Halts at singularity, collision">Stoppt bei Singularität, Kollision</small></li>
@@ -1541,21 +1541,21 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
       <header class="ch-head">
         <div>
           <span class="eyebrow" data-en="Architecture &amp; devices">Architektur &amp; Geräte</span>
-          <h2 data-en="Web apps, atlas &amp; hardware">Web-Apps, Atlas &amp; Hardware</h2>
-          <p class="lede" data-en="Four web applications, 3D function atlas compass with 9 areas and the complete hardware stack.">Vier Web-Anwendungen, 3D-Funktionsatlas-Kompass mit 9 Bereichen und der komplette Hardware-Stack.</p>
+          <h2 data-en="Operator apps, atlas &amp; hardware">Bedien-Apps, Atlas &amp; Hardware</h2>
+          <p class="lede" data-en="Four operator apps, 3D function atlas compass with 9 areas and the complete hardware stack. The UX | Cocktail Tablet belongs to the cocktail scene.">Vier Bedien-Apps, 3D-Funktionsatlas-Kompass mit 9 Bereichen und der komplette Hardware-Stack. Das UX | Cocktail Tablet gehört zur Cocktail-Szene.</p>
         </div>
         <ol class="path" aria-label="System &amp; Hardware" data-en-aria="System &amp; hardware">
-          <li><a href="#webapps" style="--hue: var(--lime)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>03</span></span><b data-en="Web apps">Web-Apps</b><small data-en="Launcher, Control UI, Monitoring, Touch">Launcher, Control UI, Monitoring, Touch</small></a></li>
+          <li><a href="#webapps" style="--hue: var(--lime)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span>03</span></span><b data-en="Operator apps">Bedien-Apps</b><small data-en="Launcher, Control UI, Monitoring, Touch">Launcher, Control UI, Monitoring, Touch</small></a></li>
           <li><a href="#atlas-sec" style="--hue: var(--pink)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span>04</span></span><b data-en="Function atlas">Funktionsatlas</b><small data-en="9 areas, 85 functions, 10 loops">9 Bereiche, 85 Funktionen, 10 Kreisläufe</small></a></li>
           <li><a href="#hardware" style="--hue: var(--teal)"><span class="pn"><svg class="ico" aria-hidden="true"><use href="#i-chip"/></svg><span>05</span></span><b data-en="Hardware stack">Hardware Stack</b><small data-en="12 devices from robot to sensors">12 Geräte vom Roboter bis zur Sensorik</small></a></li>
         </ol>
       </header>
 <section class="sec" id="webapps">
         <header class="sec-head">
-          <div><span class="eyebrow" style="--hue: var(--lime)"><span class="n">03</span><span data-en="Four web apps · one browser">Vier Web-Apps · ein Browser</span></span><h2 data-en="Web apps">Web-Apps</h2></div>
-          <div class="brief" style="--hue: var(--lime)"><p class="slogan" data-en="Open, don't install.">Öffnen statt installieren.</p><ul class="kpis"><li class="kpi"><strong>4</strong><span data-en="web apps">Web-Apps</span></li><li class="kpi"><strong>4</strong><span data-en="device types">Gerätetypen</span></li><li class="kpi"><strong>0</strong><span data-en="installs">Installation</span></li></ul></div>
+          <div><span class="eyebrow" style="--hue: var(--lime)"><span class="n">03</span><span data-en="Four operator apps · one browser">Vier Bedien-Apps · ein Browser</span></span><h2 data-en="Operator apps">Bedien-Apps</h2></div>
+          <div class="brief" style="--hue: var(--lime)"><p class="slogan" data-en="Open, don't install.">Öffnen statt installieren.</p><ul class="kpis"><li class="kpi"><strong>4</strong><span data-en="operator apps">Bedien-Apps</span></li><li class="kpi"><strong>4</strong><span data-en="device types">Gerätetypen</span></li><li class="kpi"><strong>0</strong><span data-en="installs">Installation</span></li></ul></div>
         </header>
-        <div class="app-frame deck" data-deck role="region" aria-label="Web-Apps als Folien" data-en-aria="Web apps as slides">
+        <div class="app-frame deck" data-deck role="region" aria-label="Bedien-Apps als Folien" data-en-aria="Operator apps as slides">
           <div class="af-bar" aria-hidden="true"><span class="af-dots"><i></i><i></i><i></i></span><span class="af-url"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg><span data-deck-url>Port 8081</span></span></div>
           <div class="af-body">
             <div class="af-side">
@@ -1819,7 +1819,7 @@ footer .wrap { display: flex; justify-content: space-between; align-items: cente
 
                   <figure class="slide app-slide hws-slide">
                     <div class="sl-media"><img src="img/hardware/raspberry_pi.jpg" width="900" height="506" alt="Raspberry Pi im schwarzen Gehäuse neben dem Roboterarm auf dem Arbeitstisch" data-en-alt="Raspberry Pi in a black case next to the robot arm on the work table" loading="lazy"></div>
-                    <figcaption><span class="k-t" data-k data-en="Camera host · sensing">Kamera-Host · Sensorik</span><b data-k data-slide-title data-en="Pi cameras on the network.">Pi-Kameras im Netz.</b><span data-k data-en="The Raspberry Pi serves the camera images to the workstation over the network via the RPi Cam Web Interface.">Der Raspberry Pi stellt die Kamerabilder über das RPi Cam Web Interface im Netzwerk der Workstation bereit.</span><ul class="chips" data-k><li class="chip">Raspberry Pi</li><li class="chip">RPi Cam Web Interface</li><li class="chip" data-en="ArUco · in preparation">ArUco · in Vorbereitung</li></ul></figcaption>
+                    <figcaption><span class="k-t" data-k data-en="Camera host · sensing">Kamera-Host · Sensorik</span><b data-k data-slide-title data-en="Pi cameras on the network.">Pi-Kameras im Netz.</b><span data-k data-en="The Raspberry Pi serves the camera images to the workstation over the network via the RPi Cam Web Interface.">Der Raspberry Pi stellt die Kamerabilder über das RPi Cam Web Interface im Netzwerk der Workstation bereit.</span><ul class="chips" data-k><li class="chip">Raspberry Pi</li><li class="chip">RPi Cam Web Interface</li><li class="chip" data-en="ArUco homography">ArUco-Homographie</li></ul></figcaption>
                   </figure>
 
                   <figure class="slide app-slide hws-slide">

@@ -93,6 +93,8 @@
 >> | **`/ui/motion_busy`** | `std_msgs/Bool` (latched) | *Geplante Fahrt des Motion Handlers läuft → kein Servo-Start, Grip und Linearachse ignoriert.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control-Lock des `remote_control_watchdog`: nur mit Steuerung bewegt die Brille Roboter, Greifer und Linearachse.* |
 >> | **`/ui/gripper_state`** | `std_msgs/String` (latched) | *Greiferzustand vom Servo-Node (`closed` erst nach Bestätigung des Treibers); der Trigger schließt, wenn er nicht `closed` ist, sonst öffnet er.* |
+>> | **`/ui/gripper_type`** | `std_msgs/String` (latched) | *Eingestellter Greifer (z. B. Vakuum- oder Fingergreifer) – entscheidet mit `/ui/gripper_state`, ob der Trigger öffnet oder schließt.* |
+>> | **`/ui/mixed_reality_state`** | `std_msgs/String` (latched JSON, Heartbeat 2 s) | *Mixed-Reality-Modus der UI (`mixed_reality_guard`): Tempo-Deckel, Sicherheitsrand und ob der echte Greifer schalten darf; der Node setzt ihn selbst durch.* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)

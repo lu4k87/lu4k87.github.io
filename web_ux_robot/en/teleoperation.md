@@ -539,7 +539,9 @@ This node receives the already-sanitized `/joy_check` signal and translates it i
 | 2 | `0.2` | 40 % | *Slow — near-target approach* |
 | 3 | `0.3` | 60 % | *Normal — default start level* |
 | 4 | `0.4` | 80 % | *Fast — long-range traversal* |
-| 5 | `0.5` | 100 % | *Maximum* |
+| 5 | `0.5` | 100 % | *Maximum on Robot \| Hardware without confirmation* |
+| 6 | `0.6` | 120 % | *Robot \| Hardware only after the UI confirmation (`/ui/robot_control/speed_confirm`, valid 15 s for exactly this level) and only up to `hardware_max_speed_index` (realmove launch: `5` = level 6 for the Lite 6, otherwise `4`); TCP below Z Collision Level + 50 mm or no fresh free object zone (`/remote/overspeed_clear`, ≤ 300 ms) → drives at level 5 speed* |
+| 7 | `0.7` | 140 % | *Robot \| Digital Twin only (`allow_overspeed_levels` from the fake launch and mode `fake` in `/remote/control_state`, at most 5 s old); otherwise the node limits to the highest allowed level* |
 
 </details>
 
@@ -592,7 +594,7 @@ Status feedback is published to `/ui/joy_button_presses` after every state trans
 #### 5.3.4 Topics & Services Reference
 
 <details>
-<summary><b>🔽 Show table</b> · 20 entries · Subscribers · Publishers · Service Clients · Action Client</summary>
+<summary><b>🔽 Show table</b> · 27 entries · Subscribers · Publishers · Service Clients · Action Client</summary>
 
 | Type | Name | Message Type | Description |
 |------|------|-------------|-------------|
@@ -614,6 +616,13 @@ Status feedback is published to `/ui/joy_button_presses` after every state trans
 | **Service Client** | `/ufactory/set_vacuum_gripper` | `xarm_msgs/srv/VacuumGripperCtrl` | *Vacuum on/off* |
 | **Subscriber** | `/ui/gripper_cmd` | `std_msgs/String` | *Gripper commands from the UX \| Control Interface* |
 | **Publisher** | `/ui/gripper_state` / `/ui/gripper_type` | `std_msgs/String` (latched) | *Gripper state and type for the UI* |
+| **Publisher** | `/ui/gripper_simulated` | `std_msgs/Bool` (latched) | *`true` = gripper is only simulated (`simulate_gripper` and a gripper type other than `none`)* |
+| **Subscriber** | `/ui/pad_map_buttons` | `std_msgs/Int32MultiArray` (latched) | *Button mapping from the `pad_remap` node; invalid = mapping stays unchanged* |
+| **Subscriber** | `/ui/ground_collision_level` | `std_msgs/Float64` (latched) | *Z Collision Level (TCP height in mm) from `moveit_floor_collision` for the height limit of level 6* |
+| **Subscriber** | `/remote/overspeed_clear` | `std_msgs/Bool` | *Object zone from the watchdog (20 Hz): level 6 on Robot \| Hardware only while fresh (≤ 300 ms) and clear* |
+| **Subscriber** | `/ui/robot_control/speed_confirm` | `std_msgs/Int32` | *UI confirmation for level 6 on Robot \| Hardware, valid 15 s for exactly this level* |
+| **Subscriber** | `/remote/control_state` | `std_msgs/String` (JSON, latched) | *Mode from the watchdog (`fake` = Robot \| Digital Twin); safety limit for levels 6/7* |
+| **Subscriber** | `/ui/mixed_reality_state` | `std_msgs/String` (latched) | *Mixed Reality state; while active its speed cap limits the highest level* |
 | **Service Client** | `/ui/execute_initial_pose` | `std_srvs/srv/Trigger` | *Moves the robot to the home pose via the motion handler* |
 | **Action Client** | `/whisper/inference` | `whisper_idl/action/Inference` | *Starts/cancels Whisper voice recording* |
 

@@ -541,17 +541,28 @@ Dieser Node empfängt das bereits bereinigte Signal `/joy_check` und übersetzt 
 | 2 | `0.2` | 40 % | *Langsam — Zielanfahrt* |
 | 3 | `0.3` | 60 % | *Normal — Standard-Startstufe* |
 | 4 | `0.4` | 80 % | *Schnell — Weitstreckenfahrt* |
-| 5 | `0.5` | 100 % | *Maximum* |
+| 5 | `0.5` | 100 % | *Maximum an Robot \| Hardware ohne Freigabe* |
+| 6 | `0.6` | 120 % | *Robot \| Hardware nur nach Freigabe der UI (`/ui/robot_control/speed_confirm`, 15 s gültig für genau diese Stufe) und nur bis `hardware_max_speed_index` (Realmove-Launch: `5` = Stufe 6 beim Lite 6, sonst `4`); TCP unter Z Collision Level + 50 mm oder keine frische freie Objekt-Zone (`/remote/overspeed_clear`, ≤ 300 ms) → fährt mit dem Tempo von Stufe 5* |
+| 7 | `0.7` | 140 % | *Nur Robot \| Digital Twin (`allow_overspeed_levels` aus dem Fake-Launch und Modus `fake` in `/remote/control_state`, höchstens 5 s alt); sonst begrenzt der Node auf die höchste erlaubte Stufe* |
 
 </details>
 
 
 #### 5.3.2 Signal-Fluss & Exponentielle Glättung
 
-```
-// Jeder Callback-Zyklus:
-smoothed_value += (target_value - smoothed_value) × 0.5
+Alle kontinuierlichen Achsen laufen durch einen **exponentiellen Tiefpassfilter**, damit Rauschen am Stick keine ruckartigen, sprunghaften Bewegungen auslöst:
 
+```
+// In jedem Callback-Zyklus:
+smoothed_value += (target_value - smoothed_value) × smoothing_factor
+
+// Beispiel für die X-Achse:
+smoothed_twist_.linear.x += (target_twist.linear.x - smoothed_twist_.linear.x) × 0.5
+```
+
+Die vollständige Signalkette von der Hardware bis zum Servo:
+
+```
 Hardware-Eingabe
  └─ /joy (rohe Achsen & Buttons)
  └─ teleop_pre_collision_checker.py (Sicherheitsfilter + async Positionsabfrage)
@@ -583,7 +594,7 @@ Status-Feedback an `/ui/joy_button_presses` nach jeder Zustandsänderung.
 #### 5.3.4 Topics & Services Referenz
 
 <details>
-<summary><b>🔽 Tabelle anzeigen</b> · 20 Einträge · Subscribers · Publishers · Service Clients · Action Client</summary>
+<summary><b>🔽 Tabelle anzeigen</b> · 27 Einträge · Subscribers · Publishers · Service Clients · Action Client</summary>
 
 | Typ | Name | Message-Typ | Beschreibung |
 |-----|------|------------|-------------|
@@ -605,6 +616,13 @@ Status-Feedback an `/ui/joy_button_presses` nach jeder Zustandsänderung.
 | **Service Client** | `/ufactory/set_vacuum_gripper` | `xarm_msgs/srv/VacuumGripperCtrl` | *Vakuum an/aus* |
 | **Subscriber** | `/ui/gripper_cmd` | `std_msgs/String` | *Greiferbefehle der UX \| Control Interface* |
 | **Publisher** | `/ui/gripper_state` / `/ui/gripper_type` | `std_msgs/String` (latched) | *Greiferzustand und -typ für die UI* |
+| **Publisher** | `/ui/gripper_simulated` | `std_msgs/Bool` (latched) | *`true` = Greifer wird nur simuliert (`simulate_gripper` und ein Greifertyp außer `none`)* |
+| **Subscriber** | `/ui/pad_map_buttons` | `std_msgs/Int32MultiArray` (latched) | *Tastenbelegung vom Node `pad_remap`; ungültig = Belegung bleibt unverändert* |
+| **Subscriber** | `/ui/ground_collision_level` | `std_msgs/Float64` (latched) | *Z Collision Level (TCP-Höhe in mm) von `moveit_floor_collision` für die Höhengrenze von Stufe 6* |
+| **Subscriber** | `/remote/overspeed_clear` | `std_msgs/Bool` | *Objekt-Zone vom Watchdog (20 Hz): Stufe 6 an Robot \| Hardware nur, solange frisch (≤ 300 ms) und frei* |
+| **Subscriber** | `/ui/robot_control/speed_confirm` | `std_msgs/Int32` | *Freigabe der UI für Stufe 6 an Robot \| Hardware, 15 s gültig für genau diese Stufe* |
+| **Subscriber** | `/remote/control_state` | `std_msgs/String` (JSON, latched) | *Modus vom Watchdog (`fake` = Robot \| Digital Twin); Sicherheitsgrenze für Stufe 6/7* |
+| **Subscriber** | `/ui/mixed_reality_state` | `std_msgs/String` (latched) | *Zustand von Mixed Reality; solange aktiv, begrenzt dessen Tempo-Deckel die höchste Stufe* |
 | **Service Client** | `/ui/execute_initial_pose` | `std_srvs/srv/Trigger` | *Fährt die Home-Pose an* |
 | **Action Client** | `/whisper/inference` | `whisper_idl/action/Inference` | *Whisper-Sprachaufnahme* |
 

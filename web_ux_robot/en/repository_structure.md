@@ -11,7 +11,7 @@
 ```
 dev_ws/
 ├── .claude/                                                               # Claude Code helpers only (not needed to run the robot)
-│   ├── agents/                                                            # Project agents: ws-explorer, test-runner, ui-verifier, safety-reviewer, robustness-reviewer, showcase-reviewer, docs-auditor
+│   ├── agents/                                                            # Project agents: ws-explorer, test-runner, ui-verifier, safety-reviewer, robustness-reviewer, showcase-reviewer, docs-auditor, coherence-reviewer, stack-diagnoser, teamwork-optimizer, ws-worker
 │   ├── hooks/                                                             # Checks before a command and after each edit
 │   ├── memory/                                                            # Shared Claude memory (in Git, linked by tools/ws_sync.sh; global tooling: ~/ai_dev_workflow_global)
 │   ├── mods/                                                              # Claude Code mods: ros-safety-status (Robot | Digital Twin / Robot | Hardware status line)
@@ -33,7 +33,7 @@ dev_ws/
 │   ├── present_presentation.html                                          # Project presentation: interactive page on shared control, AI/VLA, vision, UI/UX, evaluation (images: img/presentation/)
 │   ├── present_control_modes.html                                         # Control modes & safety chain: product page of the project
 │   ├── present_function_atlas.html                                        # Redirect to the function atlas in project_docs.html
-│   ├── en/ · de/                                                          # 13 pages each: concept, installation, running, teleoperation, …
+│   ├── en/ · de/                                                          # 14 pages each: concept, installation, running, teleoperation, …
 │   ├── brand/                                                             # Brand kit brand.yaml: name, claim, slogans, colours, fonts (checked by tools/check_showcase.py)
 │   ├── css/ · js/ · fonts/ · templates/                                   # Shared styles, scripts (e.g. lite6_mesh.js), local fonts and templates of the project pages
 │   └── img/                                                               # Screenshots; diagrams/ (generated), presentation/, project_docs/
@@ -77,6 +77,7 @@ dev_ws/
 ├── src/
 │   ├── gaze_control_ui_tobii_glasses/                                     # 👁️ Python: PyQt5 gaze selection & calibration UI
 │   │   ├── gaze_control_ui_tobii_glasses/gaze_ui_core.py                 # Shared core: buttons, dwell, gaze mapping, servo
+│   │   ├── gaze_control_ui_tobii_glasses/gaze_tracker.py                  # Gaze capture: Tobii Pro Glasses 3 RTSP + 4 ArUco markers → homography → `/gaze/point` (no UI, no motion)
 │   │   ├── gaze_control_ui_tobii_glasses/gaze_ui_node_tobii_glasses.py    # Gaze UI (`gaze_ui`)
 │   │   └── gaze_control_ui_tobii_glasses/gaze_ui_node_tobii_glasses_zedm.py # Gaze UI with the ZED M image (`gaze_ui_zedm`)
 │   ├── gaze_grasp_routine_tobii_glasses/                                  # 👁️ Python: Tobii gaze control: gaze-to-3D grasp routine
@@ -89,7 +90,9 @@ dev_ws/
 │   │   ├── http_monitoring_dashboard_p8083/ros_monitor.py                 # ROS 2 side: graph, topic rates, robot usage, sessions
 │   │   ├── http_monitoring_dashboard_p8083/blackbox.py                    # Lists blackbox incidents (~/.ros/blackbox, read only)
 │   │   ├── http_monitoring_dashboard_p8083/study.py                       # Usability study: tests, tasks, participants, runs, questionnaires
-│   │   ├── index.html · js/ · css/                                        # Web UI (views: overview, system, processes, UIs & services, ROS graph, topics, robot usage, grasp & place, users & sessions, evaluation, event logs)
+│   │   ├── http_monitoring_dashboard_p8083/vla.py                         # VLA-M: tasks to `vla_bridge` (/vla/instruction, /vla/skill, /vla/response) for the model comparison
+│   │   ├── http_monitoring_dashboard_p8083/routines.py                    # Recurring click sequences from the interactions table (analysis only, no playback)
+│   │   ├── index.html · js/ · css/                                        # Web UI (views: overview, system, processes, UIs & services, ROS graph, topics, robot usage, grasp & place, VLA-M, users & sessions, evaluation, event logs)
 │   │   └── launch/monitoring_dashboard.launch.py                               # ros2 launch … port:=8083 open_browser:=true db:=…
 │   ├── http_robot_control_ui_p8081/                                       # 🎮 HTML/JS: Standalone Robot Control & Jogging Web UI
 │   │   ├── index.html                                                     # Robot control interface (Port 8081)
@@ -145,6 +148,7 @@ dev_ws/
 │   ├── robot_profiles/                                                    # 🦾 Python: robot profiles (one YAML per arm), active profile, robot_bringup.launch.py, validate_profile
 │   │   └── profiles/                                                      # xarm_lite6 · xarm5 · xarm7 · abb_irb1100 · ur5e · franka_fr3 · kinova_gen3
 │   ├── abb_irb1100_support/                                               # 🏭 URDF, SRDF, MoveIt + start (Robot | Digital Twin) of the ABB IRB 1100
+│   ├── franka_fr3_support/                                                # 🦾 URDF, SRDF, MoveIt + start (Robot | Digital Twin) of the Franka FR3 (franka_description, mock_components, no libfranka)
 │   ├── scene_objects/                                                     # 📍 Python: RViz2 markers for safe zones & workspace bounds
 │   │   ├── launch/scene_objects.launch.py
 │   │   └── scene_objects/
@@ -185,13 +189,22 @@ dev_ws/
 │   │   ├── vla_bridge/placing.py                                          # Clearance for the gripper when placing next to tall objects
 │   │   ├── vla_bridge/palletizing.py                                      # Palletizing planner for the scene "Logistics – auto palletizing" (pure Python)
 │   │   ├── vla_bridge/pallet_job.py                                       # Auto palletizing: plan from the scene, executes carton by carton
+│   │   ├── vla_bridge/cocktail.py                                         # Scene "Bar – cocktail mixer": bottle ring, recipes and shaker poses (pure calculation)
+│   │   ├── vla_bridge/cocktail_job.py                                     # Mixes a drink (skill `cocktail`, 8 steps; Robot | Digital Twin, on Robot | Hardware only the paths)
+│   │   ├── vla_bridge/flow.py                                             # Validation and traversal of direct visual VLA flows (acyclic graph from the browser, `next` / `on_error`)
+│   │   ├── vla_bridge/held_body.py                                        # Held real object as AttachedCollisionObject in MoveIt (box at the flange while carrying)
+│   │   ├── vla_bridge/tiling.py                                           # Laying plan for the scene "Construction – tiling" (floor field, demo wall; pure Python)
+│   │   ├── vla_bridge/tile_job.py                                         # Floor tiling: approaches stop by stop, 6 steps per tile (Robot | Digital Twin only)
 │   │   ├── vla_bridge/session_log.py                                      # Agent rounds as JSON Lines (~/.ros/vla_logs, size-capped)
 │   │   └── vla_bridge/scene.py                                            # Scene from /zed/bboxes_3d (label, colour, grasp sphere, box)
+│   ├── cocktail_tablet/                                                   # 🍸 Python/JS: UX | Cocktail Tablet (port 8086) – touch screen of the scene Bar – cocktail mixer for a tablet in the LAN; only cocktail commands to `vla_bridge`
 │   ├── vr_quest3_teleop/                                                  # 🥽 Meta Quest 3 WebXR Teleoperation bridge
 │   │   ├── https_vr_webxr_p8443/                                          # Secure WebXR browser interface & 3D controllers
 │   │   │   └── https_vr_webxr_p8443.py                                    # HTTPS server (port 8443) for the WebXR page
 │   │   ├── vr_quest3_teleop/rosapi_guard.py                               # Starts /rosapi only if none is running yet
 │   │   └── vr_quest3_teleop/vr_quest3_teleop_node.py                      # VR 6-DoF controller pose to MoveIt Servo bridge
+│   ├── mixed_reality_guard/                                               # 🕶️ Python: server side of the Mixed Reality mode – merges /ui/mixed_reality_state of all clients into one fail-safe set of limits
+│   ├── mr_magicleap2/                                                     # 🕶️ Python: MR headset (Magic Leap 2) – headset pose as TF + operator zone, stored alignment; view only
 │   ├── xarm_ros2/                                                         # 🤖 Official xArm ROS 2 stack (copied into the repo, extended)
 │   │   └── xarm_moveit_servo/src/xarm_joystick_input.cpp                  # Gamepad input node with collision brake integration
 │   ├── zed-ros2-interfaces/                                               # 📷 Custom ROS 2 interfaces for Stereolabs ZED cameras
@@ -210,7 +223,7 @@ dev_ws/
 │   ├── monitoring_sim.py                                                  # Test data simulator for the UX | Monitoring (isolated domain only, e.g. 97)
 │   ├── bench_nexus_webkit.py                                              # Measures CPU/FPS of the Nexus app window (WebKitGTK, offscreen)
 │   ├── firewall_setup.sh                                                  # Show ufw rules / --apply / --undo
-│   ├── ws_sync.sh                                                         # Sync laptop / lab PC / home PC: setup, git pull --rebase, build changed packages (--setup, --no-build)
+│   ├── ws_sync.sh                                                         # Sync laptop / lab PC / home PC: setup, fast-forward pull, build changed packages (--setup, --no-build, --check)
 │   ├── install_blender.sh                                                 # Installs/updates Blender + Blender MCP server without sudo (--check)
 │   ├── reel_render.py                                                     # Renders a video page frame by frame (headless Chrome → ffmpeg)
 │   ├── make_docs_lite6.py                                                 # Generates docs/js/lite6_mesh.js (Lite 6 meshes for the project pages)

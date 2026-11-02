@@ -72,6 +72,8 @@
 >> | **`/ui/motion_busy`** | `std_msgs/Bool` (latched) | *Planned motion of the motion handler running → no servo start, grip and linear axis ignored.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control lock of `remote_control_watchdog`: only with control does the headset move the robot, gripper and linear axis.* |
 >> | **`/ui/gripper_state`** | `std_msgs/String` (latched) | *Gripper state from the Servo node (`closed` only after the driver confirms); the trigger closes when it is not `closed`, otherwise opens.* |
+>> | **`/ui/gripper_type`** | `std_msgs/String` (latched) | *Configured gripper (e.g. vacuum or finger gripper) – with `/ui/gripper_state` it decides whether the trigger opens or closes.* |
+>> | **`/ui/mixed_reality_state`** | `std_msgs/String` (latched JSON, heartbeat 2 s) | *Mixed Reality mode of the UI (`mixed_reality_guard`): speed cap, safety margin and whether the real gripper may switch; the node enforces it itself.* |
 >
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)

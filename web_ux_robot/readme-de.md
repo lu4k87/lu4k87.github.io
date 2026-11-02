@@ -25,7 +25,7 @@
 
 > [!TIP]
 > **📘 Handbuch:** [`docs/operate_manual.html`](operate_manual.html) – Architektur, Sicherheitskette, Ports, Server/Client-Steuerung, VLA-M-Chat.
-> [Öffentliches Handbuch ansehen](https://lu4k87.github.io/web_ux_robot/operate_manual.html) · lokal über den Button **Manual** im UX | Nexus Launcher (früher „Nexus Webapp“) (`http://localhost:8080/manuals/operate_manual.html`).
+> [Öffentliches Handbuch ansehen](https://lu4k87.github.io/web_ux_robot/operate_manual.html) · lokal über das Symbol **Projekt-Doku** (Ebenen-Symbol) im Fuß des Start-Popups des UX | Nexus Launcher (früher „Nexus Webapp“) → *Handbuch*; direkt: `http://localhost:8080/manuals/operate_manual.html`.
 > **🛠️ Setup-Guide (DE/EN):** [`docs/operate_setup_guide.html`](operate_setup_guide.html) – Inbetriebnahme Schritt für Schritt, für einen vorinstallierten PC oder ab nacktem Ubuntu 22.04 (verlinkt in der Projekt-Doku, Footer-Knopf **Projekt-Doku** des UX | Nexus Launcher).
 
 Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation** des UFactory xArm Lite 6. Blicksteuerung, Sprache, Gamepad, VR und Web-UIs – kombiniert mit assistiver Automatisierung – senken die Einstiegshürden der Robotersteuerung. Grundlage ist das *Shared-Control*-Prinzip (Industrie 5.0): Der Mensch bleibt im Regelkreis, das System plant kollisionsfreie Bewegungen im Hintergrund. Das System schlägt vor, der Mensch entscheidet (Human-in-the-Loop). Im Zentrum steht ein live mitlaufender **Digital Twin**: Jede Bewegung ist in 3D zu sehen, bevor der echte Arm fährt.
@@ -46,9 +46,9 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
 | 👁️ | **3D-Vision & Greifen** – ZED Mini + YOLOv8-3D-Boxen, MoveIt-Kollisionsobjekte, OctoMap, kollisionsfreier 3-Phasen-Griff, virtuelle Objekte für Tests ohne Kamera | [Vision & Greifen](de/vision_grasping.html) |
 | 🗣️ | **Sprache & Blick** – Whisper-Sprachbefehle (DE/EN), Tobii-Pro-Glasses-3-Blick-UI und Greifen per Verweildauer | [Sprache & Blick](de/voice_gaze.html) |
 | 🧊 | **Digital Twin** – live mitlaufendes 3D-Modell von Arm und Arbeitszelle im Browser (three.js + URDF, `/joint_states`); im Digital Twin planen mit TCP-Gizmo und Ghost-Vorschau, dann bestätigen; erkannte und virtuelle Objekte, Schutzzonen, Szenen; Neues gefahrlos im Modus (Robot | Digital Twin) mit Physics-Sandbox testen; derselbe Digital Twin in VR und in bis zu 4 virtuellen Kameras; Isaac Sim als optionaler Schatten-Digital-Twin | [Konzept: Digital Twin](de/concept.html#-digital-twin-erst-virtuell-dann-real) · [UX \| Control Interface](de/robot_control_ui.html) |
-| 🖥️ | **UX \| Control Interface** (Port 8081) – WebGL-Digital-Twin, Jogging, MoveIt-Planung mit Ghost-Vorschau und TCP-Gizmo, Physics-Sandbox (Roboter-Simulation), Bewegungsabfolgen, andockbares HUD, Bereichsleiste je Arbeitsschritt (Move, Teach Robot, Vision, Assistant (VLA-M), Remote Teleop) mit Schritt-für-Schritt-Guides und Settings, Kamerakacheln und virtuelle Kameras (eigene Blickwinkel auf den Digital Twin) im Viewport, Befehlspalette (Strg+K), Diagnostics (Log) als Schublade; alle vier Web-UIs auf Deutsch oder Englisch (Wechsel live unten in der Theme-Liste, Alt+T) | [UX \| Control Interface](de/robot_control_ui.html) |
+| 🖥️ | **UX \| Control Interface** (Port 8081) – WebGL-Digital-Twin, Jogging, MoveIt-Planung mit Ghost-Vorschau und TCP-Gizmo, Physics-Sandbox (Roboter-Simulation), Bewegungsabfolgen, andockbares HUD, Bereichsleiste je Arbeitsschritt (Bewegen / Jogging, Teach Robot, Vision, Assistant (VLA-M), Remote Teleop) mit Schritt-für-Schritt-Guides und Settings, Kamerakacheln und virtuelle Kameras (eigene Blickwinkel auf den Digital Twin) im Viewport, Befehlspalette (Strg+K), Diagnostics (Log) als Schublade; alle Web-UIs auf Deutsch oder Englisch (Wechsel live unten in der Theme-Liste, Alt+T) | [UX \| Control Interface](de/robot_control_ui.html) |
 | 🚀 | **UX \| Nexus Launcher** (Port 8080) – Ein-Klick-Launcher mit Setups für Roboter-Simulation und echte Roboter-Hardware, Launch-Baum- und Config-Einsicht, Vorabprüfung vor EXECUTE, Bereitschafts-Checks je Schritt, Log je Start, Neustart eines Laufs, Config-Sicherungen, Setup-Info-Karte (Netzwerk, IPs, Ports, PDF-Export), UX \| Compact Interface für ein Zusatz-Touch-Display | [System starten](de/running.html) |
-| 🤖 | **VLA-M-Chat – Agentic ROS** *(in Arbeit)* – Anweisung in Alltagssprache → KI-Agent (lokal Ollama oder Claude) plant Pick & Place mit der Szene → Ausführung, Greifprüfung, Neuplanung; Diktat per Mikrofon, Ein-Klick *Grasp* / *Place here* im Objektmenü, Auto-Palettieren (Skill `palletize`), *Record demo* fürs Training; geplant LeRobot (SmolVLA / π0.5) und Reinforcement Learning in der Simulation | [VLA-M](de/vla.html) |
+| 🤖 | **VLA-M-Chat – Agentic ROS** *(in Arbeit)* – Anweisung in Alltagssprache → KI-Agent (Ollama lokal, Claude oder Gemini Robotics-ER in der Cloud) plant Pick & Place mit der Szene → Ausführung, Greifprüfung, Neuplanung; Diktat per Mikrofon, Ein-Klick *Grasp* / *Place here* im Objektmenü, Auto-Palettieren (Skill `palletize`), *Record demo* fürs Training; geplant LeRobot (SmolVLA / π0.5) und Reinforcement Learning in der Simulation | [VLA-M](de/vla.html) |
 | 📊 | **UX \| Monitoring** (Port 8083) – Systemlast, ROS-2-Graph mit Live-Raten, Roboter-Nutzung, VLA-M-Aufträge mit Modellvergleich (Erfolgsquote, Zeit bis Plan, Korrekturen), Sessions und Auswertung von Nutzerstudien; **Isaac Sim** als Schatten-Digital-Twin | [Monitoring](de/monitoring.html) · [Isaac Sim](de/isaac_sim.html) |
 
 <p align="center">
@@ -62,7 +62,7 @@ Eine Forschungs- und Evaluationsplattform für die **multimodale Teleoperation**
   <img src="img/monitoring_dashboard.png" width="32%" alt="UX | Monitoring – Übersicht">
 </p>
 
-*Oben: **UX | Control Interface** (früher „Robot Control UI“) (Bereich Move: Header mit E-STOP, Bereichs-Leiste, Digital-Twin-Viewport, kartesisches Jogging) und **UX | Nexus Launcher** (Start-Popup RUN DEV SETUP, Robot | Digital Twin). Unten: **VLA-M** mit einem Plan aus vier Schritten, der auf *Execute* wartet, **UX | Compact Interface** (früher „Touch Panel“) (Ansicht Move) und **UX | Monitoring** (früher „Monitoring Dashboard“) (Übersicht). Alles im Modus (Robot | Digital Twin) – weitere Screenshots direkt bei jeder Funktion in `docs/de/`.*
+*Oben: **UX | Control Interface** (früher „Robot Control UI“) (Bereich Bewegen / Jogging: Header mit E-STOP, Bereichs-Leiste, Digital-Twin-Viewport, kartesisches Jogging) und **UX | Nexus Launcher** (Start-Popup RUN DEV SETUP, Robot | Digital Twin). Unten: **VLA-M** mit einem Plan aus vier Schritten, der auf *Execute* wartet, **UX | Compact Interface** (früher „Touch Panel“) (Ansicht Move) und **UX | Monitoring** (früher „Monitoring Dashboard“) (Übersicht). Alles im Modus (Robot | Digital Twin) – weitere Screenshots direkt bei jeder Funktion in `docs/de/`.*
 
 ## 🧱 Gebaut auf
 
@@ -98,6 +98,7 @@ Im Popup **RUN DEV SETUP** den Modus **Robot | Digital Twin** wählen und **EXEC
 | UX \| Nexus Launcher (+ `/touch`, `/manuals/…`) | `8080` | UX \| Monitoring | `8083` |
 | UX \| Control Interface | `8081` | rosbridge WS / WSS | `9090` / `9091` |
 | Web Video Server | `8082` | VR WebXR (UX \| Control Interface über HTTPS) | `8443` |
+| UX \| Cocktail Tablet (Szene *Bar – cocktail mixer*, Tablet im LAN) | `8086` | rosbridge lokal (nur `127.0.0.1`, volle Whitelist) | `9092` |
 
 Alle Ports: [7.4 Netzwerk & Ports](de/running.html#74-netzwerk---port-architektur).
 

@@ -58,7 +58,7 @@ The **Digital Twin** is the live 3D model of the xArm Lite 6 and its workcell. I
 
 - **What it is:** WebGL model (three.js + URDF of the xArm Lite 6) in the UX | Control Interface (port 8081), runs in any browser, offline-capable.
 - **Live mirror:** follows `/joint_states` and the linear axis in real time – in Robot | Digital Twin mode the simulated arm, in Robot | Hardware mode the physical arm.
-- **Workcell in the Digital Twin:** table, lab room, safety zones, camera stand, detected objects as 3D boxes with grasp spheres (`/zed/bboxes_3d`), virtual objects and scenes (Standard, Auto palletizing).
+- **Workcell in the Digital Twin:** table, lab room, safety zones, camera stand, detected objects as 3D boxes with grasp spheres (`/zed/bboxes_3d`), virtual objects and five scenes (Standard, Logistics – auto palletizing, Intralogistics – AMR, Construction – tiling, Bar – cocktail mixer).
 - **Plan in the Digital Twin:** drag the target with the TCP gizmo → MoveIt plans → ghost preview of the path (`/ui/moveto_preview_path`) → human confirms → only then the arm moves.
 - **Act in the Digital Twin:** click an object → *Grasp*; click the table → *Place here*.
 - **Test in the Digital Twin:** Robot | Digital Twin mode + virtual objects + Physics-Sandbox → new functions are tried without risk, then run on the real arm with the same UI.
@@ -148,7 +148,7 @@ A central user interface bundles all system states to relieve the operator:
 - **Layout:** gaze direction = motion direction; all buttons flush with the screen edge, centre free for the scene.
 - **Speed levels:** slow / normal / fast = 50 / 100 / 150 % of the previous speed, switched by looking at SPEED; DOWN never faster than normal.
 - **Gaze-loss stop:** no gaze data for > 300 ms → motion stops; status card shows tracking, Z height, speed, gripper.
-- **Vacuum gripper:** one toggle button (GRIPPER) via the `VacuumGripperCtrl` service.
+- **Vacuum gripper:** one toggle button (GRIPPER) via `/ui/gripper_cmd` (`joy_to_servo_node`); the state shown comes from `/ui/gripper_state` once the driver confirms it.
 
 ![Gaze Control UI](../imgs/gaze_control_interface.png)
 

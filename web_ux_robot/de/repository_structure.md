@@ -11,7 +11,7 @@
 ```
 dev_ws/
 ├── .claude/                                                               # Hilfsmittel nur für Claude Code (nicht für den Roboterbetrieb)
-│   ├── agents/                                                            # Projekt-Agenten: ws-explorer, test-runner, ui-verifier, safety-reviewer, robustness-reviewer, showcase-reviewer, docs-auditor
+│   ├── agents/                                                            # Projekt-Agenten: ws-explorer, test-runner, ui-verifier, safety-reviewer, robustness-reviewer, showcase-reviewer, docs-auditor, coherence-reviewer, stack-diagnoser, teamwork-optimizer, ws-worker
 │   ├── hooks/                                                             # Prüfungen vor einem Befehl und nach jedem Edit
 │   ├── memory/                                                            # Gemeinsames Claude-Memory (im Git, verknüpft von tools/ws_sync.sh; globales Werkzeug: ~/ai_dev_workflow_global)
 │   ├── mods/                                                              # Claude-Code-Mods: ros-safety-status (Statuszeile Robot | Digital Twin / Robot | Hardware)
@@ -33,7 +33,7 @@ dev_ws/
 │   ├── present_presentation.html                                          # Projektvorstellung: interaktive Seite zu Shared Control, KI/VLA, Vision, UI/UX, Evaluierung (Bilder: img/presentation/)
 │   ├── present_control_modes.html                                         # Steuerwege & Sicherheitskette: Produktseite des Projekts
 │   ├── present_function_atlas.html                                        # Weiterleitung zum Funktionsatlas in project_docs.html
-│   ├── en/ · de/                                                          # je 13 Seiten: Konzept, Installation, Starten, Teleoperation, …
+│   ├── en/ · de/                                                          # je 14 Seiten: Konzept, Installation, Starten, Teleoperation, …
 │   ├── brand/                                                             # Brand-Kit brand.yaml: Name, Claim, Slogans, Farben, Schriften (geprüft von tools/check_showcase.py)
 │   ├── css/ · js/ · fonts/ · templates/                                   # Gemeinsame Styles, Skripte (z. B. lite6_mesh.js), lokale Schriften und Vorlagen der Projektseiten
 │   └── img/                                                               # Screenshots; diagrams/ (erzeugt), presentation/, project_docs/
@@ -77,6 +77,7 @@ dev_ws/
 ├── src/
 │   ├── gaze_control_ui_tobii_glasses/                                     # 👁️ Python: PyQt5 Blick-Auswahl & Kalibrierungs-UI
 │   │   ├── gaze_control_ui_tobii_glasses/gaze_ui_core.py                 # Gemeinsamer Kern: Knöpfe, Verweilen, Blick-Mapping, Servo
+│   │   ├── gaze_control_ui_tobii_glasses/gaze_tracker.py                  # Blickerfassung: Tobii Pro Glasses 3 (RTSP) + 4 ArUco-Marker → Homographie → `/gaze/point` (ohne UI, ohne Bewegung)
 │   │   ├── gaze_control_ui_tobii_glasses/gaze_ui_node_tobii_glasses.py    # Gaze UI (`gaze_ui`)
 │   │   └── gaze_control_ui_tobii_glasses/gaze_ui_node_tobii_glasses_zedm.py # Gaze UI mit ZED-M-Bild (`gaze_ui_zedm`)
 │   ├── gaze_grasp_routine_tobii_glasses/                                  # 👁️ Python: Tobii-Blicksteuerung: Blick-zu-3D-Greif-Routine
@@ -89,7 +90,9 @@ dev_ws/
 │   │   ├── http_monitoring_dashboard_p8083/ros_monitor.py                 # ROS-2-Seite: Graph, Topic-Raten, Robot-Nutzung, Sessions
 │   │   ├── http_monitoring_dashboard_p8083/blackbox.py                    # Listet Blackbox-Vorfälle (~/.ros/blackbox, nur lesend)
 │   │   ├── http_monitoring_dashboard_p8083/study.py                       # Usability-Studie: Tests, Aufgaben, Testpersonen, Durchläufe, Fragebögen
-│   │   ├── index.html · js/ · css/                                        # Web-UI (Ansichten: Übersicht, System, Prozesse, UIs & Dienste, ROS-Graph, Topics, Robot-Nutzung, Greifen & Ablegen, Nutzer & Sessions, Evaluierung, Event Logs)
+│   │   ├── http_monitoring_dashboard_p8083/vla.py                         # VLA-M: Aufträge an `vla_bridge` (/vla/instruction, /vla/skill, /vla/response) für den Modellvergleich
+│   │   ├── http_monitoring_dashboard_p8083/routines.py                    # Wiederkehrende Klickfolgen aus der Tabelle interactions (nur Auswertung, kein Abspielen)
+│   │   ├── index.html · js/ · css/                                        # Web-UI (Ansichten: Übersicht, System, Prozesse, UIs & Dienste, ROS-Graph, Topics, Robot-Nutzung, Greifen & Ablegen, VLA-M, Nutzer & Sessions, Evaluierung, Event Logs)
 │   │   └── launch/monitoring_dashboard.launch.py                               # ros2 launch … port:=8083 open_browser:=true db:=…
 │   ├── http_robot_control_ui_p8081/                                       # 🎮 HTML/JS: Eigenständiges Roboter-Steuerungs- & Jogging-Webpanel
 │   │   ├── index.html                                                     # Roboter-Steuerungsoberfläche (Port 8081)
@@ -145,6 +148,7 @@ dev_ws/
 │   ├── robot_profiles/                                                    # 🦾 Python: Roboter-Profile (ein YAML je Arm), aktives Profil, robot_bringup.launch.py, validate_profile
 │   │   └── profiles/                                                      # xarm_lite6 · xarm5 · xarm7 · abb_irb1100 · ur5e · franka_fr3 · kinova_gen3
 │   ├── abb_irb1100_support/                                               # 🏭 URDF, SRDF, MoveIt + Start (Robot | Digital Twin) des ABB IRB 1100
+│   ├── franka_fr3_support/                                                # 🦾 URDF, SRDF, MoveIt + Start (Robot | Digital Twin) des Franka FR3 (franka_description, mock_components, kein libfranka)
 │   ├── scene_objects/                                                     # 📍 Python: RViz2-Marker für Schutzzonen & Arbeitsbereichsgrenzen
 │   │   ├── launch/scene_objects.launch.py
 │   │   └── scene_objects/
@@ -185,13 +189,22 @@ dev_ws/
 │   │   ├── vla_bridge/placing.py                                          # Freiraum für den Greifer beim Ablegen neben hohen Objekten
 │   │   ├── vla_bridge/palletizing.py                                      # Palettier-Planer für die Szene „Logistik – automatisch palettieren“ (reines Python)
 │   │   ├── vla_bridge/pallet_job.py                                       # Auto-Palettieren: Plan aus der Szene, Ausführung Karton für Karton
+│   │   ├── vla_bridge/cocktail.py                                         # Szene „Bar – Cocktailmixer“: Flaschenring, Rezepte und Shaker-Posen (reine Rechnung)
+│   │   ├── vla_bridge/cocktail_job.py                                     # Mixt einen Drink (Skill `cocktail`, 8 Schritte; Robot | Digital Twin, an Robot | Hardware nur die Bahnen)
+│   │   ├── vla_bridge/flow.py                                             # Prüfung und Durchlauf direkter visueller VLA-Abläufe (azyklischer Graph aus dem Browser, `next` / `on_error`)
+│   │   ├── vla_bridge/held_body.py                                        # Gehaltenes echtes Objekt als AttachedCollisionObject in MoveIt (Box am Flansch beim Tragen)
+│   │   ├── vla_bridge/tiling.py                                           # Verlegeplan für die Szene „Bau – Fliesenlegen“ (Bodenfeld, Demo-Wand; reines Python)
+│   │   ├── vla_bridge/tile_job.py                                         # Fliesenlegen Boden: Halt für Halt anfahren, 6 Schritte je Fliese (nur Robot | Digital Twin)
 │   │   ├── vla_bridge/session_log.py                                      # Agenten-Runden als JSON Lines (~/.ros/vla_logs, größenbegrenzt)
 │   │   └── vla_bridge/scene.py                                            # Szene aus /zed/bboxes_3d (Label, Farbe, Greifkugel, Box)
+│   ├── cocktail_tablet/                                                   # 🍸 Python/JS: UX | Cocktail Tablet (Port 8086) – Touch-Oberfläche der Szene Bar – cocktail mixer für ein Tablet im LAN; nur Cocktail-Befehle an `vla_bridge`
 │   ├── vr_quest3_teleop/                                                  # 🥽 Meta Quest 3 WebXR Teleoperations-Bridge
 │   │   ├── https_vr_webxr_p8443/                                          # Sichere WebXR Browser-Oberfläche & 3D-Controller
 │   │   │   └── https_vr_webxr_p8443.py                                    # HTTPS-Server (Port 8443) für die WebXR-Seite
 │   │   ├── vr_quest3_teleop/rosapi_guard.py                               # Startet /rosapi nur, wenn noch keiner läuft
 │   │   └── vr_quest3_teleop/vr_quest3_teleop_node.py                      # VR 6-DoF Controller-Pose zu MoveIt Servo Bridge
+│   ├── mixed_reality_guard/                                               # 🕶️ Python: Serverseite des Mixed-Reality-Modus – führt /ui/mixed_reality_state aller Clients zu einem ausfallsicheren Satz Grenzen zusammen
+│   ├── mr_magicleap2/                                                     # 🕶️ Python: MR-Brille (Magic Leap 2) – Brillenpose als TF + Bedienerzone, gespeicherte Ausrichtung; nur Anzeige
 │   ├── xarm_ros2/                                                         # 🤖 Offizieller xArm ROS 2 Stack (ins Repo kopiert, erweitert)
 │   │   └── xarm_moveit_servo/src/xarm_joystick_input.cpp                  # Gamepad-Eingabeknoten mit Kollisionsbremsen-Integration
 │   ├── zed-ros2-interfaces/                                               # 📷 Benutzerdefinierte ROS 2 Interfaces für Stereolabs ZED Kameras
@@ -210,7 +223,7 @@ dev_ws/
 │   ├── monitoring_sim.py                                                  # Testdaten-Simulator für das UX | Monitoring (nur isolierte Domain, z.B. 97)
 │   ├── bench_nexus_webkit.py                                              # Misst CPU/FPS des Nexus-App-Fensters (WebKitGTK, unsichtbar)
 │   ├── firewall_setup.sh                                                  # ufw-Regeln anzeigen / --apply / --undo
-│   ├── ws_sync.sh                                                         # Abgleich Laptop / Labor-PC / Home-PC: Einrichten, git pull --rebase, geänderte Pakete bauen (--setup, --no-build)
+│   ├── ws_sync.sh                                                         # Abgleich Laptop / Labor-PC / Home-PC: Einrichten, Fast-Forward-Pull, geänderte Pakete bauen (--setup, --no-build, --check)
 │   ├── install_blender.sh                                                 # Installiert/aktualisiert Blender + Blender-MCP-Server ohne sudo (--check)
 │   ├── reel_render.py                                                     # Rendert eine Video-Seite Bild für Bild (Headless Chrome → ffmpeg)
 │   ├── make_docs_lite6.py                                                 # Erzeugt docs/js/lite6_mesh.js (Lite-6-Meshes für die Projektseiten)
