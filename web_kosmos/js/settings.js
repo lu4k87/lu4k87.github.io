@@ -148,7 +148,7 @@ const nRows = (g) => g.rows.filter(([k]) => k !== '#').length;
 // Stationen, an denen eine Zeile etwas ändert (Stand 28.10.2026); Zeile ohne Wirkungs-Schlüssel wirkt an jeder Station
 const NEAR_EARTH = ['earth', 'iss', 'tiangong', 'hubble', 'jwst', 'euclid', 'roman'];   // Ozean + Lufthülle (EARTH_FRAG, ATMO_FRAG)
 const BODIES = SOLAR_SYSTEM.filter((id) => id !== 'sun');   // Planeten und Monde mit spinAxis (axes.js)
-const SYMBOLS = ['earth', 'solar'];   // Satelliten (sats.js), Asteroiden (levels/solar.js)
+const SYMBOLS = ['solar'];   // Asteroiden (levels/solar.js); Satelliten um die Erde haben eigene Regler an der Station (levels/earth.js)
 // createFlare (flare.js), auch über orbitview, l2view, uranusmoon, createMarsMoon; die Sonne hat eigene Optik-Ebenen (levels/sun.js)
 const FLARE = ['earth', 'moon', 'solar', 'sun', 'io', 'europa', 'triton', 'phobos', 'deimos', 'asteroid', 'miranda', 'iss', 'tiangong', 'hubble', 'jwst', 'euclid', 'roman'];
 const FLARE_NOSUN = FLARE.filter((id) => id !== 'sun');
@@ -162,7 +162,7 @@ const WHERE = {
   solar: [SOLAR_SYSTEM, 'an Stationen im Sonnensystem'],
   near: [NEAR_EARTH, 'an der Erde und den Stationen in ihrer Nähe (ISS, Weltraumteleskope)'],
   bodies: [BODIES, 'an Stationen mit Planeten und Monden'],
-  sym: [SYMBOLS, 'an der Erde (Satelliten) und im Sonnensystem (Asteroiden)'],
+  sym: [SYMBOLS, 'im Sonnensystem (Asteroiden)'],
   flare: [FLARE, 'an Stationen mit der Sonne im Bild'],
   flareNs: [FLARE_NOSUN, 'an Stationen mit der Sonne im Bild; die Sonne selbst hat eine eigene Optik'],
   sky: [() => [...MILKY, ...deepAt], 'an Stationen mit Sternhimmel'],
@@ -204,7 +204,7 @@ const GROUPS = [
     ['rayleigh', TOG('rayleigh', 'Blaue Dämmerung am Erdrand (Rayleigh)'), 'near']] },
   { id: 'planets', icon: 'orbit', title: 'Planeten', rows: [
     ['axes', TOG('axes', 'Drehachsen der Planeten und Monde') + NOTE('Linie über Nord- und Südpol jedes Planeten und Mondes, neigt und dreht sich mit dem Körper. Nordpol eisblau, Südpol grau.'), 'bodies'],
-    ['small', RANGE('small', 'Größe der Symbole', 1, 12, 0.5, '×') + NOTE('Satelliten, Trümmer und Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte.'), 'sym']] },
+    ['small', RANGE('small', 'Größe der Symbole', 1, 12, 0.5, '×') + NOTE('Asteroiden als vergrößerte Symbole – je größer, desto weniger Objekte (4× → jedes achte); 1× zeigt alle als Lichtpunkte. Satelliten und Trümmer um die Erde: Regler „Größe“ und „Anzahl“ der Station Erde.'), 'sym']] },
   { id: 'cam', icon: 'cam', title: 'Kamera &amp; Bewegung', rows: [['motion', PICK('motion', 'Bewegung', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']], true) + NOTE('„Aus“ wirkt wie „Bewegung reduzieren“ im System: keine Fahrt von selbst, Wechsel als kurze Überblendung.')],
     SUB('Steuerung'),
     ['fovK', RANGE('fovK', 'Blickwinkel', 0.6, 1.6, 0.05, '×') + NOTE('Über 1× zeigt mehr vom Raum wie ein Weitwinkel, unter 1× rückt die Szene heran wie ein Teleobjektiv.')],

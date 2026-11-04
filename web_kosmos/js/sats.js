@@ -5,7 +5,6 @@
 
 import * as THREE from 'three';
 import { propagate, periodMin } from './orbit.js';
-import { settings } from './settings.js';
 
 export const KIND = ['Nutzlast', 'Starlink', 'Trümmer', 'Station'];
 export const KIND_COLOR = ['#ffe9c4', '#8fc6ff', '#ff8a5c', '#f3b552'];
@@ -48,14 +47,14 @@ void main() {
   gl_Position = projectionMatrix * mv;
   int kind = int(el2.w + 0.5);
   float show = kind == 0 ? uShow0 : kind == 1 ? uShow1 : kind == 2 ? uShow2 : uShow3;
-  // Vergrößerung uMag (Zahnrad „Satelliten und Kleinkörper“): je größer, desto kleiner der gezeigte Anteil uKeep; Stationen immer
+  // Vergrößerung uMag und gezeigter Anteil uKeep (Regler „Größe“ und „Anzahl“ der Station Erde, levels/earth.js); Stationen immer
   if (kind != 3 && seed > uKeep) show = 0.0;
   float d = max(-mv.z, 0.05), near = clamp(12.0 / d, 0.0, 1.0), big = smoothstep(1.0, 4.0, uMag);
   float base = kind == 3 ? 7.0 + 3.0 * (uMag - 1.0) : (kind == 2 ? 1.4 : 1.7) * uMag * (1.0 + 0.4 * big);
-  vPx = uPx * base * (0.75 + 1.3 * near);
+  vPx = uPx * base * (0.9 + 1.3 * near);
   gl_PointSize = vPx * show;
-  // bei 1× klein und schwach (19.000 additive Punkte ergäben sonst eine weiße Wolke), vergrößert und ausgedünnt deutlich
-  vA = show * (kind == 3 ? 1.0 : mix(0.07 + 0.3 * near * near, 0.85 + 0.15 * near, big));
+  // bei 1× („echt“) kleine, aber sichtbare Lichtpunkte (deckend gemischt, alle 19.470 bleiben ein feiner Schleier), vergrößert deutlich
+  vA = show * (kind == 3 ? 1.0 : mix(0.6 + 0.3 * near * near, 0.85 + 0.15 * near, big));
   vRot = seed * 40.0;
   vKind = float(kind);
   vCol = kind == 0 ? vec3(1.0, 0.91, 0.77) : kind == 1 ? vec3(0.56, 0.78, 1.0) : kind == 2 ? vec3(1.0, 0.54, 0.36) : vec3(0.95, 0.71, 0.32);
@@ -135,13 +134,15 @@ export function createSats(data, { unit = 1e-3 } = {}) {
   g.setAttribute('el', new THREE.BufferAttribute(el, 4));
   g.setAttribute('el2', new THREE.BufferAttribute(el2, 4));
   g.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
-  const u = { uDays: { value: 0 }, uPx: { value: 1 }, uScale: { value: unit }, uMag: { value: 1 }, uKeep: { value: 1 }, uGain: { value: 0.8 }, uShow0: { value: 1 }, uShow1: { value: 1 }, uShow2: { value: 1 }, uShow3: { value: 1 }, uSunL: { value: new THREE.Vector3() } };
+  const u = { uDays: { value: 0 }, uPx: { value: 1 }, uScale: { value: unit }, uMag: { value: 6 }, uKeep: { value: keepShare(6) }, uGain: { value: 0.8 }, uShow0: { value: 1 }, uShow1: { value: 1 }, uShow2: { value: 1 }, uShow3: { value: 1 }, uSunL: { value: new THREE.Vector3() } };
   const m = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms: u, blending: THREE.NormalBlending, depthWrite: false, transparent: true });
   const pts = new THREE.Points(g, m);
   pts.frustumCulled = false;
   pts.userData = {
     count: n,
-    update: (days) => { u.uDays.value = days; u.uMag.value = settings.S.small; u.uKeep.value = keepShare(settings.S.small); },
+    update: (days) => { u.uDays.value = days; },
+    setMag: (m) => { u.uMag.value = m; },          // 1 = Lichtpunkt („echt“), bis 12×
+    setKeep: (share) => { u.uKeep.value = share; },  // gezeigter Anteil 0–1 (Stationen immer)
     setShow: (kind, on) => { u[`uShow${kind}`].value = on ? 1 : 0; },
     setPixelRatio: (pr) => { u.uPx.value = pr; },
     setSun: (dirLocal) => { u.uSunL.value.copy(dirLocal); },

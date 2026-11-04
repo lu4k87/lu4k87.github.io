@@ -438,11 +438,16 @@ export function create(ctx) {
   const l2Pos = [0, 0, 0];
   const launched = (k) => !l2Data || !l2Data[k] || jd >= l2Data[k].v[0][0];
   const show = { sats: true, debris: true, orbits: true };
+  // Größe der Symbole (1 = Lichtpunkt „echt“) und gezeigter Anteil des Katalogs in Prozent; Standard wie bisher 6× mit
+  // keepShare(6) ≈ 7 % (jedes 15. Objekt), 100 % = alle 19.470 Katalogobjekte
+  const satView = { mag: 6, share: 7 };
+  const applySats = () => { if (!sats) return; sats.userData.setMag(satView.mag); sats.userData.setKeep(satView.share / 100); };
   let linesT = -1;
   const satsReady = loadSats().then((d) => {
     satData = d;
     sats = createSats(d);
     sats.userData.setPixelRatio(pr);
+    applySats();
     tilt.add(sats);
     for (const [name, col, op] of [['ISS (ZARYA)', 0xf3b552, 0.55], ['CSS (TIANHE)', 0xffd27a, 0.4], ['HST', 0x9cc8ff, 0.35]]) {
       const k = namedIndex(d, name);
@@ -585,6 +590,8 @@ export function create(ctx) {
   // ---------- Ebenen (Zahnrad „Station · Erde & Mond“, Zeitleiste) ----------
   const SPEEDS = [[1 / 1440, '1 min/s'], [1 / 144, '10 min/s'], [1 / 24, '1 h/s'], [0.25, '6 h/s'], [1, '1 Tag/s']];
   let clockIdx = 0;
+  const num = (x) => x.toLocaleString('de-DE');
+  const dot = (k) => `<span class="w-dot" style="--c:${KIND_COLOR[k]}"></span>`;
   registerLayers('earth', [
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Zeitraffer', hint: 'Erddrehung, Mondlauf, Satelliten und ISS im gewählten Tempo; Pause = Echtzeit.', value: 0, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: true, fmt: (i) => SPEEDS[Math.round(i)][1],
       set: (i, playing) => { clockIdx = Math.round(i); rate = playing ? SPEEDS[clockIdx][0] : 0; if (!playing) jd = julianDate(new Date()); },
@@ -601,12 +608,14 @@ export function create(ctx) {
     { id: 'auroraPulse', type: 'toggle', label: 'Pulsierende Flecken (Morgensektor)', value: true, sub: true, set: (v) => { auroraU.uPulse.value = v ? 1 : 0; } },
     { id: 'auroraGain', type: 'range', label: 'Leuchtstärke', value: 1, min: 0.3, max: 5, step: 0.1, sub: true, unit: '×', set: (v) => { auroraU.uGain.value = v; } },
     { id: 'sats', type: 'toggle', group: 'Erdumlaufbahn', label: 'Satelliten (CelesTrak-Katalog)', value: true, set: (v) => { show.sats = v; applyShow(); } },
+    { id: 'satSize', type: 'range', label: 'Größe', value: 6, min: 1, max: 12, step: 0.5, sub: true, fmt: (v) => (v <= 1 ? 'echt · Lichtpunkt' : `${String(v).replace('.', ',')}×`), set: (v) => { satView.mag = v; applySats(); },
+      hint: 'Maßstab: im Bild der ganzen Erde deckt ein Pixel über zehn Kilometer – selbst die ISS (109 m) wäre ein Hundertstel Pixel. „Echt“ zeigt darum jedes Objekt als Lichtpunkt von einem Pixel; Raumstationen bleiben als Symbol.' },
+    { id: 'satShare', type: 'range', label: 'Anzahl', value: 7, min: 1, max: 100, step: 1, sub: true, fmt: (v) => (satData ? `${num(Math.round(satData.obj.length * v / 100))} von ${num(satData.obj.length)}` : `${v} %`), set: (v) => { satView.share = v; applySats(); },
+      hint: 'Alle 19.470 Objekte sind der CelesTrak-Katalog (Stand 25.10.2026): die echte Zahl der verfolgten Satelliten und Trümmer. Dazu fliegen rund 1,2 Mio. Teile ab 1 cm, die kein Katalog erfasst (ESA). Große Symbole mit allen Objekten verdecken die Erde – dann weniger wählen.' },
     { id: 'debris', type: 'toggle', label: 'Trümmerwolken', value: true, sub: true, set: (v) => { show.debris = v; applyShow(); } },
     { id: 'orbits', type: 'toggle', label: 'Bahnen ISS, Tiangong, Hubble', value: true, sub: true, set: (v) => { show.orbits = v; applyShow(); } },
   ]);
   let wT = -1;
-  const num = (x) => x.toLocaleString('de-DE');
-  const dot = (k) => `<span class="w-dot" style="--c:${KIND_COLOR[k]}"></span>`;
   const occluders = [{ center: new THREE.Vector3(), radius: R_E }, { center: moonPos, radius: R_M }];
   const sunFar = new THREE.Vector3();
 
