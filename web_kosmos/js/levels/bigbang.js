@@ -161,7 +161,7 @@ export function create(ctx) {
     const ranked = (list) => list.sort((a, b) => b.d - a.d).map((s, i) => Object.assign(s, { frac: (i + rand()) / list.length }));
     // Erste Sterne in den dichtesten Knoten (blau-weiß, verlöschen, wenn die Galaxien übernehmen), dazu Supernova-Blitze
     const sites = ranked(sampleWeb(w, rand, Math.round(1400 * k), { power: 3, top: 0.2 }));
-    const stars = glowPoints(sites.map((s) => ({ pos: V(s), size: 0.005, col: blackbody(18000 + rand() * 7000).map((v) => v * (1.4 + rand())),
+    const stars = glowPoints(sites.map((s) => ({ pos: V(s), size: 0.005, col: blackbody(18000 + rand() * 7000).map(((f) => (v) => v * f)(1.4 + rand())),
       birth: 15 + 6 * Math.pow(s.frac, 1.3), end: 27 + rand() * 5 })));
     stars.material.uniforms.uFade.value = 0.8;
     const novae = glowPoints(Array.from({ length: Math.round(70 * k) }, () => {
@@ -185,7 +185,7 @@ export function create(ctx) {
     galSeed.copy(V(far[0]));
     // ferne, schwache Galaxien als Lichtpunkte auf dem Netz
     const dust = glowPoints(ranked(sampleWeb(w, rand, Math.round(20000 * k), { top: 0.1, power: 0.5 })).map((s) => ({
-      pos: V(s), size: 0.0035, col: blackbody(4500 + rand() * 6000).map((v) => v * (0.4 + rand())), birth: 22 + 20 * Math.pow(s.frac, 1.3) })));
+      pos: V(s), size: 0.0035, col: blackbody(4500 + rand() * 6000).map(((f) => (v) => v * f)(0.4 + rand())), birth: 22 + 20 * Math.pow(s.frac, 1.3) })));
     dust.material.uniforms.uFade.value = 1.5;
     bang.add(dust, stars, novae, gals);
     pop = { stars, novae, gals, dust, all: [stars, novae, gals, dust] };

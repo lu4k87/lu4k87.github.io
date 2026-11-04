@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
 import { pointCloud, disposeScene, volume, bakeField, offscreen } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, MPC } from '../astro.js';
-import { galaxyAtlas, createFlyby } from '../galaxyflight.js';
+import { createFlyby } from '../galaxyflight.js';
 import { sstep } from '../flightplan.js';
 
 const R = 250;
@@ -300,15 +300,17 @@ ${GAS_FIELD}` });
     { id: 'twK', type: 'range', group: 'Funkeln', label: 'Tempo', value: 1, min: 0.25, max: 3, step: 0.25, unit: '×', set: (v) => { twK = v; }, active: () => twinkle.visible, only: 'Wirkt, sobald unter Ansicht „Funkeln“ an ist.' },
   ]);
   // Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (User 27.10.2026, nur im Flug sichtbar)
-  const flyby = createFlyby(galaxyAtlas());
+  const flyby = createFlyby();
   scene.add(flyby.group);
-  // Haufen des Netzes auf derselben Fahrt: nahe Punkte schon ab 2,5 px weich aus (sonst zieht ein Haufen als überstrahlter
-  // Klecks vorbei); in Ruhe bleibt die Station unverändert
+  // Punkte des Netzes auf derselben Fahrt: nahe Punkte schon ab 2,5 px weich aus (sonst zieht ein Haufen als überstrahlter
+  // Klecks vorbei) und das ganze Netz blendet mit der Fahrt aus – die Galaxien des Vorbeiflugs sind dieselben Objekte,
+  // aufgelöst statt als Punkt (User 04.11.2026: Punktstrom wirkte wie Warp-Streifen); in Ruhe bleibt die Station unverändert
   const wu = web.material.uniforms, FADE = wu.uFade.value;
+  let gain0 = 1;
   const pass = { ...flyby,
-    begin(from, anchor) { flyby.begin(from, anchor); wu.uFade.value = FADE; },
-    step(e) { flyby.step(e); wu.uFade.value = FADE + (2.5 - FADE) * sstep(0, 0.3, e); },
-    end() { flyby.end(); wu.uFade.value = FADE; } };
+    begin(from, anchor) { flyby.begin(from, anchor); gain0 = wu.uGain.value; wu.uFade.value = FADE; },
+    step(e) { flyby.step(e); wu.uFade.value = FADE + (2.5 - FADE) * sstep(0, 0.3, e); wu.uGain.value = gain0 * (1 - 0.92 * sstep(0.25, 0.7, e)); },
+    end() { flyby.end(); wu.uFade.value = FADE; wu.uGain.value = gain0; } };
   const controls = [{ id: 'flow', label: 'Strömung', value: 'off', options: [['off', 'Aus'], ['on', 'Laniakea']], set: (v) => { flow.visible = v === 'on'; } },
     // Gas: Temperatur = Farben wie in IllustrisTNG, Röntgengas = nur heißes Haufengas (User 28.10.2026, Vorschau Gas:B + Gas:C)
     // Dichte (blau-weiß-rot) + Leuchtnetz (cyanblau) = Vorlagen 1 + 2 (User 28.10.2026, Vorschau „Gas über das ganze Netz“ Gas:B + Gas:C)

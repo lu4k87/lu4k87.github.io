@@ -204,12 +204,12 @@ export function starFormation({ arms = [], rings = [], n, scale = 1, rot, seed =
   };
   for (let i = 0; i < n; i++) {
     const b = birth();
-    if (b) put(b.R, b.phi, gauss(rand) * 0.06, blackbody(9000 + rand() * 16000).map((v) => v * (0.7 + rand() * 0.8)), 0.04 + rand() * 0.05, 10 + rand() * 25, rand());
+    if (b) put(b.R, b.phi, gauss(rand) * 0.06, blackbody(9000 + rand() * 16000).map(((f) => (v) => v * f)(0.7 + rand() * 0.8)), 0.04 + rand() * 0.05, 10 + rand() * 25, rand());
   }
   for (let i = 0; i < n * hii; i++) {
     const b = birth();
     if (!b) continue;
-    const life = 3 + rand() * 5, ph = rand(), c = [1.0, 0.32, 0.48].map((v) => v * (0.8 + 0.9 * rand()));
+    const life = 3 + rand() * 5, ph = rand(), c = [1.0, 0.32, 0.48].map(((f) => (v) => v * f)(0.8 + 0.9 * rand()));
     for (let j = 2 + Math.floor(rand() * 5); j > 0; j--) put(b.R + gauss(rand) * 0.05, b.phi + gauss(rand) * 0.05 / b.R, gauss(rand) * 0.02, c, 0.07 + rand() * 0.07, life, ph);
   }
   const g = new THREE.BufferGeometry();

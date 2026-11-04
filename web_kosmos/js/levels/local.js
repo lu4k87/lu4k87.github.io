@@ -13,6 +13,7 @@ import { buildGalaxy, buildHalo, ARMS, R0 } from './galaxy.js';
 import { pointCloud, disposeScene } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, KPC } from '../astro.js';
 import { galaxyGlow, starFormation, lightBlobs, streamCloud } from '../galaxyfx.js';
+import { farGalaxies } from '../deepsky.js';
 import { registerLayers } from '../layers.js';
 
 const RAD = Math.PI / 180;
@@ -164,7 +165,7 @@ export function create(ctx) {
   const star = (b, p, c, s = 0.12) => { b.pos.push(p.x, p.y, p.z); b.col.push(...c); b.size.push(s); };
   const hof = (b, p, T, k, d) => { b.hp.push(p.x, p.y, p.z); b.hc.push(...blackbody(T).map((v) => v * k)); b.hs.push(d); };
   const blob = (b, c, n, r, k, T, dT, flat = 1) => {
-    for (let i = 0; i < n; i++) star(b, new THREE.Vector3(c.x + gauss(rand) * r, c.y + gauss(rand) * r * flat, c.z + gauss(rand) * r), blackbody(T + rand() * dT).map((v) => v * k * (0.5 + rand())));
+    for (let i = 0; i < n; i++) star(b, new THREE.Vector3(c.x + gauss(rand) * r, c.y + gauss(rand) * r * flat, c.z + gauss(rand) * r), blackbody(T + rand() * dT).map(((f) => (v) => v * f)(k * (0.5 + rand()))));
   };
   // SMC: unregelmäßig, junge Sterne, NGC 346 als rosa Knoten
   blob(bags.own, smc, Math.round(4000 * det), 1.0, 1.1, 5200, 5000, 0.6);
@@ -226,15 +227,9 @@ export function create(ctx) {
   streams.push(stellar, gss);   // der Andromeda-Strom hängt an `kids` (läuft mit M31) und schaltet mit
   scene.add(gas, stellar);
 
-  // ferne Hintergrund-Galaxien (2–6 Mpc), schwach – geben dem Raum Tiefe
-  const bp = [], bc = [], bs = [];
-  for (let i = 0; i < Math.round(2600 * det); i++) {
-    const dir = new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize().multiplyScalar(2000 + rand() * 4000);
-    bp.push(dir.x, dir.y, dir.z);
-    bc.push(...blackbody(4200 + rand() * 2500).map((v) => v * 1.4 * (0.3 + rand())));
-    bs.push(8 + rand() * 14);
-  }
-  const back = keep(pointCloud(bp, bc, bs, { min: 1.0, max: 6, fade: 5 }));
+  // ferne Hintergrund-Galaxien (2–6 Mpc), schwach – geben dem Raum Tiefe: weiche Scheiben und Ellipsen mit Neigung und
+  // Staubband (deepsky.js farGalaxies; User 04.11.2026: vorher 1-px-Punkte, deren Farbe je Kanal zufällig war → Konfetti)
+  const back = keep(farGalaxies({ n: Math.round(2600 * det), rand: mulberry32(23), dist: [2000, 6000], gain: 2.2 }));
   scene.add(back);
 
   // Grenze der Gruppe: Nullgeschwindigkeitsfläche ≈ 1 Mpc um den Schwerpunkt (zwischen MW und M31) – drei Ringe

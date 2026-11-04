@@ -5,10 +5,15 @@
 //   blau, Ellipsen, von der Kante, unregelmäßig, Paar in Wechselwirkung) – keine Teleskopbilder, keine Lizenzfrage.
 // · galaxySprites()/glowPoints(): Galaxien als Tafeln mit Tönung, Geburt und Reifung (uT), ferne Galaxien/Sterne als
 //   Punkte mit Geburt und Ende; uS = Maßstab der Gruppe (Station 11 lässt den Raum wachsen), uPx = Pixel je Bogenmaß.
-// · createFlyby(): reife Galaxien entlang der Fahrt, beim Start an Kamera und Anker ausgerichtet (Lage: flightplan.js
-//   flybyField), nur im Flug sichtbar.
+// · galaxyField(): Galaxien prozedural im Shader (User 04.11.2026: Atlas-Tafeln wirkten flach, kopiert und rosa) – jede
+//   Galaxie eine eigene Form aus Seed, Typ (Spirale, Ellipse, unregelmäßig, Linse), Armzahl, Steigung, Balken, Bulge, Staub,
+//   Flockigkeit; echte Neigung im Raum (Scheibe als dünne Schicht mit Höhe, von der Kante schmal mit Staubband), Staubbahnen
+//   an der Innenkante der Arme (vorn stärker), HII-Knoten dezent, Lichthof; Billboard-Tafel, Scheibe per Strahl–Ebene-Schnitt.
+// · createFlyby(): Galaxien entlang der Fahrt (Lage: flightplan.js flybyField), beim Start an Kamera und Anker ausgerichtet,
+//   nur im Flug sichtbar; der Atlas bleibt für den Auftakt-Film (opener.js) und Station 11.
 import * as THREE from 'three';
 import { mulberry32, gauss, blackbody } from './astro.js';
+import { NOISE } from './glsl.js';
 import { sstep, flybyField, FLYBY } from './flightplan.js';
 
 // ---------- Atlas: 4 × 4 Kacheln je 512 px, additiv auf Schwarz gemalt (einmal je Seite, das Canvas bleibt im Speicher) ----------
@@ -216,6 +221,140 @@ export function galaxySprites(list, tex) {
   mesh.renderOrder = 2;
   return mesh;
 }
+// ---------- Galaxien prozedural: Instanz = Tafel zur Kamera, Scheibe liegt als dünne Schicht im Raum (Normale aN) ----------
+// Je Bildpunkt: Sichtstrahl schneidet die Scheibenebene (schräge Scheiben perspektivisch richtig); nahe der Kante zählt
+// stattdessen der dem Zentrum nächste Punkt des Strahls, gewichtet mit der Höhe über der Ebene (Dicke hz) und der Weglänge
+// durch die Schicht – so bleibt eine Galaxie von der Kante ein schmaler heller Strich mit Staubband statt zu verschwinden.
+// aP0 = (Seed, Typ 0 Spirale · 1 Ellipse · 2 unregelmäßig · 3 Linse, Armzahl, Steigung), aP1 = (Balkenlänge, Bulge-Radius,
+// Staub, Flockigkeit), alles in Einheiten des Scheibenhalbmessers; aSize = Durchmesser, Tönung = Planck-Farbe der Sterne
+const PROC_VERT = /* glsl */ `
+attribute vec4 aP0, aP1; attribute vec3 aN, aE1, aTint; attribute float aSize, aGain;
+uniform float uS; uniform vec2 uNear;
+varying vec2 vXY; varying vec3 vC, vN, vE1, vE2, vTint; varying vec4 vP0, vP1; varying float vA, vR;
+void main() {
+  vec3 c = (modelViewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  float R = 0.5 * aSize * uS;
+  vXY = position.xy * 4.8 * R;   // Tafel 2,4 Halbmesser je Seite: Platz für Hof und Bulge
+  mat3 nm = mat3(modelViewMatrix);
+  vN = normalize(nm * aN); vE1 = normalize(nm * aE1); vE2 = cross(vN, vE1);
+  vC = c; vR = R; vP0 = aP0; vP1 = aP1; vTint = aTint;
+  // nah an der Kamera weich aus: uNear = Abstand in Durchmessern (vorbeiziehende Galaxien füllen nie das ganze Bild)
+  float near = smoothstep(uNear.x, uNear.y, -c.z / (2.0 * R));
+  vA = aGain * near;
+  gl_Position = projectionMatrix * vec4(c + vec3(vXY, 0.0), 1.0);
+}`;
+const PROC_FRAG = /* glsl */ `
+${NOISE}
+uniform float uGain;
+varying vec2 vXY; varying vec3 vC, vN, vE1, vE2, vTint; varying vec4 vP0, vP1; varying float vA, vR;
+void main() {
+  if (vA < 0.002) discard;
+  float R = vR, seed = vP0.x, type = vP0.y, arms = vP0.z, pitch = vP0.w;
+  float bar = vP1.x, bulge = vP1.y, dust = vP1.z, clump = vP1.w;
+  float rb = length(vXY) / R;   // Abstand in der Tafel (Bulge, Hof: Projektion ist bei fernen Tafeln die Sichtlinie)
+  if (rb > 2.3) discard;
+  vec3 P = vC + vec3(vXY, 0.0), v = normalize(P), d = P - vC;
+  float cv = dot(v, vN), acv = abs(cv);
+  float cvs = cv >= 0.0 ? max(cv, 1e-4) : min(cv, -1e-4);
+  float tStar = -dot(d, vN) / cvs;   // Schnitt des Strahls mit der Scheibenebene
+  float tNear = -dot(d, v);          // Strahlpunkt mit dem kleinsten Abstand zum Zentrum
+  bool ell = type > 0.5 && type < 1.5, irr = type > 1.5 && type < 2.5, lent = type > 2.5;
+  float hz = ell ? 0.6 : irr ? 0.22 : lent ? 0.1 : 0.07;   // Dicke (Skalenhöhe) in Halbmessern
+  float wEdge = ell ? 1.0 : 1.0 - smoothstep(0.05, 0.35, acv);
+  float t = mix(clamp(tStar, tNear - 3.0 * R, tNear + 3.0 * R), tNear, wEdge);
+  vec3 X = d + t * v;
+  float u = dot(X, vE1) / R, w = dot(X, vE2) / R, h = dot(X, vN) / R;
+  float r = length(vec2(u, w));
+  float hw = exp(-h * h / (2.0 * hz * hz));                                   // Höhe über der Ebene
+  float path = pow((1.0 + hz * hz) / (acv * acv + hz * hz), 0.3);          // Weglänge durch die Schicht (Kante heller)
+  vec3 tint = vTint;
+  vec3 cDisc = tint * vec3(1.0, 0.96, 0.9), cArm = tint * vec3(0.8, 0.9, 1.06), cBulge = tint * vec3(1.08, 0.9, 0.72);
+  vec3 light = vec3(0.0);
+  if (ell) {
+    // Ellipse: glattes Sphäroid (abgeplattet entlang aN), warm, ohne Struktur
+    float rr = sqrt(u * u + w * w + h * h / (hz * hz)) / max(bulge, 0.05);
+    light = cBulge * (pow(1.0 + rr * rr, -1.25) * (1.0 - smoothstep(1.4, 2.6, rr)) + 0.8 * exp(-rr * rr * 20.0));
+  } else {
+    float disc = exp(-r / 0.3) * (1.0 - smoothstep(0.85, 1.1, r));
+    float tex = 1.0, armP = 0.0, gate = 0.0, hii = 0.0, lane = 0.0, dn = 0.0;
+    if (r < 1.15) {
+      vec3 q = vec3(u, w, seed);
+      float n1 = fbm(q * 5.0, 4), n2 = fbm(q * 2.2 + 7.0, 3);
+      float rIn = bar > 0.0 ? bar : 0.12;
+      float phase = atan(w, u) - log(max(r, 0.03) / rIn) / tan(pitch) + (0.25 + 0.6 * clump) * n2;
+      armP = arms > 0.5 ? pow(0.5 + 0.5 * cos(arms * phase), 2.0 + 2.0 * (1.0 - clump)) : 0.0;
+      gate = smoothstep(rIn * 0.8, rIn + 0.15, r) * (1.0 - smoothstep(0.75, 1.0, r));
+      tex = irr ? max(0.0, 0.3 + 1.5 * (n1 + 0.5 * n2)) : max(0.1, 0.85 + (0.5 + 0.7 * clump) * n1);
+      dn = ridged(q * 6.0 + 3.0, 3);
+      lane = pow(0.5 + 0.5 * cos(arms * phase + 1.1), 3.0) * gate * (0.35 + 0.65 * dn);
+      hii = smoothstep(0.35, 0.6, fbm(q * 14.0 + 21.0, 2)) * (irr ? disc * tex * 0.6 : armP * gate * disc);
+    }
+    float armAmp = arms > 0.5 ? mix(0.5, 0.25, clump) : 0.0;
+    float dsk = disc * (1.0 - armAmp + 2.0 * armAmp * armP * gate) * tex;
+    float barD = bar > 0.0 ? exp(-2.0 * (u * u / (bar * bar) + w * w / (0.08 * bar * bar))) : 0.0;
+    // Staub: Bahnen an der Innenkante der Arme + Flecken, bei Neigung auf der zugewandten Hälfte dunkler
+    float sinI = sqrt(max(0.0, 1.0 - acv * acv));
+    float nearSide = smoothstep(0.15, -0.35, dot(X, v) / R);
+    float dustK = dust * (0.4 + 0.6 * sinI) * (0.45 + 0.55 * nearSide);
+    float dustF = 1.0 - clamp(dustK * (0.85 * lane + 0.7 * smoothstep(0.3, 0.7, dn) * disc), 0.0, 0.85);
+    light = (mix(cDisc, cArm, armP * gate * 0.75) * dsk + cBulge * barD * 1.2 + vec3(1.0, 0.72, 0.78) * hii * 0.9) * hw * path * dustF;
+    // Bulge als Sphäroid in der Tafel, Hof der alten Sterne
+    float xb = rb / max(bulge, 0.02);
+    float bulgeD = irr ? 0.0 : pow(1.0 + xb * xb, -1.6) + 0.6 * exp(-xb * xb * 12.0);
+    light += cBulge * bulgeD * (lent ? 1.6 : 1.2) + tint * 0.02 * exp(-rb * 2.0);
+    // von der Kante: Staubband durch die Mitte vor Scheibe und Bulge
+    float band = wEdge * dust * exp(-pow(h / (0.45 * hz), 2.0)) * smoothstep(0.0, 0.1, r);
+    light *= 1.0 - 0.7 * band;
+  }
+  gl_FragColor = vec4(light * vA * uGain, 1.0);
+}`;
+// list: { pos, size, gain, tint, n, e1, p0: [seed, type, arms, pitch], p1: [bar, bulge, dust, clump] }
+export function galaxyField(list) {
+  const n = list.length;
+  const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
+    vertexShader: PROC_VERT, fragmentShader: PROC_FRAG,
+    uniforms: { uS: { value: 1 }, uGain: { value: 1 }, uNear: { value: new THREE.Vector2(0.3, 1.2) } },
+    transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide,
+  }), n);
+  const p0 = new Float32Array(n * 4), p1 = new Float32Array(n * 4), nn = new Float32Array(n * 3), e1 = new Float32Array(n * 3);
+  const tint = new Float32Array(n * 3), size = new Float32Array(n), gain = new Float32Array(n);
+  const m = new THREE.Matrix4();
+  list.forEach((g, i) => {
+    mesh.setMatrixAt(i, m.makeTranslation(g.pos.x, g.pos.y, g.pos.z));
+    p0.set(g.p0, i * 4); p1.set(g.p1, i * 4);
+    nn.set([g.n.x, g.n.y, g.n.z], i * 3); e1.set([g.e1.x, g.e1.y, g.e1.z], i * 3);
+    tint.set(g.tint, i * 3); size[i] = g.size; gain[i] = g.gain;
+  });
+  const geo = mesh.geometry;
+  for (const [k, a, w] of [['aP0', p0, 4], ['aP1', p1, 4], ['aN', nn, 3], ['aE1', e1, 3], ['aTint', tint, 3], ['aSize', size, 1], ['aGain', gain, 1]]) {
+    geo.setAttribute(k, new THREE.InstancedBufferAttribute(a, w));
+  }
+  mesh.frustumCulled = false;
+  mesh.renderOrder = 2;
+  return mesh;
+}
+// Zufällige Lage einer Scheibe: Normale gleichverteilt auf der Kugel, e1 senkrecht dazu (Richtung des Balkens)
+export function randDisc(rand) {
+  const n = new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize();
+  const a = Math.abs(n.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+  const e1 = new THREE.Vector3().crossVectors(n, a).normalize();
+  const b = new THREE.Vector3().crossVectors(n, e1);
+  const phi = rand() * Math.PI * 2;
+  return { n, e1: e1.multiplyScalar(Math.cos(phi)).addScaledVector(b, Math.sin(phi)).normalize() };
+}
+// Eigenschaften einer Galaxie: Typanteile grob nach dem nahen Universum (Spiralen überwiegen), Tönung aus der Sternpopulation
+export function randGalaxy(rand) {
+  const t = rand(), type = t < 0.62 ? 0 : t < 0.8 ? 1 : t < 0.9 ? 2 : 3;
+  const arms = type === 0 ? (rand() < 0.55 ? 2 : rand() < 0.5 ? 3 : 4) : 0;
+  const bar = type === 0 && rand() < 0.6 ? 0.22 + rand() * 0.18 : 0;
+  const bulge = type === 1 ? 0.35 + rand() * 0.35 : type === 3 ? 0.3 + rand() * 0.2 : type === 2 ? 0 : 0.08 + rand() * 0.14;
+  const dust = type === 0 ? 0.5 + rand() * 0.5 : type === 3 ? 0.25 : type === 2 ? 0.3 : 0;
+  const T = type === 1 ? 4300 + rand() * 600 : type === 2 ? 6500 + rand() * 2500 : 5000 + rand() * 1600;
+  return {
+    p0: [rand() * 100, type, arms, 0.25 + rand() * 0.35], p1: [bar, bulge, dust, type === 2 ? 1 : Math.pow(rand(), 1.5)],
+    tint: blackbody(T), ...randDisc(rand),
+  };
+}
 export const randTurn = (rand) => ({ rx: rand() * 6.3, ry: rand() * 6.3, rz: rand() * 6.3 });
 
 export function flybyTurn(rand) {
@@ -266,18 +405,15 @@ export function glowPoints(list) {
 // ---------- Vorbeiflug: Gruppe mit Ursprung im Anker, +z zur Startpose der Kamera, Maßstab = Startabstand D ----------
 // begin() richtet das Feld an der Fahrt aus (die Kamera fährt auf der Achse auf den Anker zu), step(e) blendet über die
 // Etappe ein und aus, end() blendet es weg; w = Gewicht der Etappe für den Fahrplan (main.js planChain)
-// Helligkeit wie eine Leuchtkraftfunktion: die meisten schwach, wenige hell (keine überstrahlten Flecken); Tönung nah an
-// Weiß mit leichtem Gelb (reife Sternpopulationen), kein Warp-Streifen – ein Vorbeiflug in diesem Maßstab verschmiert nichts
-export function createFlyby(tex) {
+// Helligkeit wie eine Leuchtkraftfunktion: die meisten schwach, wenige hell (keine überstrahlten Flecken); jede Galaxie
+// eine eigene Form (galaxyField), gleichmäßig über das Bild verteilt (flybyField)
+export function createFlyby() {
   const rand = mulberry32(8);
-  const list = flybyField(rand).map((g) => ({
-    pos: new THREE.Vector3(g.x, g.y, g.z), size: g.size, gain: 0.45 + 1.25 * rand() ** 3,
-    tile: TILES.mature[Math.floor(rand() * TILES.mature.length)],
-    tint: blackbody(5200 + rand() * 1500),
-    ...flybyTurn(rand),
-  }));
-  const mesh = galaxySprites(list, tex), u = mesh.material.uniforms, group = new THREE.Group(), axis = new THREE.Vector3(0, 0, 1);
-  u.uNear.value.set(0.35, 1.6);
+  const list = flybyField(rand).map((g) => {
+    const gal = randGalaxy(rand);
+    return { pos: new THREE.Vector3(g.x, g.y, g.z), size: g.size, gain: (0.45 + 1.25 * rand() ** 3) * (gal.p0[1] === 1 ? 0.8 : 1), ...gal };
+  });
+  const mesh = galaxyField(list), u = mesh.material.uniforms, group = new THREE.Group(), axis = new THREE.Vector3(0, 0, 1);
   group.add(mesh);
   group.visible = false;
   const dir = new THREE.Vector3();

@@ -60,7 +60,7 @@ function nucleus(det, rand) {
     const x = a * (Math.cos(E) - e), z = a * Math.sqrt(1 - e * e) * Math.sin(E);
     const tw = gauss(rand) * 0.12;   // leicht verdrillte Ellipsen
     pos.push(-x * Math.cos(tw) - z * Math.sin(tw), gauss(rand) * 0.12 * a, -z * Math.cos(tw) + x * Math.sin(tw));
-    col.push(...blackbody(4300 + rand() * 700).map((v) => v * (0.35 + rand() * 0.5)));
+    col.push(...blackbody(4300 + rand() * 700).map(((f) => (v) => v * f)(0.35 + rand() * 0.5)));
     size.push(0.00012);
   }
   for (let i = 0; i < 400; i++) {   // P3: junge A-Sterne, ≈ 0,1 pc um das Loch

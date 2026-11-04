@@ -44,12 +44,15 @@ float luma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 // Zoom-Unschärfe entlang der Strahlen zum Anker (Bewegung durch die Skala). Gemittelt wird in gestauchten Werten
 // (c / (1 + L), danach zurück): ein überheller Punkt wie die Sonne verschmiert so zu einer dünnen Spur statt zu einer
 // weißen Scheibe.
+// Stützstellen je Bildpunkt um einen Zufallsbruchteil versetzt (User 04.11.2026: ohne Zitter zerfällt jeder helle Punkt
+// in eine Reihe von Strichen – Perlenkette statt Spur)
 vec3 zoomed(sampler2D t, vec2 uv, vec2 c, float amt, vec3 e) {
   if (amt < 0.001) return sampleLevel(t, uv, e);
   vec3 acc = vec3(0.0);
   float w = 0.0;
+  float jit = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
   for (int i = 0; i < 10; i++) {
-    float k = float(i) / 9.0;
+    float k = (float(i) + jit) / 10.0;
     vec2 q = mix(uv, c, k * amt);
     float wi = 1.0 - k * 0.6;
     vec3 s = tex(t, q);

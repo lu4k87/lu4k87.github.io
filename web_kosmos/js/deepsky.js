@@ -21,7 +21,7 @@ const DEEP = {
   asteroid: { cirrus: 1, gal: 1, seed: 11 },   // Sternfeld dort ohne galaktische Lage (Standard-Achsen)
   pulsar: { cirrus: 1, gal: 1, seed: 11 },
   galaxy: { outside: true, cirrus: 0, gal: 1.4, seed: 9 },
-  local: { outside: true, cirrus: 0, gal: 0.8, seed: 13 },
+  local: { outside: true, cirrus: 0, gal: 1.0, seed: 13 },
   andromeda: { outside: true, cirrus: 0, gal: 1.2, seed: 21 },
 };
 setDeepAt(Object.keys(DEEP));   // Regler „Tiefer Himmel“ im Reiter Station nur an diesen Stationen (settings.js)
@@ -56,18 +56,34 @@ void main() {
 
 // Ferne Galaxien als Punktbilder: Spiralen als geneigte Exponentialscheibe mit gelblichem Kern (große mit angedeuteten
 // Armen), elliptische steil zur Mitte und warm; Lagewinkel und Neigung zufällig
-const GAL_VERT = /* glsl */ `
-${SKY_VERTEX}
+const GAL_ATTR = /* glsl */ `
 attribute vec3 color;
 attribute vec4 shape;   // Größe (px), Achsenverhältnis, Lagewinkel, Spirale (0/1)
 uniform float uPx, uGain;
 varying vec3 vCol;
 varying vec4 vShape;
+`;
+const GAL_VERT = /* glsl */ `
+${SKY_VERTEX}
+${GAL_ATTR}
 void main() {
   gl_Position = skyPosition(position);
   gl_PointSize = shape.x * uPx;
   vCol = color * uGain;
   vShape = vec4(shape.x * uPx, shape.yzw);
+}
+`;
+// dieselben Bilder als Punkte im Raum (Hintergrund einer Station mit Parallaxe): Größe in px bei Bezugsabstand uRef
+const GAL_VERT_3D = /* glsl */ `
+${GAL_ATTR}
+uniform float uRef;
+void main() {
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * mv;
+  float k = uRef / max(-mv.z, 1e-3);
+  gl_PointSize = shape.x * uPx * k;
+  vCol = color * uGain;
+  vShape = vec4(shape.x * uPx * k, shape.yzw);
 }
 `;
 const GAL_FRAG = /* glsl */ `
@@ -77,16 +93,23 @@ void main() {
   vec2 p = gl_PointCoord * 2.0 - 1.0;
   float c = cos(vShape.z), s = sin(vShape.z);
   p = mat2(c, -s, s, c) * p;
-  p.y /= vShape.y;
+  float q = vShape.y, py = p.y;
+  p.y /= q;
   float r = length(p);
-  float arms = 1.0 + vShape.w * smoothstep(10.0, 18.0, vShape.x) * 0.5 * cos(2.0 * atan(p.y, p.x) - 7.0 * log(r + 0.08));
+  float big = smoothstep(10.0, 18.0, vShape.x);
+  float arms = 1.0 + vShape.w * big * 0.5 * cos(2.0 * atan(p.y, p.x) - 7.0 * log(r + 0.08));
   vec3 spiral = vCol * exp(-5.0 * r) * arms + vec3(1.0, 0.82, 0.6) * length(vCol) * 0.5 * exp(-r * r * 80.0);
+  // geneigte Spiralen: Staubband quer durch die Mitte, bei großen Bildern sichtbar
+  float lane = vShape.w * big * (1.0 - smoothstep(0.3, 0.6, q)) * exp(-pow(py / (0.1 * q + 0.03), 2.0)) * smoothstep(0.1, 0.3, r) * (1.0 - smoothstep(0.7, 1.0, r));
+  spiral *= 1.0 - 0.6 * lane;
   vec3 ell = vCol * exp(-5.0 * sqrt(r));
   gl_FragColor = vec4(mix(ell, spiral, vShape.w) * (1.0 - smoothstep(0.6, 1.0, r)), 1.0);
 }
 `;
 
-function galaxies(cfg, n, rand) {
+// Attribute: Richtungen (Gruppen und Haufen, Vermeidungszone), Farben (Planck-Farbe, blass), Form; big = Anteil
+// deutlich größerer Bilder (Tiefenfeld wenige, Hintergrund einer Station mehr)
+function galaxyAttrs(cfg, n, rand, { big = 0.03, size = [5, 10] } = {}) {
   const ngp = new THREE.Vector3(...(cfg.ngp || [0, 1, 0])).normalize();
   const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), shape = new Float32Array(n * 4);
   // ein Drittel sitzt in Gruppen und Haufen (≈ 1–2° groß) – das echte Tiefenfeld ist nicht gleichmäßig
@@ -107,20 +130,39 @@ function galaxies(cfg, n, rand) {
     const T = spiral ? 6000 + rand() * 6000 : 4000 + rand() * 1200;
     const peak = 0.06 + 0.22 * b;
     col.set(blackbody(T).map((x) => (0.5 + 0.5 * x) * peak), i * 3);
-    const size = 5 + 10 * b + (rand() < 0.03 ? 8 + 14 * rand() : 0);
-    shape.set([size, spiral ? 0.2 + 0.8 * rand() : 0.55 + 0.45 * rand(), rand() * Math.PI, spiral ? 1 : 0], i * 4);
+    const sz = size[0] + size[1] * b + (rand() < big ? 8 + 14 * rand() : 0);
+    shape.set([sz, spiral ? 0.2 + 0.8 * rand() : 0.55 + 0.45 * rand(), rand() * Math.PI, spiral ? 1 : 0], i * 4);
   }
+  return { pos, col, shape };
+}
+function galaxyPoints({ pos, col, shape }, vert, uniforms, order) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.setAttribute('shape', new THREE.BufferAttribute(shape, 4));
   const m = new THREE.ShaderMaterial({
-    vertexShader: GAL_VERT, fragmentShader: GAL_FRAG, uniforms: { uPx: { value: 1 }, uGain: { value: 1 } },
+    vertexShader: vert, fragmentShader: GAL_FRAG, uniforms: { uPx: { value: 1 }, uGain: { value: 1 }, ...uniforms },
     blending: THREE.AdditiveBlending, depthWrite: false, depthTest: true, transparent: true,
   });
   const p = new THREE.Points(g, m);
   p.frustumCulled = false;
-  p.renderOrder = -12;
+  p.renderOrder = order;
+  return p;
+}
+function galaxies(cfg, n, rand) {
+  return galaxyPoints(galaxyAttrs(cfg, n, rand), GAL_VERT, {}, -12);
+}
+// Ferne Galaxien als Punkte im Raum um den Ursprung (Abstände dist, Größen in px bei dist[0]), z. B. Station Lokale
+// Gruppe 2–6 Mpc (User 04.11.2026: vorher 1-px-Punkte in Zufallsfarben); userData.setPx wie die Punktwolken (vol.js)
+export function farGalaxies({ n, rand, dist, gain = 1, big = 0.12, size = [4, 9] }) {
+  const a = galaxyAttrs({ outside: true }, n, rand, { big, size });
+  for (let i = 0; i < n; i++) {
+    const d = dist[0] + (dist[1] - dist[0]) * rand();
+    a.pos[i * 3] *= d; a.pos[i * 3 + 1] *= d; a.pos[i * 3 + 2] *= d;
+  }
+  const p = galaxyPoints(a, GAL_VERT_3D, { uRef: { value: dist[0] } }, -12);
+  p.material.uniforms.uGain.value = gain;
+  p.userData.setPx = (pr) => { p.material.uniforms.uPx.value = pr; };
   return p;
 }
 

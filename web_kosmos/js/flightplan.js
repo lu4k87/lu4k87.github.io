@@ -43,17 +43,19 @@ export const ZOOM = 22;
 // ---------- Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (Station 9 → 8, galaxyflight.js createFlyby) ----------
 // Feld in Einheiten des Startabstands: die Kamera fährt auf der z-Achse von 1 auf den Anker (0) zu, bis 1/ZOOM. Galaxien
 // liegen logarithmisch gleich dicht entlang der Fahrt (der Zoom durchläuft jede Dekade gleich schnell → gleichmäßiger Strom),
-// seitlich proportional zum Abstand: sie ziehen am Rand vorbei, die Mitte (Ziel) bleibt frei, die Kamera streift keine.
+// seitlich proportional zum Abstand und gleichverteilt über die Fläche bis über den Bildrand hinaus (User 04.11.2026: nicht
+// nur ein Ring am Rand): sie ziehen überall vorbei, nur die Mitte (Ziel) bleibt frei, die Kamera streift keine.
 // w = Gewicht der Etappe (länger als ein normaler Flug), z = Bereich der Abstände (unten in Vielfachen von 1/ZOOM: die
-// letzten sind vor der Ankunft vorbei), side/size = seitlicher Abstand und Durchmesser je Abstand, fade = Ein-/Ausblenden
-// blur = Anteil der Zoom-Unschärfe auf dieser Fahrt (main.js; voll zieht sie den Strom zu Warp-Streifen)
-export const FLYBY = { w: 2.3, n: 75, z: [1.8, 0.9], side: [0.28, 0.9], size: [0.05, 0.13], fade: [0.12, 0.85], blur: 0.35 };
+// letzten sind vor der Ankunft vorbei), side/size = seitlicher Abstand und Durchmesser je Abstand (Größen wie eine
+// Leuchtkraftfunktion: viele kleine, wenige große), fade = Ein-/Ausblenden, blur = Anteil der Zoom-Unschärfe auf dieser
+// Fahrt (main.js; voll zieht sie Punkte zu Warp-Streifen)
+export const FLYBY = { w: 2.3, n: 150, z: [1.8, 0.9], side: [0.2, 1.15], size: [0.03, 0.14], fade: [0.1, 0.85], blur: 0.15 };
 export function flybyField(rand, zoom = ZOOM, n = FLYBY.n) {
   const lo = Math.log(FLYBY.z[0] / zoom), hi = Math.log(FLYBY.z[1]), [s0, s1] = FLYBY.side, [d0, d1] = FLYBY.size;
   return Array.from({ length: n }, (_, i) => {
     const z = Math.exp(lo + (hi - lo) * (i + rand()) / n);   // geschichtet: keine Lücke, keine Häufung
     const r = z * (s0 + (s1 - s0) * Math.sqrt(rand())), th = rand() * 2 * Math.PI;
-    return { x: r * Math.cos(th), y: r * Math.sin(th), z, size: z * (d0 + (d1 - d0) * rand()) };
+    return { x: r * Math.cos(th), y: r * Math.sin(th), z, size: z * (d0 + (d1 - d0) * Math.pow(rand(), 1.7)) };
   });
 }
 

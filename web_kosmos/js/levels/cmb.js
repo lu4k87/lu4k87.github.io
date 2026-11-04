@@ -185,7 +185,7 @@ export function create(ctx) {
     // beobachtete Farbe: bei wachsendem z zu Rot verschoben (Darstellung der Rotverschiebung)
     const T = 6500 / (1 + z * 0.55);
     pos.push(p.x, p.y, p.z);
-    col.push(...blackbody(Math.max(1800, T)).map((v) => v * 6 * (0.25 + rand() * 0.6) * (r < 1 ? 0.3 : 1)));
+    col.push(...blackbody(Math.max(1800, T)).map(((f) => (v) => v * f)(6 * (0.25 + rand() * 0.6) * (r < 1 ? 0.3 : 1))));
     size.push(0.05 * (0.5 + 0.6 * rand() + 1.1 * rand() ** 8));
     phase.push(rand());
   }
