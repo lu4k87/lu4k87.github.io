@@ -290,7 +290,7 @@ export function create(ctx) {
   const SGR_MARK = sgrPath(100, -1, 1.2)[8];
   const hotspots = [
     // gleicher Raum: Station 3 nutzt dasselbe Achsenkreuz (Zentrum im Ursprung, kpc) – Flug als Überblendung (main.js sameSpace);
-    // plane = Normale der Scheibe: der Flug hinein fällt nicht von oben auf sie, sondern sinkt im Bogen auf flachen Blick (samePath)
+    // plane = Normale der Scheibe: der Flug hinein fällt nicht von oben auf sie, sondern sinkt im Bogen auf flachen Blick (main.js flatDir, Blick dreht im Takt des Sinkens)
     { id: 'mw', kind: 'dive', to: 'galaxy', pos: new THREE.Vector3(0, 0, 0), same: true, plane: new THREE.Vector3(0, 1, 0) },
     // Zukunft gesetzt: Andromeda (Station) zeigt die heutige Lage – dann kein gleicher Raum, sondern normaler Flug
     { id: 'm31', kind: 'dive', to: 'andromeda', pos: m31pos, get same() { return future === 0; } },

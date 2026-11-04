@@ -662,7 +662,7 @@ function passPose(lv, A, down) {
 // min = Landung mindestens um diesen Faktor näher am Anker (hinein) bzw. weiter weg (hinaus) als der Abflug, veil = Anteil von
 // Lichtschleier und Zoom-Unschärfe, fade = Überblendung über diesen Teil der Nähe p (die innere Station ist für die Nähe gebaut: von weit
 // draußen liegt ihr Halo als blauer Dunst über der Galaxie, deshalb übernimmt sie erst nah dran)
-const SAME = { min: 2, veil: 0.3, fade: [0.4, 0.92], elev: THREE.MathUtils.degToRad(25), n: 64 };
+const SAME = { min: 2, veil: 0.3, fade: [0.4, 0.92], elev: THREE.MathUtils.degToRad(25) };
 function sameSpace(outer, inner, anchor, turning) {
   const h = outer.hotspots.find((x) => x.to === inner.id);
   return h && h.same && !turning && !still() ? { k: outer.unit / inner.unit, a: anchor.clone(), n: h.plane || null } : null;
@@ -674,36 +674,6 @@ function flatDir(d, n) {
   const h = d.dot(n), side = d.clone().addScaledVector(n, -h);
   if (Math.abs(h) <= Math.sin(SAME.elev) || side.lengthSq() < 1e-8) return d;
   return side.normalize().multiplyScalar(Math.cos(SAME.elev)).addScaledVector(n, Math.sign(h) * Math.sin(SAME.elev));
-}
-// Gleicher Raum hinein mit Scheibe (Lokale Gruppe → Milchstraße): Bahn als Bézier-Kurve statt Gerade (User 01.11.2026: die
-// Gerade fiel von oben auf die Scheibe, der Blick kippte am Anfang 12° auf den Anker). Sie startet in der Blickrichtung des
-// Abflugs und endet in der Blickrichtung der Landung; der Blick dreht wie bei der Geraden früh (tk) auf das Ziel und bleibt
-// dort (entlang der Bahn geneigt kippte er mittendrin auf −68°, Milchstraße 23° aus der Mitte); Abstand zum Ziel logarithmisch
-// über e (Tabelle ld, wie die Gerade in flyPose)
-const _bt = new THREE.Vector3();
-function bez(P, s, out) {
-  const u = 1 - s;
-  return out.copy(P[0]).multiplyScalar(u * u * u).addScaledVector(P[1], 3 * u * u * s).addScaledVector(P[2], 3 * u * s * s).addScaledVector(P[3], s * s * s);
-}
-function samePath(a, b) {
-  const L = a.pos.distanceTo(b.pos) / 3, land = b.target.clone().sub(b.pos).normalize();
-  const P = [a.pos.clone(), a.pos.clone().addScaledVector(a.look, L), b.pos.clone().addScaledVector(land, -L), b.pos.clone()];
-  const ld = [];
-  for (let i = 0; i <= SAME.n; i++) ld.push(Math.min(i ? ld[i - 1] : Infinity, Math.log(bez(P, i / SAME.n, _bt).distanceTo(b.target))));
-  return { P, ld, look: a.look.clone(), target: b.target.clone() };
-}
-function pathPose(cam, path, e, tk, up, bend) {
-  const { P, ld } = path, N = ld.length - 1, want = ld[0] + (ld[N] - ld[0]) * e;
-  let i = 0;
-  while (i < N - 1 && ld[i + 1] > want) i++;
-  const s = e >= 1 ? 1 : (i + THREE.MathUtils.clamp((ld[i] - want) / (ld[i] - ld[i + 1] || 1), 0, 1)) / N;
-  bez(P, s, cam.position);
-  if (bend) bend(cam.position, e);   // Weiterfahrt aus der vorigen Etappe (carryBend) wie bei der Geraden
-  _d1.copy(path.target).sub(cam.position).normalize();
-  _q.setFromUnitVectors(_d0.copy(path.look), _d1);
-  const target = cam.position.clone().add(_d0.applyQuaternion(new THREE.Quaternion().slerp(_q, tk)));
-  aim(cam, target, up && up(tk));
-  return target;
 }
 // Punkt von der äußeren in die innere Station (inward) bzw. zurück
 const sameMap = (s, v, inward) => (inward ? v.clone().sub(s.a).multiplyScalar(s.k) : v.clone().divideScalar(s.k).add(s.a));
@@ -910,7 +880,6 @@ function hop() {
     u0: chainTime(ch, ch.legs.length - state.queue.length - 1), u1: chainTime(ch, ch.legs.length - state.queue.length),
     arcOuter: arcs && (down ? arcs.from : arcs.to), arcInner: arcs && (down ? arcs.to : arcs.from),
     outerFrom, outerTo, outerEnd, innerFrom, innerTo, prog: 0, fade: null,
-    path: same && down && same.n ? samePath(outerFrom, outerTo) : null,
     // Hochachse je Kamera vom Bild am Etappenanfang (Blick der weiterfahrenden Kamera) zu dem am Ende
     upOuter: same ? upPath(outerFrom, outerTo, outer.camera.up)
       : upPath(down ? cur : pose(outerFrom.pos, anchor), down ? pose(outerTo.pos, anchor) : outerEnd || outerTo, outer.camera.up),
@@ -960,7 +929,10 @@ function stepTransition(dt) {
   // Ziel ruhig in der Mitte (User 31.10.2026: über 85 % der Etappe kippte der Blick mitten im Flug nach, Lokale Gruppe →
   // Milchstraße 12°); beim Hinausfliegen gleichmäßig über die Zeit der Etappe (der Blick dreht dort weit, vom Anker zum Ziel
   // der Station): an e hängend lag die Wende in der Anfahrt (e beschleunigt) gedrängt am Etappenende, Mond → Erde bis 1,6 rad/s
-  const tkOuter = tr.down ? smoother(0, LOOK_IN, e) : smoother(tr.u0, tr.u1, ch.t);
+  // gleicher Raum mit Scheibe (Lokale Gruppe → Milchstraße): die Kamera sinkt im Bogen von der Übersicht auf den flachen
+  // Blick (SAME.elev), der Blick dreht im Takt des Sinkens vom Abflugblick auf die Galaxie – eine Bewegung statt erst
+  // Nicken, dann Heben (User 04.11.2026: der frühe Schwenk kippte den Blick 5° nach unten, das Sinken hob ihn danach 20°)
+  const tkOuter = tr.same && tr.same.n && tr.down ? e : tr.down ? smoother(0, LOOK_IN, e) : smoother(tr.u0, tr.u1, ch.t);
   if (tr.swing && !tr.down) tr.swing.w = ch.t >= 1 ? 1 : THREE.MathUtils.clamp((ch.t - tr.u0) / (tr.u1 - tr.u0), 0, 1);
   // weiterfahrende Kamera = die der Station, an der die vorige Etappe endete (hinein: äußere, hinaus: innere);
   // die Wendestation fährt Steigen, Kuppe und Sinken als einen Bogen (x = Etappen-Koordinate ab der Wende)
@@ -971,8 +943,7 @@ function stepTransition(dt) {
   if (tr.same) {
     // gleicher Raum: eine Fahrt in den Koordinaten der äußeren Station um den Anker (Weiterfahrt aus der vorigen Etappe als
     // Bogen), die innere Kamera folgt deckungsgleich
-    outerTgt = tr.path ? pathPose(tr.outer.camera, tr.path, e, tkOuter, tr.upOuter, tr.carry)
-      : flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.carry, null, tr.upOuter);
+    outerTgt = flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.carry, null, tr.upOuter);
     bank(tr.outer, dt, bk);
     sameCam(tr, ch, e, fx);
     innerTgt = sameMap(tr.same, tr.anchor, true);   // Bezugspunkt wie bei der äußeren Kamera (Aufzeichnung ?camlog)
