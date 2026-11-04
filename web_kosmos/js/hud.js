@@ -477,8 +477,10 @@ export function createHud(h) {
     h.onInput();
   });
 
-  // Kategorie einer Kennzahl für die redaktionelle Infotafel (Tafel:C)
+  // Rubrik einer Kennzahl für die redaktionelle Infotafel (Tafel:C): Feld `c` je Kennzahl in content.js (Vorschau 04.11.2026
+  // Rubrik:A, je Station eindeutig – Test tests/cards.test.js); die Stichwort-Ableitung darunter ist nur Rückfall
   function factCat(f) {
+    if (f.c) return f.c;
     const l = (f.l || '').toLowerCase(), u = (f.u || '').trim(), ul = u.toLowerCase();
     if (l.includes('abstand') || l.includes('entfernung') || l.includes('distanz') || l.includes('von der erde') || ul.includes('ae') || ul.includes('lj') || ul.includes('kpc') || ul.includes('mpc')) return 'Distanz';
     if (l.includes('radius') || l.includes('durchmesser') || l.includes('länge') || l.includes('breite') || l.includes('höhe') || l.includes('spiegel') || l.includes('schild') || l.includes('spannweite')) return 'Dimension';

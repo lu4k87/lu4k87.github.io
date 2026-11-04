@@ -2,11 +2,9 @@
 // Maßstabsgetreue Silhouetten und Vergleiche für alle 31 Stationen in Kosmos.
 // Radien nach JPL Fact Sheets, NASA NSSDCA und IAU WGCCRE 2015.
 
-import { nbsp } from './figs.js';
 
 export const SCALE_COMPARISONS = {
   iss: {
-    sizeStr: '109 m Gitterträger',
     tabs: [
       {
         name: 'Mensch & Bauten',
@@ -28,7 +26,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   tiangong: {
-    sizeStr: '55 m Spannweite',
     tabs: [
       {
         name: 'vs. ISS & Flugzeuge',
@@ -42,7 +39,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   earth: {
-    sizeStr: 'Ø 12.742 km',
     tabs: [
       {
         name: 'Erde & Monde',
@@ -72,7 +68,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   moon: {
-    sizeStr: 'Ø 3.474 km',
     tabs: [
       {
         name: 'Mond vs. Erde',
@@ -94,7 +89,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   mars: {
-    sizeStr: 'Ø 6.779 km',
     tabs: [
       {
         name: 'Mars vs. Erde & Mond',
@@ -108,7 +102,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   phobos: {
-    sizeStr: '27 × 22 × 18 km',
     tabs: [
       {
         name: 'vs. Berge & Städte',
@@ -121,7 +114,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   deimos: {
-    sizeStr: '15 × 12 × 10 km',
     tabs: [
       {
         name: 'vs. Phobos',
@@ -134,7 +126,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   asteroid: {
-    sizeStr: 'Psyche: 278 × 238 × 171 km',
     tabs: [
       {
         name: 'Asteroiden-Vergleich',
@@ -147,7 +138,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   jupiter: {
-    sizeStr: 'Ø 139.822 km',
     tabs: [
       {
         name: 'Gasriesen vs. Erde',
@@ -171,7 +161,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   io: {
-    sizeStr: 'Ø 3.643 km',
     tabs: [
       {
         name: 'vs. Erdmond & Europa',
@@ -185,7 +174,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   europa: {
-    sizeStr: 'Ø 3.122 km',
     tabs: [
       {
         name: 'vs. Erdmond',
@@ -198,7 +186,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   ganymede: {
-    sizeStr: 'Ø 5.268 km',
     tabs: [
       {
         name: 'Größte Monde',
@@ -212,7 +199,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   callisto: {
-    sizeStr: 'Ø 4.821 km',
     tabs: [
       {
         name: 'vs. Merkur & Ganymed',
@@ -226,7 +212,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   saturn: {
-    sizeStr: 'Ø 116.460 km (Ringe: 282.000 km)',
     tabs: [
       {
         name: 'Saturn & Ringe vs. Erde',
@@ -240,7 +225,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   titan: {
-    sizeStr: 'Ø 5.150 km',
     tabs: [
       {
         name: 'vs. Erde & Mond',
@@ -254,7 +238,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   enceladus: {
-    sizeStr: 'Ø 504 km',
     tabs: [
       {
         name: 'vs. Großbritannien',
@@ -267,7 +250,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   uranus: {
-    sizeStr: 'Ø 50.724 km',
     tabs: [
       {
         name: 'Eisriesen vs. Erde',
@@ -281,7 +263,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   miranda: {
-    sizeStr: 'Ø 471 km',
     tabs: [
       {
         name: 'vs. Enceladus & Mimas',
@@ -294,7 +275,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   neptune: {
-    sizeStr: 'Ø 49.244 km',
     tabs: [
       {
         name: 'vs. Uranus & Erde',
@@ -308,7 +288,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   triton: {
-    sizeStr: 'Ø 2.707 km',
     tabs: [
       {
         name: 'vs. Pluto & Mond',
@@ -322,7 +301,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   pluto: {
-    sizeStr: 'Ø 2.376 km (Charon 1.212 km)',
     tabs: [
       {
         name: 'Pluto & Charon vs. Mond',
@@ -336,7 +314,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   sun: {
-    sizeStr: 'Ø 1.392.700 km',
     tabs: [
       {
         name: 'Sonne vs. Planeten',
@@ -350,7 +327,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   solar: {
-    sizeStr: 'Ausdehnung ≈ 100 AE (15 Mrd. km)',
     tabs: [
       {
         name: 'Planeten-Ordnung',
@@ -364,7 +340,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   galaxy: {
-    sizeStr: 'Ø ≈ 100.000 Lichtjahre',
     tabs: [
       {
         name: 'Galaxien-Vergleich',
@@ -378,7 +353,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   andromeda: {
-    sizeStr: 'Ø ≈ 220.000 Lichtjahre',
     tabs: [
       {
         name: 'Galaxien-Vergleich',
@@ -392,7 +366,6 @@ export const SCALE_COMPARISONS = {
     ],
   },
   sgra: {
-    sizeStr: 'Schatten Ø ≈ 53 µas (≈ 66 Mio. km)',
     tabs: [
       {
         name: 'vs. Sonnensystem',
@@ -436,7 +409,6 @@ export function renderScaleCompare(stationId, tabIdx = 0) {
           <circle cx="16" cy="12.5" r="1.8" fill="none" stroke="currentColor" stroke-width="1.4"/>
         </svg>
         <span class="sc-title">Maßstabs-Vergleich${real ? ', echte Größe' : ''}</span>
-        <span class="sc-tag">${nbsp(comp.sizeStr)}</span>
       </div>
       <div class="sc-stage">
         <div class="sc-items" style="--vh:${Math.ceil(rTop * 2) + 2}px">
