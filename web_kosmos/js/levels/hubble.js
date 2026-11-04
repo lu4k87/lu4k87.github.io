@@ -24,6 +24,31 @@ const WING = { len: 7.1, w: 2.6, base: 2.35 };                          // Solar
 const TARGETS = { udf: [53.1625, -27.7914, 'Ultra Deep Field'], m16: [274.7, -13.83, 'Säulen der Schöpfung'], m31: [10.6847, 41.2692, 'Andromeda'] };
 const GREYS = [0xf0efe9, 0xd5d7da, 0xa4a8ae, 0x5d6168].map((x) => new THREE.Color(x));
 
+// Heckwand (Ø 4,2 m auf 1024 px): Grundfläche mit Bahnen aus Folienband quer (Fugen dunkler), ein paar Stoßkanten
+// radial, Flecken von Fingerabdrücken/Schmutz der Wartungen
+function aftWallTexture() {
+  const N = 1024, c = document.createElement('canvas'), g = c.getContext('2d'), rnd = mulberry32(41);
+  c.width = c.height = N;
+  const tone = (k) => `rgb(${196 * k | 0},${199 * k | 0},${204 * k | 0})`;
+  g.fillStyle = tone(0.78); g.fillRect(0, 0, N, N);
+  for (let y = 0; y < N;) {
+    const h = N * (0.03 + rnd() * 0.035);
+    for (let x = -rnd() * N * 0.3; x < N;) { const w = N * (0.1 + rnd() * 0.4); g.fillStyle = tone(0.84 + rnd() * 0.2); g.fillRect(x + 1, y + 1, w - 2, h - 2); x += w; }
+    y += h;
+  }
+  g.strokeStyle = 'rgba(70,72,78,0.45)'; g.lineWidth = 2;
+  for (let k = 0; k < 6; k++) { const a = rnd() * Math.PI * 2; g.beginPath(); g.moveTo(N / 2 + Math.cos(a) * N * 0.3, N / 2 + Math.sin(a) * N * 0.3); g.lineTo(N / 2 + Math.cos(a) * N * 0.5, N / 2 + Math.sin(a) * N * 0.5); g.stroke(); }
+  for (let k = 0; k < 14; k++) {
+    const x = rnd() * N, y = rnd() * N, r = 6 + rnd() * 22, s = g.createRadialGradient(x, y, 0, x, y, r);
+    s.addColorStop(0, 'rgba(60,58,54,0.14)'); s.addColorStop(1, 'rgba(60,58,54,0)');
+    g.fillStyle = s; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
 export function create(ctx) {
   const ov = createOrbitView(ctx, { sat: 'HST', fallback: [6847.8, 0.0002, 28.47, 270.53, 155.4, 204.67, -0.6432, 0], radius: 16, color: 0x9cc8ff });
   const { scene, camera } = ov;
@@ -56,10 +81,13 @@ export function create(ctx) {
   tube(HST.r1 * 0.98, HST.ssm, HST.ssm + 0.25, mat('metal'), HST.r2 * 1.02);   // Übergang
   tube(HST.r2, HST.ssm + 0.25, HST.front, mat('silver'), HST.r2, true, 3.2);  // Lichtschutzröhre (offen)
   tube(HST.r2 * 0.99, HST.ssm + 0.25, HST.front, M.inside, HST.r2 * 0.99, true);
-  add(hst, new THREE.CircleGeometry(HST.r1, 64), mat('metal'), [HST.aft - 0.01, 0, 0], [0, -Math.PI / 2, 0]);
-  // Andockring am Heck (seit 2009) und Ringe zwischen den Abschnitten
-  I.rod(V(HST.aft - 0.35, 0, 0), V(HST.aft, 0, 0), 1.1, mat('dark'), K.U.ring).rod(V(HST.aft - 0.4, 0, 0), V(HST.aft - 0.33, 0, 0), 1.15, mat('metal'), K.U.ring);
-  for (let k = 0; k < 3; k++) { const a = k * 2 * Math.PI / 3; I.box(V(HST.aft - 0.2, Math.cos(a) * 0.95, Math.sin(a) * 0.95), [0.4, 0.25, 0.25], mat('box'), null, GREYS[1]); }
+  // Heckwand nach NASA-Bild der Andockvorrichtung: matt silbergrau, beklebt mit Bahnen aus Folienband (Fugen, leicht
+  // verschiedene Töne, Flecken) – keine gebürstete Metallplatte
+  M.aftWall = stationMat({ map: aftWallTexture(), roughness: 0.62, metalness: 0.45 });
+  add(hst, new THREE.CircleGeometry(HST.r1, 64), M.aftWall, [HST.aft - 0.01, 0, 0], [0, -Math.PI / 2, 0]);
+  // Andockring am Heck (seit 2009), weiß lackiert, auf drei Haltern; Ringe zwischen den Abschnitten
+  I.rod(V(HST.aft - 0.35, 0, 0), V(HST.aft - 0.12, 0, 0), 1.1, mat('paint'), K.U.ring).rod(V(HST.aft - 0.4, 0, 0), V(HST.aft - 0.33, 0, 0), 1.15, mat('paint'), K.U.ring);
+  for (let k = 0; k < 3; k++) { const a = k * 2 * Math.PI / 3; I.box(V(HST.aft - 0.2, Math.cos(a) * 0.95, Math.sin(a) * 0.95), [0.4, 0.18, 0.3], mat('paint'), null, GREYS[1]); }
   for (const x of [HST.aft + 0.05, HST.aft + 2.4, HST.ssm - 0.05]) I.rod(V(x - 0.08, 0, 0), V(x + 0.08, 0, 0), HST.r1 + 0.04, mat('metal'), K.U.ring);
   I.rod(V(HST.front - 0.11, 0, 0), V(HST.front + 0.01, 0, 0), HST.r2 + 0.03, mat('metal'), K.U.ring);
   K.ribs(I, V(0, 0, 0), V(1, 0, 0), HST.r2 + 0.025, HST.ssm + 1.0, HST.front - 0.6, 7, mat('metal'), 0.1);   // Spantringe der Lichtschutzröhre
@@ -241,6 +269,7 @@ export function create(ctx) {
     dispose() {
       ov.dispose();
       K.dispose();
+      M.aftWall.map.dispose();
       Object.values(M).forEach((m) => m.dispose());
     },
   };
