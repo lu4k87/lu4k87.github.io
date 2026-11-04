@@ -24,6 +24,7 @@
   --line: rgba(255, 255, 255, 0.14);
   --line-strong: rgba(255, 255, 255, 0.24);
   --pane-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+  --menu-bg: rgba(6, 10, 18, 0.94);   /* deckende Scheibe der Aufklapp-Fenster unter der Schnell-Leiste (.qpop, .qmenu) */
   --accent: #33ccff;
   --accent-rgb: 51, 204, 255;
   --accent-ink: #03161a;
@@ -87,9 +88,11 @@ body.panel-off .panel { display: none; }
 .brand-text span { font-size: 12px; color: var(--ink-soft); }
 .flight { flex: 1; text-align: center; font: 500 13px var(--mono); letter-spacing: 0.08em; color: var(--accent); opacity: 0; transition: opacity 0.4s; }
 body.is-flying .flight { opacity: 1; }
-/* Knöpfe rechts in der Kopfzeile (Kopf:C): eine feine Leiste, Symbol mit Wort darunter; an = cyan getönt, offenes Fenster
-   zusätzlich mit Rahmen; Strich trennt die Schnell-Knöpfe vom Knopf Infotafel (Einstellungen: unten links, .dock) */
-.top-actions { grid-area: acts; justify-self: end; align-self: start; display: flex; align-items: center; height: 52px; margin: 8px 16px 0 0; padding: 0 4px; border-radius: var(--radius); }
+/* Schnell-Leiste rechts in der Kopfzeile (Kopf:C; Umbau Vorschau 04.11.2026 „Schnell-Leiste“ Leiste:A+B, nur Symbole):
+   drei Gruppen .qg mit mittiger Überschrift (12 px Versalien, volle Schriftfarbe) 6 px über der Knopfreihe, Strich zwischen den
+   Gruppen, ganz rechts „Mehr“ (⋯) mit Menü .qmenu unter der Leiste; an = cyan getönt, offenes Fenster/Menü zusätzlich mit Rahmen.
+   Einstellungen: unten links (.dock). */
+.top-actions { grid-area: acts; justify-self: end; align-self: start; position: relative; z-index: 5; display: flex; align-items: flex-end; margin: 8px 16px 0 0; padding: 5px 4px 4px; border-radius: var(--radius); }
 .icon-btn {
   width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
   background: var(--glass-sheen), var(--glass-btn); box-shadow: var(--glass-btn-edge); border: 1px solid var(--line); color: var(--ink); transition: border-color 0.2s, color 0.2s;
@@ -97,15 +100,18 @@ body.is-flying .flight { opacity: 1; }
 }
 .icon-btn svg { width: 20px; height: 20px; }
 .icon-btn:hover, .icon-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
-/* Schnell-Knöpfe links neben dem Zahnrad (quick.js): an = eisblau gefüllt, Station ohne Ton = abgedunkelt; Strich trennt von der Infotafel */
-.quick { display: flex; align-items: center; }
-.quick::after { content: ""; align-self: stretch; width: 1px; margin: 6px 4px; background: var(--line); }
+.qg { position: relative; display: flex; flex-direction: column; align-items: center; padding: 0 3px; }
+.qg + .qg { margin-left: 4px; padding-left: 7px; }
+.qg + .qg::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 1px; background: var(--line); }
+.qg-t { display: block; margin: 0 0 6px; font: 500 12px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
+.qg-row { display: flex; align-items: center; gap: 2px; }
+.qk-anchor { position: relative; display: inline-flex; }
 .top-actions .icon-btn {
-  width: auto; min-width: 52px; height: 44px; padding: 0 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  border: 0; border-radius: 5px; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; font-size: 12px; line-height: 1.15; white-space: nowrap; transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  width: 40px; min-width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 5px; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .top-actions .icon-btn[hidden] { display: none; }   /* Vollbild ohne Browser-Erlaubnis (quick.js) */
-.top-actions .icon-btn svg { width: 18px; height: 18px; }
+.top-actions .icon-btn svg { width: 20px; height: 20px; }
 .top-actions .icon-btn:hover { background: rgba(255, 255, 255, 0.06); color: var(--ink); }
 .top-actions .icon-btn[aria-expanded="true"] { color: var(--accent); background: rgba(var(--accent-rgb), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.55); }
 .qk[aria-pressed="true"], .top-actions .qk[aria-pressed="true"]:hover { color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
@@ -115,6 +121,32 @@ body.is-flying .flight { opacity: 1; }
 #qk-ui .qk-off, #qk-ui.is-off .qk-on { display: none; }
 #qk-sound.is-off .qk-off,
 #qk-ui.is-off .qk-off { display: inline; }
+/* Stufen im Symbol (quick.js data-lvl): Animation Voll = drei Fahrtlinien, Ruhig = eine, Aus = durchgestrichen · Qualität = Balken
+   bis zur Stufe gefüllt · Bildrate = Zeiger des Tachos (Frei rechts oben, 30 links, 60 Mitte) */
+#qk-motion .qk-off, #qk-motion[data-lvl="1"] .qk-l3, #qk-motion[data-lvl="2"] :is(.qk-l2, .qk-l3) { display: none; }
+#qk-motion[data-lvl="2"] .qk-off { display: inline; }
+#qk-quality :is(.qk-b1, .qk-b2, .qk-b3) { fill: none; transition: fill 0.2s; }
+#qk-quality[data-lvl="1"] .qk-b1, #qk-quality[data-lvl="2"] :is(.qk-b1, .qk-b2), #qk-quality[data-lvl="3"] :is(.qk-b1, .qk-b2, .qk-b3) { fill: currentColor; }
+#qk-fps .qk-needle { transform-origin: 12px 16px; transition: transform 0.3s var(--ease-out); }
+#qk-fps[data-lvl="1"] .qk-needle { transform: rotate(-90deg); }
+#qk-fps[data-lvl="2"] .qk-needle { transform: rotate(-45deg); }
+/* Aufklapp-Fenster unter der Leiste: Farblook-Liste (.qpop, mittig unter dem Knopf) und Mehr-Menü (.qmenu, 300 px, rechtsbündig);
+   Bauteile des Zahnrads (layers.css: .b-row, .b-looks, Rast-Regler; .cfg-toggle unten). Deckende Scheibe statt Milchglas: hinter
+   der Leiste (selbst Milchglas) würde ein zweiter Weichzeichner nichts mehr sehen. */
+.qpop, .qmenu {
+  position: absolute; top: calc(100% + 6px); z-index: 6; padding: 12px 14px; display: grid; gap: 12px; text-align: left;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--glass-sheen), var(--menu-bg); box-shadow: var(--glass-edge); color: var(--ink);
+}
+.qpop[hidden], .qmenu[hidden] { display: none; }
+.qpop { left: 50%; transform: translateX(-50%); width: 184px; padding: 10px 10px 10px; gap: 8px; }
+.qpop .b-looks { grid-template-columns: minmax(0, 1fr); }
+.qmenu { right: 0; width: 300px; max-width: calc(100vw - 32px); }
+.qmenu .b-looks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.qmenu .cfg-label { font-size: 13px; }
+.qmenu .b-rast:has(#qm-fps) .b-stops > span { flex: 1 1 0; white-space: nowrap; }   /* „60 Bilder/s“ bricht sonst bei 300 px um */
+.qmenu .is-na { opacity: 0.45; cursor: default; }
+.qmenu .qm-na { margin: -8px 0 0; font-size: 12.5px; line-height: 1.35; color: var(--ink); }
+.qmenu .qm-na[hidden] { display: none; }
 /* UI-Elemente ein-/ausblenden (User 29.10.2026): Alle HUD-Elemente verbergen, nur der Schalter oben rechts bleibt sichtbar */
 .topbar, .band, .bottombar, #hotspots, .stage > .hint, .stage > .pull, .hs-card, .caption {
   transition: opacity 0.25s ease, visibility 0.25s ease;
@@ -125,18 +157,26 @@ body.ui-off :is(.topbar, .band, .bottombar, #station, #cfg, #panel, #hotspots, .
   visibility: hidden !important;
 }
 body.ui-off .hud { grid-template-columns: minmax(0, 1fr) auto 0; }
-body.ui-off .top-actions > :not(.quick) { display: none !important; }
-body.ui-off .quick > :not(#qk-ui) { display: none !important; }
-body.ui-off .quick::after { display: none !important; }
-/* schmal: Drehachsen und Kinobalken nur im Zahnrad, sonst überdeckt die Reihe den Schriftzug */
-/* ohne Platz für die Wörter: nur Symbole */
-@media (max-width: 960px) {
-  .top-actions .ib-t { display: none; }
-  .top-actions .icon-btn { min-width: 40px; height: 40px; padding: 0; }
-  .top-actions { height: 48px; }
+body.ui-off .top-actions > :not(.qg--view) { display: none !important; }
+body.ui-off .qg--view > :not(.qg-row), body.ui-off .qg--view .qg-row > :not(#qk-ui) { display: none !important; }
+body.ui-off .qg--view { margin-left: 0; padding-left: 3px; }
+body.ui-off .qg--view::before { display: none !important; }
+/* mittel: engere Knöpfe, damit Schriftzug + Suche in der Kopfzeile Platz behalten */
+@media (max-width: 1180px) {
+  .top-actions .icon-btn { width: 36px; min-width: 36px; }
+  .qg-row { gap: 0; }
 }
-@media (max-width: 760px) { #qk-axes, #qk-bars { display: none; } }
-@media (max-width: 480px) { #qk-full { display: none; } }
+/* schmal: die sechs Zusatz-Knöpfe und die Gruppen-Überschriften weichen, alles bleibt im Mehr-Menü erreichbar */
+@media (max-width: 760px) {
+  #qk-bars, #qk-motion, .qk-anchor, #qk-timeline, #qk-scale, #qk-quality, #qk-fps, .qg-t { display: none; }
+  .top-actions { align-items: center; padding: 4px; }
+}
+/* Handy: nur Ton, Infotafel, UI, Hell, Mehr – sonst schiebt sich die Leiste über den Schriftzug */
+@media (max-width: 480px) {
+  #qk-full, #qk-cine, .qg + .qg::before { display: none; }
+  .qg { padding: 0 1px; }
+  .qg + .qg { margin-left: 0; padding-left: 1px; }
+}
 .icon-btn--sm { width: 32px; height: 32px; flex: none; }
 .icon-btn--sm svg { width: 16px; height: 16px; }
 /* Schließen in Info-Karte und Station-Panel: flach wie die Kopfzeile statt runder Glas-Blase */
@@ -1099,7 +1139,7 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   --glass-sheen: linear-gradient(118deg, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0.15) 24%, rgba(255, 255, 255, 0) 25%);
   --glass-edge: inset 1px 1px 0 rgba(255, 255, 255, 0.95), inset -1px -1px 0 rgba(255, 255, 255, 0.4), 0 12px 40px rgba(0, 0, 0, 0.45);
   --glass-blur: blur(20px) saturate(1.4) brightness(1.8);
-  --pane-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --pane-shadow: 0 12px 40px rgba(0, 0, 0, 0.45); --menu-bg: rgba(246, 248, 252, 0.96);
   --glass-tile: linear-gradient(150deg, rgba(var(--ink-rgb), 0.05), rgba(var(--ink-rgb), 0.01) 60%);
   --glass-tile-edge: inset 0 0 0 1px rgba(var(--ink-rgb), 0.08);
   color: var(--ink); text-shadow: none; color-scheme: light;

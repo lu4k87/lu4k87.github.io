@@ -14,7 +14,7 @@ import { nbsp } from './figs.js';
 import { SOLAR_SYSTEM } from './content.js';
 
 const KEY = 'kosmos.settings.v1';
-const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, barsH: 1, axes: false,
+export const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, barsH: 1, axes: false,
   sunK: 1, shade: 1, shadow: 1, soft: 1, spec: 1, gloss: 0, cursor: 'orbit', cursorAll: 'scene' };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
@@ -129,8 +129,11 @@ const ROW = (key, html, w, half) => {
 const rgb = (b, t, e) => `rgb(${b.map((x, i) => Math.min(255, Math.round(x * t[i] * e))).join(',')})`;
 const swatch = (g) => (g ? `background:radial-gradient(circle at 34% 62%, ${rgb([255, 236, 190], g.hi, g.exposure)} 0 9%, ${rgb([240, 140, 50], g.hi, g.exposure)} 22%, ${rgb([120, 40, 22], g.sh, g.exposure)} 46%, ${rgb([22, 26, 44], g.sh, g.exposure)} 78%);box-shadow:inset 0 0 ${Math.round(g.vig * 26)}px rgba(0,0,0,.85)`
   : 'background:conic-gradient(from 200deg at 50% 55%, #e88a3a 0 25%, #4e7bd6 0 50%, #9a62c9 0 75%, #3aa88a 0)');
-const LOOKS = `<div class="b-row b-stack"><span class="cfg-label" id="cfg-grade">Farblook</span>
-  <div class="b-looks" role="radiogroup" aria-labelledby="cfg-grade">${GRADE_IDS.map((id, i) => `<button type="button" role="radio" data-key="grade" data-val="${id}"><span class="b-sw" style="${swatch(i ? GRADES[i - 1][1] : null)}"></span><span>${i ? GRADES[i - 1][0] : 'Je Station'}</span></button>`).join('')}</div></div>`
+// Farblook-Auswahl (Zahnrad, Schnell-Leiste quick.js: Liste unter dem Knopf + Mehr-Menü) – lid = Id der Überschrift je Einbau-Ort
+export const looksHtml = (lid) => `<div class="b-row b-stack"><span class="cfg-label" id="${lid}">Farblook</span>
+  <div class="b-looks" role="radiogroup" aria-labelledby="${lid}">${GRADE_IDS.map((id, i) => `<button type="button" role="radio" data-key="grade" data-val="${id}"><span class="b-sw" style="${swatch(i ? GRADES[i - 1][1] : null)}"></span><span>${i ? GRADES[i - 1][0] : 'Je Station'}</span></button>`).join('')}</div></div>`;
+export const gradeName = (id) => (id === 'station' ? 'Je Station' : (GRADES[GRADE_IDS.indexOf(id) - 1] || ['?'])[0]);
+const LOOKS = looksHtml('cfg-grade')
   + NOTE('„Je Station“ = jede Station behält ihren eigenen Look (die Sonne hat dafür einen eigenen Farblook); die anderen gelten überall.');
 // Auswahlfeld wie PICK; passt kein Stil mehr zu den Reglern, steht „Eigene Werte“ darin
 const MW_STYLE = `<div class="b-row b-pick"><span class="cfg-label" id="cfg-mwstyle">Stil</span><select class="b-select" data-mwstyle aria-labelledby="cfg-mwstyle">
