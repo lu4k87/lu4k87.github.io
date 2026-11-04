@@ -293,7 +293,7 @@ export const CARDS = {
     { v: '557,7', u: 'nm', l: 'Grün: Sauerstoff', s: 'nasa-aurora' },
     { v: '80,8', u: '° N', l: 'geo­magnetischer Pol (IGRF-14)', s: 'wdc-poles' }] },
   'earth.sats': { g: 'orbits', hl: 'leo', c: 'sats', f: [
-    { v: '16.800', u: '', l: 'aktive Satelliten (Okt. 2026)', s: 'celestrak' },
+    { v: '16.800', u: '', l: 'aktive Satelliten (Okt. 2026)', s: 'celestrak' },
     { v: '540–570', u: 'km', l: 'Bahnhöhe Starlink', s: 'celestrak' },
     { v: '19.470', u: '', l: 'Objekte im Bild mit Trümmern', s: 'celestrak' }] },
   'iss.below': { g: 'orbits', hl: 'iss', c: 'orbit', f: [
@@ -302,7 +302,7 @@ export const CARDS = {
     { v: '7,66', u: 'km/s', l: 'Bahn­geschwindigkeit', s: 'celestrak' }] },
   'earth.geo': { g: 'orbits', hl: 'geo', f: [
     { v: '35.786', u: 'km', l: 'Höhe über dem Äquator', s: 'nasa-earth' },
-    { v: '23,9', u: 'h', l: 'Umlauf = Sterntag (23 h 56 min)', s: 'nasa-earth' },
+    { v: '23,9', u: 'h', l: 'Umlauf = Sterntag (23 h 56 min)', s: 'nasa-earth' },
     { v: '3,07', u: 'km/s', l: 'Bahn­geschwindigkeit (eigene Rechnung)', s: 'nasa-earth' }] },
   'solar.sun': { g: 'sun', c: 'gran', f: [
     { v: '5.772', u: 'K', l: 'Oberfläche (Photosphäre)', s: 'nasa-sun' },
@@ -311,7 +311,7 @@ export const CARDS = {
   'solar.moon': { g: 'moon', f: MOON_F },
   'moon.phase': { g: 'moon', f: MOON_F },
   'solar.jupiter': { g: 'jupiter', f: [
-    { v: '9,9', u: 'h', l: 'ein Jupitertag (9 h 56 min)', s: 'nasa-planets' },
+    { v: '9,9', u: 'h', l: 'ein Jupitertag (9 h 56 min)', s: 'nasa-planets' },
     { v: '318', u: '×', l: 'Erdmasse', s: 'nasa-planets' },
     { v: '5,2', u: 'AE', l: 'Abstand zur Sonne', s: 'nasa-planets' }] },
   'solar.saturn': { g: 'rings', f: [

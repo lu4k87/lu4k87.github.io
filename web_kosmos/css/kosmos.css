@@ -750,7 +750,7 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .hc-tile b { font: 500 16px/1.15 var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .hc-tile b.is-long { font-size: 13.5px; }
 .hc-tile b i { font: 500 12px var(--mono); font-style: normal; color: var(--ink-soft); margin-left: 3px; }
-.hc-tile > span { font-size: 12px; line-height: 1.3; color: var(--ink-soft); hyphens: manual; overflow-wrap: break-word; }
+.hc-tile > span { font-size: 12px; line-height: 1.35; color: var(--ink-soft); hyphens: manual; overflow-wrap: break-word; text-wrap: balance; }   /* Label ≤ 3 Zeilen gleich lang, nie „(Okt. / 2026)“ (User 04.11.2026) */
 .fn { font: 500 11px var(--mono); color: var(--accent); margin-left: 2px; line-height: 0; }
 .hc-ctl { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 10px; padding: 9px 12px 10px; border-radius: 8px; cursor: pointer;
   border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); background: var(--accent-soft); }
