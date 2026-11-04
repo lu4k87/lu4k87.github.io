@@ -514,7 +514,7 @@ export function create(ctx) {
     { id: 'clouds', type: 'toggle', label: 'Wolken der Erde', value: true, sub: true, set: (v) => { P.earth.clouds.visible = v; } },
     { id: 'orbits', type: 'toggle', label: 'Bahnen mit Leuchtspur', value: true, set: (v) => setVis(planets.map((x) => x.orbit), v) },
     { id: 'belts', type: 'toggle', label: 'Kleinkörper: Asteroiden, Trojaner, Kuipergürtel', value: true, set: (v) => setVis(beltObjs, v) },
-    ...auroraLayers(jAur),
+    ...auroraLayers(jAur, { mag: false }),   // Jupiter normal: nur Polarlicht, Magnetosphäre per Zahnrad
   ]);
 
   const occluders = planets.map((x) => ({ center: x.pos, radius: 1 }));

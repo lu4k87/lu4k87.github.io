@@ -3,7 +3,8 @@
 // Fußpunkte von Io, Europa, Ganymed (Schweif ostwärts), Magnetscheibe mit Spiralarmen, gestreckte Feldlinien, Teilchenregen.
 // Teile einzeln schaltbar: jupiterAurora(detail) → Gruppe, g.userData.parts = { oval, cap, disk, lines, flow }, g.userData.capU = { uSwirl, uFlare, uFoot, uGain };
 // uGain = Leuchtkraft von Vorhang und Polkappe (Zahnrad-Regler, gemeinsames Uniform).
-// auroraLayers(g) = Zahnrad-Ebenen dazu, gleich in den Stationen Sonnensystem und Jupiter & Monde.
+// auroraLayers(g, { mag }) = Zahnrad-Ebenen dazu, gleich in den Stationen Sonnensystem und Jupiter & Monde; mag = false → Magnetscheibe,
+// Feldlinien und Teilchenströme zu Beginn aus (Sonnensystem, User 04.11.2026: Jupiter normal, nur Polarlicht), per Zahnrad weiter zuschaltbar.
 import * as THREE from 'three';
 import { NOISE } from './glsl.js';
 const TILT = 9.6 * Math.PI / 180;
@@ -202,7 +203,7 @@ void main() {
   g.userData.mag = { lineMat, flowU, flowN: (k) => stream.geometry.setDrawRange(0, Math.round(nFlow * k)) };
   return g;
 }
-export function auroraLayers(g) {
+export function auroraLayers(g, { mag = true } = {}) {
   const P = g.userData.parts, U = g.userData.capU, M = g.userData.mag;
   return [
     { id: 'jOval', type: 'toggle', group: 'Jupiter-Polarlicht', label: 'Hauptoval (UV-Falschfarbe)', value: true, set: (v) => { P.oval.visible = P.cap.visible = v; },
@@ -215,11 +216,11 @@ export function auroraLayers(g) {
     { id: 'jFlares', type: 'toggle', label: 'Polar-Flares', value: true, sub: true, set: (v) => { U.uFlare.value = v ? 1 : 0; } },
     { id: 'jFeet', type: 'toggle', label: 'Fußpunkte von Io, Europa, Ganymed', value: true, sub: true, set: (v) => { U.uFoot.value = v ? 1 : 0; },
       hint: 'Die Monde ziehen Spuren ins Polarlicht; ihr Umlauf ist hier im Zeitraffer, die Lagen sind schematisch.' },
-    { id: 'jDisk', type: 'toggle', group: 'Jupiter-Magnetosphäre', label: 'Magnetscheibe mit Spiralarmen', value: true, set: (v) => { P.disk.visible = v; } },
+    { id: 'jDisk', type: 'toggle', group: 'Jupiter-Magnetosphäre', label: 'Magnetscheibe mit Spiralarmen', value: mag, set: (v) => { P.disk.visible = v; } },
     { id: 'jDiskGain', type: 'range', label: 'Helligkeit', value: 1, min: 0, max: 6, step: 0.25, unit: '×', sub: true, set: (v) => { U.uDiskGain.value = v; } },
-    { id: 'jLines', type: 'toggle', label: 'Gestreckte Feldlinien', value: true, set: (v) => { P.lines.visible = v; } },
+    { id: 'jLines', type: 'toggle', label: 'Gestreckte Feldlinien', value: mag, set: (v) => { P.lines.visible = v; } },
     { id: 'jLineGain', type: 'range', label: 'Helligkeit', value: 1, min: 0, max: 6, step: 0.25, unit: '×', sub: true, set: (v) => { M.lineMat.opacity = 0.1 * v; } },
-    { id: 'jFlow', type: 'toggle', label: 'Teilchenströme ins Oval', value: true, set: (v) => { P.flow.visible = v; } },
+    { id: 'jFlow', type: 'toggle', label: 'Teilchenströme ins Oval', value: mag, set: (v) => { P.flow.visible = v; } },
     { id: 'jFlowN', type: 'range', label: 'Menge', value: 1, min: 0.25, max: 3, step: 0.25, unit: '×', sub: true, set: (v) => { M.flowN(v); } },
     { id: 'jFlowSpeed', type: 'range', label: 'Tempo', value: 1, min: 0, max: 5, step: 0.25, unit: '×', sub: true, set: (v) => { M.flowU.uSpeed.value = 0.06 * v; },
       hint: 'Zeitraffer: echt brauchen die Elektronen von der Scheibe bis in die Atmosphäre nur Sekunden bis Minuten.' },

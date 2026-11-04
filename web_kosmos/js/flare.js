@@ -183,22 +183,23 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8], own = false }
     const moveGhost = ghostMotionOn && (own || settings.S.ghostMotion !== false);
 
     if (useMaster) {
-      // Linse:B – Master-Optik nach Nutzerreferenz; bei 1× dezent (User 26.10.2026: viel zu stark), 3× ≈ früherer Look
-      place(rainbowRing, ndc.x, ndc.y, 1.15, camera, v * 0.35);
-      place(innerArc, ndc.x, ndc.y, 0.95, camera, v * 0.22);
-      place(halo, ndc.x, ndc.y, 0.65, camera, v * 0.4);
+      // Linse:B – Master-Optik nach Nutzerreferenz; bei 1× dezent (User 26.10.2026 und 04.11.2026: viel zu stark → Teile
+      // halbiert), 2× ≈ Look vom 26.10., 5× ≈ ursprünglicher Look
+      place(rainbowRing, ndc.x, ndc.y, 1.15, camera, v * 0.16);
+      place(innerArc, ndc.x, ndc.y, 0.95, camera, v * 0.11);
+      place(halo, ndc.x, ndc.y, 0.65, camera, v * 0.2);
 
       if (showGhost) {
         // Magenta-Sensor-Ghost: Wandert auf der optischen Achse mit Parallaxe
         const gx = moveGhost ? ndc.x * -0.55 + 0.12 : ndc.x + 0.28;
         const gy = moveGhost ? ndc.y * -0.55 - 0.12 : ndc.y - 0.28;
-        place(magentaGhost, gx, gy, 0.22, camera, v * 0.3);
+        place(magentaGhost, gx, gy, 0.22, camera, v * 0.15);
       } else {
         magentaGhost.visible = false;
       }
 
       if (settings.S.anamorphic !== false) {
-        place(streak, ndc.x, ndc.y, 0.10, camera, v * 0.45, 18);
+        place(streak, ndc.x, ndc.y, 0.10, camera, v * 0.25, 18);
       } else {
         streak.visible = false;
       }
