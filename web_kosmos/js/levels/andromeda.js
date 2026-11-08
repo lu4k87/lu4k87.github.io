@@ -106,9 +106,9 @@ export function create(ctx) {
   scene.add(gal);
   const stars = keep(buildGalaxy({ n: Math.round(280000 * det), seed: 31, scale: SCALE, arms: M31_ARMS, rings: M31_RINGS, young: false, dust: false, bar: 0.35, bulge: 1.8 }));
   gal.add(stars);
-  const young = keep(starFormation({ arms: M31_ARMS, rings: M31_RINGS, n: Math.round(26000 * det), scale: SCALE, rot: ROT.m31, seed: 131, gain: 1.1, rIn: 0.8, hii: 0.05 }));
+  const young = keep(starFormation({ arms: M31_ARMS, rings: M31_RINGS, n: Math.round(42000 * det), scale: SCALE, rot: ROT.m31, seed: 131, gain: 1.35, rIn: 0.8, hii: 0.075 }));
   gal.add(young);
-  const core = keep(lightBlobs([0, 0, 0], blackbody(4300).map((v) => v * 0.22), [3.2]));
+  const core = keep(lightBlobs([0, 0, 0], blackbody(3500).map((v) => v * 0.3), [3.2]));   // Kern warm-golden wie NGC 4536 (Vorschau 08.11.2026)
   gal.add(core);
   const nuc = keep(nucleus(det, rand));
   gal.add(nuc);

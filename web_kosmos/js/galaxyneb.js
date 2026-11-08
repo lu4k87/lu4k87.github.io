@@ -211,7 +211,7 @@ export function nebulaVolume(renderer, { arms, rings = [], detail = 1, look = {}
     fragmentShader: volFrag({ fine, arms, rings, look }),
     uniforms: {
       uCam: { value: new THREE.Vector3() }, uField: { value: field.texture }, uSteps: { value: Math.round(q.steps * (fine ? 1.4 : 1)) }, uTime: { value: 0 }, uT: { value: 0 },
-      uGain: { value: 1 }, uDust: { value: 1.8 }, uHii: { value: 2.2 }, uWim: { value: 0.05 }, uLight: { value: fine ? 1.1 : 0.1 }, uGlim: { value: 1 }, uYoung: { value: 3.2 },
+      uGain: { value: 1 }, uDust: { value: 3.0 }, uHii: { value: 3.0 }, uWim: { value: 0.05 }, uLight: { value: fine ? 1.1 : 0.1 }, uGlim: { value: 1 }, uYoung: { value: 3.2 },
     },
     side: THREE.BackSide, transparent: true, depthWrite: false,
     blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,

@@ -79,6 +79,8 @@ void main() {
 // sind nur noch die aufgelösten Sterne darin), hii = Anteil der rosa Knoten, assoc = Zahl der Sternassoziationen (junge
 // Sterne in Gruppen statt gleichmäßig gestreut; die Streuung sinkt dann auf die Hälfte), lf = Helligkeit je Punkt nach
 // einer steilen Leuchtkraftfunktion (wenige hell, viele schwach, Mittel gleich) statt fast gleich hell wie Glitzer
+// junge Sterne bläulich wie in Hubble-Aufnahmen (Vorschau 08.11.2026, Vorlage NGC 4536); alte Sterne unverändert
+const blu = (c) => [c[0] * 0.78, c[1] * 0.9, c[2] * 1.18];
 export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = true, faceTilt = 0, arms = ARMS, rings = [], young = true, bar = 1, bulge = 1, diffuse = 1, grain = 1, hii = 1, assoc = 0, lf = false } = {}) {
   const rand = mulberry32(seed);
   const pos = [], col = [], size = [], om = [];
@@ -131,7 +133,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     const y = gauss(rand) * (0.12 + R * 0.012);
     const p = diskPoint(R, phi, y);
     const T = ad > 0.5 && rand() < 0.35 ? 7000 + rand() * 12000 : 3600 + rand() * 2800;
-    add(p, old(T), 0.035 + rand() * 0.03, 0.22 + ad * 0.25);
+    add(p, T > 6900 ? blu(old(T)) : old(T), 0.035 + rand() * 0.03, 0.22 + ad * 0.25);
   }
   // junge, helle Sterne entlang der Arme
   for (let i = 0; i < (young ? N * 0.22 * (assoc ? 0.5 : 1) : 0); i++) {
@@ -141,7 +143,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     if (R < 3 || R > 17 || rand() > fade) continue;
     const off = gauss(rand) * a.width * 0.6 * (0.7 + R / 12);
     const p = diskPoint(R + off, phi + gauss(rand) * 0.015, gauss(rand) * 0.06);
-    add(p, old(8000 + rand() * 16000), 0.04 + rand() * 0.05, 0.6 + rand() * 0.8);
+    add(p, blu(old(13000 + rand() * 20000)), 0.04 + rand() * 0.05, 0.6 + rand() * 0.8);
   }
   // Sternassoziationen und junge Haufen (≈ 30–150 pc) in der Mitte der Arme, Größe der Gruppen sehr ungleich
   for (let i = 0; i < (young ? assoc : 0); i++) {
@@ -151,7 +153,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     if (R < 3 || R > 16 || rand() > fade) continue;
     const c = diskPoint(R + gauss(rand) * a.width * 0.35 * (0.7 + R / 12), phi, gauss(rand) * 0.03);
     const r = 0.03 + rand() * 0.09, m = 6 + Math.floor(rand() ** 2.5 * 60);
-    for (let j = 0; j < m; j++) add([c[0] + gauss(rand) * r, c[1] + gauss(rand) * r * 0.3, c[2] + gauss(rand) * r], old(9000 + rand() * 16000), 0.03 + rand() * 0.035, 0.45 + rand() * 0.9);
+    for (let j = 0; j < m; j++) add([c[0] + gauss(rand) * r, c[1] + gauss(rand) * r * 0.3, c[2] + gauss(rand) * r], blu(old(14000 + rand() * 20000)), 0.03 + rand() * 0.035, 0.63 + rand() * 1.26);
   }
   // HII-Regionen: rosa Knoten (Hα + Hβ) am Innenrand der Arme
   for (let i = 0; i < (young ? N * 0.006 * hii : 0); i++) {
@@ -160,7 +162,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     if (R < 3.2 || R > 15 || rand() > fade) continue;
     const c = diskPoint(R - a.width * 0.25, phi, gauss(rand) * 0.03);
     const k = 2 + Math.floor(rand() * 6);
-    for (let j = 0; j < k; j++) add([c[0] + gauss(rand) * 0.06, c[1] + gauss(rand) * 0.02, c[2] + gauss(rand) * 0.06], [1.0, 0.32, 0.48], 0.07 + rand() * 0.07, 0.5 + 0.7 * rand());
+    for (let j = 0; j < k; j++) add([c[0] + gauss(rand) * 0.06, c[1] + gauss(rand) * 0.02, c[2] + gauss(rand) * 0.06], [1.0, 0.3, 0.62], 0.105 + rand() * 0.105, 0.5 + 0.7 * rand());
   }
   // Balken (dreiachsig, „Erdnuss“) und Bulge aus alten Sternen
   const ba = BAR.angle * RAD;
@@ -174,7 +176,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
   for (let i = 0; i < N * 0.06 * bulge; i++) {
     const r = expR(0.45, 3);
     const d = new THREE.Vector3(gauss(rand), gauss(rand) * 0.7, gauss(rand)).normalize().multiplyScalar(r);
-    add([d.x, d.y, d.z], old(4000 + rand() * 1200), 0.045, 0.6 + 0.8 * Math.exp(-r / 0.5));
+    add([d.x, d.y, d.z], old(3500 + rand() * 900), 0.045, 0.6 + 0.8 * Math.exp(-r / 0.5));
   }
   // diffuses Licht der unaufgelösten Sterne
   for (let i = 0; i < N * 0.03 * diffuse; i++) {
@@ -307,7 +309,7 @@ const _near = new THREE.Vector2();
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.005, 400);
-  const gal = buildGalaxy({ n: Math.round(340000 * ctx.detail), dust: false, grain: 0.5, hii: 0.35, gain: 0.6, diffuse: 0.3, assoc: Math.round(1600 * ctx.detail), lf: true });
+  const gal = buildGalaxy({ n: Math.round(340000 * ctx.detail), dust: false, grain: 0.5, hii: 0.63, gain: 0.6, diffuse: 0.3, assoc: Math.round(2720 * ctx.detail), lf: true });
   scene.add(gal);
   // Gas und Staub als 3D-Nebel (Vorschau 28.10.2026 Nebel:A) statt Staub-Punkten (die machten im Zentrum einen dunklen Fleck)
   const neb = nebulaVolume(ctx.renderer, { arms: ARMS, detail: ctx.detail, fine: true });

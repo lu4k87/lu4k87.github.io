@@ -181,6 +181,8 @@ void main() {
 }`;
 
 // Junge Sterne (blau, 10–35 Mio. Jahre) und HII-Regionen (rosa Knoten aus Hα + Hβ, 3–8 Mio. Jahre) – Lebensdauern als Richtwert
+// Look nach der Hubble-Aufnahme NGC 4536 (Vorschau 08.11.2026 Ort:A+B+C): junge Sterne bläulich wie in Breitband-Kompositen,
+// jeder dritte Geburtsort als Haufen aus 3–8 Sternen, HII-Knoten magenta-rosa und größer
 export function starFormation({ arms = [], rings = [], n, scale = 1, rot, seed = 1, gain = 1, rIn = 3, rOut = 17, hii = 0.03 }) {
   const rand = mulberry32(seed);
   const pos = [], col = [], size = [], flow = [];
@@ -211,13 +213,16 @@ export function starFormation({ arms = [], rings = [], n, scale = 1, rot, seed =
   };
   for (let i = 0; i < n; i++) {
     const b = birth();
-    if (b) put(b.R, b.phi, gauss(rand) * 0.06, blackbody(9000 + rand() * 16000).map(((f) => (v) => v * f)(0.7 + rand() * 0.8)), 0.04 + rand() * 0.05, 10 + rand() * 25, rand());
+    if (!b) continue;
+    const c0 = blackbody(14000 + rand() * 20000).map(((f) => (v) => v * f)(0.7 + rand() * 0.8)), c = [c0[0] * 0.75, c0[1] * 0.9, c0[2] * 1.25];
+    const life = 10 + rand() * 25, ph = rand(), m = rand() < 0.35 ? 3 + Math.floor(rand() * 6) : 1;
+    for (let j = 0; j < m; j++) put(b.R + (j ? gauss(rand) * 0.08 : 0), b.phi + (j ? gauss(rand) * 0.08 / b.R : 0), gauss(rand) * 0.06, c, 0.04 + rand() * 0.05, life, ph);
   }
   for (let i = 0; i < n * hii; i++) {
     const b = birth();
     if (!b) continue;
-    const life = 3 + rand() * 5, ph = rand(), c = [1.0, 0.32, 0.48].map(((f) => (v) => v * f)(0.8 + 0.9 * rand()));
-    for (let j = 2 + Math.floor(rand() * 5); j > 0; j--) put(b.R + gauss(rand) * 0.05, b.phi + gauss(rand) * 0.05 / b.R, gauss(rand) * 0.02, c, 0.07 + rand() * 0.07, life, ph);
+    const life = 3 + rand() * 5, ph = rand(), c = [1.0, 0.3, 0.62].map(((f) => (v) => v * f)(0.8 + 0.9 * rand()));
+    for (let j = 2 + Math.floor(rand() * 5); j > 0; j--) put(b.R + gauss(rand) * 0.05, b.phi + gauss(rand) * 0.05 / b.R, gauss(rand) * 0.02, c, 0.105 + rand() * 0.105, life, ph);
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
