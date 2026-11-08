@@ -7,8 +7,11 @@
 //   offen ist (im Hubble-Bild links frei, rechts Gas). Je Richtung vom Haufen aus gibt es genau eine Ionisationsfront –
 //   die erste Wand, die das UV-Licht trifft; dahinter liegt alles im Schatten. So leuchten die Köpfe der Säulen, wo sie
 //   zum Haufen zeigen, und werfen Schatten auf die Wand dahinter.
-//   Säulen (Elefantenrüssel): Zylinder mit runden Köpfen auf der Achse zum Haufen, nach außen breiter. Bok-Globulen:
-//   dichte Staubknoten mit leuchtendem Rand zur Haufenseite und Schweif nach außen. Sher 25: blauer Überriese mit Ring
+//   Wand länglich (Gasband oben → unten rechts wie im Bild), zur Wolke hin näher am Haufen, gefaltet und mit Rissen –
+//   von weitem kein geschlossenes Oval; dünne Staubfäden kurz vor der Front als schwarze Bahnen.
+//   Säulen (Elefantenrüssel): Zylinder mit Köpfen auf der Achse zum Haufen, nach außen breiter; Kante scharf, Rillen längs
+//   der Achse, Kopf in Knollen zerfallen, davor ein strähniger Schleier (Photoverdampfung). Bok-Globulen: dichte, zerklüftete
+//   Staubknoten in Kometenform (stumpf zur Haufenseite, Schweif nach außen) mit leuchtendem Rand. Sher 25: blauer Überriese mit Ring
 //   (0,4 pc, ≈ 64° geneigt) und Sanduhr-Ausströmungen bis ≈ 0,5 pc (Brandner et al. 1997, ApJ 475, L45).
 //   Haufen: Kern ≈ 1 Mio. Jahre, 1–1,9 · 10⁴ Sonnenmassen, Entfernung 6–7,6 kpc (Harayama et al. 2008, Rochau et al. 2010);
 //   Lage der Sterne statistisch (Plummer-Profil), Säulen/Globulen/Wand frei nach dem Bild – Modell, keine Karte.
@@ -19,7 +22,8 @@
 //   Fortschritt k(t) monoton kubisch (Fritsch–Carlson) → Tempo stetig, kein Ruck; Blende je Abschnitt (beim Durchflug
 //   durch den Haufen weiter zu). apply(t) ist reine Funktion der Zeit → ?t=24 zeigt das Bild bei 24 s angehalten.
 // Bild: Wolke per Strahlverfolgung in eigener Auflösung (vol.js offscreen), Schrittweite wächst mit dem Abstand zur
-//   Kamera (nah fein, fern grob); grobe Rauschfelder einmal gebacken (bakeField); Bloom, ACES, Grading wie die App (post.js).
+//   Kamera (nah fein, fern grob); Rauschfelder einmal gebacken (bakeField: FIELD grob, FIELD2 mittlere Größen für Risse,
+//   Staubfäden, Faltung); Bloom, ACES, Grading wie die App (post.js).
 
 import * as THREE from 'three';
 import { NOISE, SKY_VERTEX } from './glsl.js';
@@ -31,6 +35,7 @@ const EXT = 48;   // Feldtextur: Würfel ±48 Lj
 const RV = 46;    // Kugel, in der das Gas liegt
 const RC = 11;    // mittlerer Radius des Hohlraums
 const WALL = new THREE.Vector3(0.92, -0.2, -0.35).normalize();   // Richtung der Molekülwolke vom Haufen aus (im Bild rechts)
+const BAND = new THREE.Vector3(0.4, -0.92, -0.1).normalize();    // Längsrichtung der Wand (Gasband oben → unten rechts)
 // Säulen: Achse vom Haufen weg, Abstand des Kopfes, Breite (Radius); alle auf der Seite der Wand
 const PILLARS = [
   [[0.85, 0.45, -0.2], 5.4, 0.5],     // Fahne oben rechts, zeigt auf den Haufen (wie im Hubble-Bild)
@@ -61,7 +66,7 @@ const KEYS = [
 ];
 export const END = KEYS[KEYS.length - 1][0];
 // Blende (Belichtung) und leichtes Rollen je Zeitpunkt
-const EXPO = [[0, 1.25], [9, 1.2], [20, 1.05], [29, 0.92], [34, 0.5], [38, 0.62], [44, 0.95], [51, 1.1], [58, 1.15]];
+const EXPO = [[0, 1.45], [9, 1.38], [20, 1.12], [29, 0.92], [34, 0.5], [38, 0.62], [44, 0.95], [51, 1.1], [58, 1.15]];
 const ROLL = [[0, 0], [15, -2.5], [27, 3.5], [36, -5], [44, 2.5], [58, 0]];
 export const BEATS = [
   [0, 'Anflug', 'Riesiges H-II-Gebiet im Carina-Arm der Milchstraße, rund 20.000–25.000 Lichtjahre entfernt'],
@@ -110,14 +115,21 @@ vec4 field(vec3 p) {
               ridged(p * 0.12 + vec3(5.0, 2.0, 9.0), 4), fbm(p * 0.04 + vec3(9.0, 4.0, 1.0), 3));
 }
 `;
+// zweites Feld (mittlere Größen): x Risse/Löcher der Wand, y dünne Staubfäden, z Faltung der Front, w feine Fäden der Front
+const FIELD2 = /* glsl */ `
+vec4 field(vec3 p) {
+  return vec4(fbm(p * 0.13 + vec3(4.0, 8.0, 2.0), 3), ridged(p * 0.26 + vec3(7.0, 3.0, 5.0), 3),
+              fbm(p * 0.2 + vec3(2.0, 6.0, 8.0), 3), ridged(p * 0.45 + vec3(1.0, 4.0, 6.0), 2));
+}
+`;
 
 const NP = PILLARS.length, NG = GLOBULES.length;
 const MEDIUM = /* glsl */ `
 #define NP ${NP}
 #define NG ${NG}
 const float EXT = ${f4(EXT)}, RV = ${f4(RV)}, RC = ${f4(RC)};
-const vec3 WALL = vec3(${f4(WALL.x)}, ${f4(WALL.y)}, ${f4(WALL.z)});
-uniform highp sampler3D uField;
+const vec3 WALL = vec3(${f4(WALL.x)}, ${f4(WALL.y)}, ${f4(WALL.z)}), BAND = vec3(${f4(BAND.x)}, ${f4(BAND.y)}, ${f4(BAND.z)});
+uniform highp sampler3D uField, uField2;
 uniform vec4 uPil[NP];     // xyz Achse, w Abstand des Kopfes
 uniform float uPilW[NP];   // Breite
 uniform vec4 uGlob[NG];    // xyz Mitte, w Radius
@@ -131,7 +143,8 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
   s = 0.0;
   float r = length(p);
   if (r > RV) return;
-  vec4 f = texture(uField, p * (0.5 / EXT) + 0.5);
+  vec3 uvw = p * (0.5 / EXT) + 0.5;
+  vec4 f = texture(uField, uvw), f2 = texture(uField2, uvw);
   vec3 d = p / max(r, 1e-3);
   float tb = f.g, fil = smoothstep(0.22, 0.78, f.b);
   if (fine > 0.01) {
@@ -144,11 +157,18 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
   // der Kante gesehen als heller Faden erscheint – so entstehen die Filamente der H-II-Gebiete
   // breiter, verrauschter Übergang zur offenen Seite und Faltung in mittlerer Größe: sonst zeichnet sich der Rand der
   // Schale als glatter heller Umriss ab (Kante der Haut von der Seite gesehen)
-  float side = smoothstep(-0.05, 0.75, dot(d, WALL) + 0.45 * f.a + 0.35 * tb + 0.4 * (f.b - 0.45));
-  float Rw = RC * (1.0 + 0.6 * f.r) + 4.5 * tb + 3.0 * (f.b - 0.45);
+  float wd = dot(d, WALL);
+  float side = smoothstep(-0.05, 0.75, wd + 0.45 * f.a + 0.35 * tb + 0.4 * (f.b - 0.45) + 0.35 * f2.x);
+  // Risse: Löcher in der Wand, zum offenen Rand hin häufiger → der Rand zerfällt in Fetzen statt eines Ovals
+  side *= smoothstep(-0.16, 0.06, f2.x + 0.12 * wd);
+  // asymmetrisch: zur Molekülwolke hin näher am Haufen; Faltung (f2.z) legt die Front in Überhänge → mehrere helle Grate
+  float bd = dot(d, BAND);
+  float Rw = (RC * (1.0 + 0.6 * f.r) + 4.5 * tb + 3.0 * (f.b - 0.45)) * (1.0 - 0.15 * wd) * (1.0 + 0.45 * bd * bd) + 4.0 * f2.z;
   float rs = r - Rw;
+  // dünne Staubfäden kurz vor und auf der Front: schwarze Bahnen vor dem hellen Gas
+  float laneF = smoothstep(0.64, 0.79, f2.y) * exp(-pow((rs + 0.8) / 1.4, 2.0)) * side;
   // Säulen: Zylinder mit rundem Kopf, nach außen breiter, Achse leicht gewunden, Oberfläche zerfressen
-  float bodyP = 0.0, headP = 0.0, rimP = 0.0, shade = 0.0;
+  float bodyP = 0.0, headP = 0.0, rimP = 0.0, shade = 0.0, evP = 0.0;
   for (int i = 0; i < NP; i++) {
     vec3 a = uPil[i].xyz;
     float tip = uPil[i].w, h = dot(p, a), fi = float(i);
@@ -161,18 +181,31 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
     float w = w0 * (1.0 + 0.3 * tb + 0.2 * max(h - tip, 0.0));
     if (qd > w + 2.5) continue;
     float sd = h > tip ? qd - w : length(vec2(qd, tip - h)) - w;
-    if (star < 0.5 && abs(sd) < 0.9) sd += w * 0.3 * gnoise(p * (1.1 / w0) + vec3(fi * 7.0, 3.0, 1.0)) + 0.05 * gnoise(p * 3.5);
-    float soft = star > 0.5 ? 0.9 : 0.14;
-    // Gas, kein Fels: zum Rand hin durchscheinend
+    // Fäden längs der Achse (Rauschen in Achsrichtung 8× gestreckt): Rillen am Körper, Strähnen vor dem Kopf
+    float str = 0.0;
+    if (star < 0.5 && sd < 1.6) {
+      str = gnoise(vec3(dot(q, bx), dot(q, by), h * 0.12) * (3.2 / w0) + vec3(fi * 5.0, 1.0, 2.0));
+      // Kopf in Knollen und Finger zerfallen (Gas verdampft ungleich), Körper mit scharfen Rillen
+      if (abs(sd) < 0.9) {
+        float head = smoothstep(tip + 2.5 * w0, tip, h);
+        sd += w * (0.3 + 0.12 * head) * gnoise(p * (1.1 / w0) + vec3(fi * 7.0, 3.0, 1.0))
+            + w * 0.14 * head * gnoise(p * (3.0 / w0) + vec3(2.0, fi, 6.0)) + w * 0.09 * str;
+      }
+    }
+    float soft = star > 0.5 ? 0.9 : 0.05;
+    // dichter Kern, Kante scharf (Ionisationsfront), außen nur die Strähnen
     bodyP = max(bodyP, smoothstep(soft, -soft * 1.6, sd) * smoothstep(Rw + 5.0, Rw + 1.0, h) * 0.65);
     if (star > 0.5) continue;
     // Kopf: leuchtende Haut, wo die Oberfläche zum Haufen zeigt; Seiten nur schwach (diffuses Licht)
     vec3 n = h > tip ? q / max(qd, 1e-3) : normalize(p - a * tip);
-    float skin = exp(-pow(sd / (0.07 + 0.04 * w0), 2.0));
+    float skin = exp(-pow(sd / (0.03 + 0.02 * w0), 2.0));
     // aufgeraute Haut: feine Grate (verdampfendes Gas) statt glatter Kappe
     float gr2 = 1.0 - abs(gnoise(p * 3.2 + vec3(fi, 5.0, 2.0)));
+    float fac = max(dot(n, -d), 0.0);
     headP += skin * max(dot(n, -d) * 1.2 + 0.05, 0.0) * (0.3 + fil) * (0.35 + 1.1 * gr2 * gr2);
-    rimP += skin * smoothstep(tip + 7.0, tip, h) * step(tip, h);
+    rimP += skin * smoothstep(tip + 7.0, tip, h) * smoothstep(tip - 0.4 * w0, tip + 0.4 * w0, h) * (0.15 + 1.6 * smoothstep(-0.1, 0.5, str));
+    // verdampfender Kopf: dünner, strähniger Schleier vor der Kappe zum Haufen hin (Photoverdampfung)
+    if (sd > 0.0) evP += exp(-sd / (0.06 + 0.16 * w0)) * fac * fac * smoothstep(tip + 1.5 * w0, tip - 0.2, h) * smoothstep(0.05, 0.7, str);
     // Schatten des Kopfes auf allem dahinter (Strahl vom Haufen trifft zuerst die Säule)
     shade = max(shade, smoothstep(w * 1.1, w * 0.75, qd) * smoothstep(tip - 0.2, tip + 0.6, h));
   }
@@ -181,8 +214,9 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
   float shell = exp(-pow((r - 21.0) / 8.0, 2.0));
   float lane = smoothstep(0.42, 0.8, f.b) * smoothstep(-0.1, 0.25, f.a) * shell * smoothstep(-0.15, 0.35, dot(d, WALL));
   float env = smoothstep(0.38, 0.8, f.b) * smoothstep(-0.25, 0.1, -f.a) * shell;
-  if (star > 0.5) { s = (bodyW * 0.9 + bodyP * 2.2 + lane * 1.4) * uDust; return; }
-  // Haut der Ionisationsfront auf der Wand, im Schatten der Säulen dunkel
+  if (star > 0.5) { s = (bodyW * 0.9 + bodyP * 3.0 + lane * 1.4 + laneF * 3.2) * uDust; return; }
+  // Haut der Ionisationsfront auf der Wand, im Schatten der Säulen dunkel; feine Fäden (f2.w) zerreißen die Haut
+  fil *= 0.45 + 1.1 * f2.w;
   float skinW = exp(-pow((rs - 0.2) / 0.42, 2.0)) * side * side * (1.0 - shade) * (0.02 + 2.4 * fil * fil);
   // Hohlraum: dünnes ionisiertes Gas, nur nah am Haufen
   float cav = rs < 0.0 ? exp(-r / 3.5) * max(tb + 0.25, 0.0) * 0.025 : 0.0;
@@ -196,19 +230,23 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
     if (dg > g * 5.0) continue;
     vec3 ax = normalize(c);
     float al = dot(v, ax), pe = length(v - ax * al);
-    // länglich zum Haufen hin gestaucht (Kometenform), Rand unregelmäßig
-    dg = length(v - ax * al * 0.35);
-    float gr = g * (1.0 + 0.4 * gnoise(v * (1.0 / g) + c) + 0.08 * gnoise(v * (3.5 / g) - c));
-    glob += smoothstep(gr, gr * 0.45, dg) * 9.0 / g;
+    // Kometenform: zur Haufenseite stumpf, nach außen gestreckt; Rand in drei Größen zerklüftet (Knoten, Buchten)
+    float fj = float(j);
+    vec3 el = normalize(cross(ax, vec3(sin(fj * 2.4), cos(fj * 1.7), 0.5)));
+    vec3 vw = v + el * (g * 0.45 * gnoise(v * (0.8 / g) + c.zxy));
+    dg = length(vw - ax * dot(vw, ax) * (al > 0.0 ? 0.5 : 0.15) - el * dot(vw, el) * 0.5);
+    float gr = g * (1.0 + 0.5 * gnoise(v * (1.0 / g) + c) + 0.22 * gnoise(v * (2.3 / g) - c) + 0.1 * gnoise(v * (5.5 / g) + c.yzx));
+    glob += smoothstep(gr, gr * 0.6, dg) * 9.0 / g + smoothstep(gr * 1.5, gr * 0.95, dg) * 0.8 / g;
     if (al > 0.0) glob += smoothstep(gr * 0.75, 0.0, pe + al * 0.14) * exp(-al / (g * 2.2)) * 3.0 / g;
     float fac = clamp(dot(v / max(dg, 1e-3), -ax) * 1.4 - 0.1, 0.0, 1.0);
     rimG += exp(-pow((dg - gr * 0.88) / (0.05 * g + 0.012), 2.0)) * fac * fac / (1.0 + dot(c, c) / 40.0);
   }
   // Farben: Hα + [N II] tiefrot (hell → lachs, über ACES), nah am Haufen [O III] und Streulicht bläulich
-  vec3 HA = vec3(1.0, 0.3, 0.19), O3 = vec3(0.45, 0.72, 1.0), HOT = vec3(1.0, 0.72, 0.58);
+  vec3 HA = vec3(1.0, 0.31, 0.13), O3 = vec3(0.45, 0.72, 1.0), HOT = vec3(1.0, 0.7, 0.5);
   float o3 = exp(-r / 6.5);
-  vec3 cg = mix(HA, O3, o3 * 0.75);
+  vec3 cg = mix(HA, O3, o3 * 0.6);
   e = (skinW + headP * 1.6 + rimP * 0.3) * flux * mix(cg, HOT, 0.3 * flux)
+    + evP * flux * mix(HOT, O3, 0.45) * 0.2
     + rimG * HOT * 1.4
     + cav * mix(HA, O3, 0.5 + 0.5 * o3)
     + env * HA * 0.006
@@ -228,12 +266,12 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
     s += ring * 0.3;
   }
   e *= uGain;
-  s += (bodyW * 0.9 + bodyP * 2.2 + glob + lane * 1.4 + skinW * 0.03) * uDust;
+  s += (bodyW * 0.9 + bodyP * 3.0 + glob + lane * 1.4 + laneF * 3.2 + skinW * 0.03) * uDust;
 }
 `;
 
-const mediumUniforms = (fieldTex) => ({
-  uField: { value: fieldTex },
+const mediumUniforms = (fieldTex, field2Tex) => ({
+  uField: { value: fieldTex }, uField2: { value: field2Tex },
   uPil: { value: PILLARS.map((p) => new THREE.Vector4(p.a.x, p.a.y, p.a.z, p.tip)) },
   uPilW: { value: PILLARS.map((p) => p.w) },
   uGlob: { value: GLOBULES.map((g) => new THREE.Vector4(g.c.x, g.c.y, g.c.z, g.r)) },
@@ -241,7 +279,7 @@ const mediumUniforms = (fieldTex) => ({
 });
 
 // Strahlverfolgung durch die Kugel RV; Schrittweite ∝ Abstand zur Kamera (uK), nah an Sher 25 fein
-function cloudMesh(fieldTex) {
+function cloudMesh(fieldTex, field2Tex) {
   const mat = new THREE.ShaderMaterial({
     vertexShader: 'varying vec3 vP; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
     fragmentShader: /* glsl */ `
@@ -265,7 +303,7 @@ void main() {
     vec3 p = ro + rd * t;
     float dt = clamp(t * uK, uDmin, uDmax);
     vec3 ps = p - uSher;
-    if (dot(ps, ps) < 10.0) dt = min(dt, 0.035);
+    if (dot(ps, ps) < 10.0) dt = min(dt, max(0.035, t * 0.0025));   // fern: Ring ohnehin nur 1–2 px breit
     vec3 e;
     float s;
     medium(p, 1.0 - smoothstep(5.0, 12.0, t), 0.0, e, s);
@@ -277,7 +315,7 @@ void main() {
   }
   gl_FragColor = vec4(L, 1.0 - T);
 }`,
-    uniforms: { ...mediumUniforms(fieldTex), uK: { value: 0.015 }, uDmin: { value: 0.035 }, uDmax: { value: 1.2 } },
+    uniforms: { ...mediumUniforms(fieldTex, field2Tex), uK: { value: 0.015 }, uDmin: { value: 0.035 }, uDmax: { value: 1.2 } },
     side: THREE.BackSide, transparent: true, depthWrite: false, depthTest: false,
     blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
   });
@@ -317,7 +355,8 @@ void main() {
     float g = uGlob[j].w, k = dot(c - ro, seg) / ss;
     if (k <= 0.0 || k >= 1.0) continue;
     float m = length(ro + seg * k - c);
-    if (m < g) tau += 7.0 * sqrt(g * g - m * m) * uDust;
+    float gc = g * 0.85;
+    if (m < gc) tau += 7.0 * sqrt(gc * gc - m * m) * uDust;
   }
   vec3 tr = exp(-tau * uExt * vec3(0.6, 0.78, 1.0));
   float vis = smoothstep(0.06, 0.2, d);   // nie durch einen Stern hindurch
@@ -464,7 +503,8 @@ export function createFilm(canvas, { quality = 1 } = {}) {
   scene.add(sky);
 
   const field = bakeField(renderer, { size: 144, extent: EXT, body: FIELD });
-  const cloud = cloudMesh(field.texture);
+  const field2 = bakeField(renderer, { size: 144, extent: EXT, body: FIELD2 });
+  const cloud = cloudMesh(field.texture, field2.texture);
   const Q = [[0.4, 0.016], [0.6, 0.011], [0.85, 0.008]][Math.max(0, Math.min(2, quality))];
   cloud.material.uniforms.uK.value = Q[1];
   const vol = offscreen(renderer, cloud);
@@ -481,7 +521,7 @@ export function createFilm(canvas, { quality = 1 } = {}) {
   sg.setAttribute('lum', new THREE.Float32BufferAttribute(st.lum, 1));
   const starMat = new THREE.ShaderMaterial({
     vertexShader: STAR_VERT, fragmentShader: STAR_FRAG,
-    uniforms: { ...mediumUniforms(field.texture), uPx: { value: 1 }, uStarGain: { value: 6200 }, uExt: { value: 1 } },
+    uniforms: { ...mediumUniforms(field.texture, field2.texture), uPx: { value: 1 }, uStarGain: { value: 6200 }, uExt: { value: 1 } },
     blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true,
   });
   const stars = new THREE.Points(sg, starMat);
@@ -504,7 +544,7 @@ export function createFilm(canvas, { quality = 1 } = {}) {
   scene.add(motes);
 
   const look = {
-    exposure: 1, bloom: 0.1, sat: 1.1, con: 0.14, sh: new THREE.Vector3(0.95, 0.98, 1.07), hi: new THREE.Vector3(1.05, 1.0, 0.94),
+    exposure: 1, bloom: 0.1, sat: 1.22, con: 0.22, sh: new THREE.Vector3(0.95, 0.98, 1.07), hi: new THREE.Vector3(1.05, 1.0, 0.94),
     vig: 0.42, grain: 0.012, bars: 0, ehtA: new THREE.Vector3(), ehtB: new THREE.Vector3(),
   };
   let barsOn = true, H = 1, W = 1;
@@ -546,7 +586,7 @@ export function createFilm(canvas, { quality = 1 } = {}) {
     post.render(rt, null, null, look, time);
   }
 
-  const ready = field.ready.then(() => renderer.compileAsync(scene, camera)).then(() => renderer.compileAsync(vol.scene, camera));
+  const ready = Promise.all([field.ready, field2.ready]).then(() => renderer.compileAsync(scene, camera)).then(() => renderer.compileAsync(vol.scene, camera));
   return {
     ready, apply, render, setSize,
     setBars(on) { barsOn = on; },
