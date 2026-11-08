@@ -31,10 +31,12 @@ body.is-fatal .boot { display: none; }
 .boot-bar b { position: absolute; top: -2px; left: calc(var(--p, 0) * 100%); width: 5px; height: 5px; border-radius: 50%; translate: -50% 0;
   background: #fff; box-shadow: 0 0 10px 2px rgba(var(--accent-rgb), 0.85);
   animation: boot-glow 2.4s ease-in-out infinite; }
-.boot-step { display: flex; justify-content: space-between; gap: 16px; font: 400 13px/1.4 var(--mono); letter-spacing: 0.06em; color: var(--ink); }
-.boot-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity 0.22s var(--ease-out); }
+/* Schritt mittig unter der Linie, Prozent rechts daneben mit Abstand (gleich breite Außenspalten halten die Mitte) */
+.boot-step { display: grid; grid-template-columns: 1fr auto 1fr; column-gap: 14px; align-items: baseline;
+  font: 400 13px/1.4 var(--mono); letter-spacing: 0.06em; color: var(--ink); }
+.boot-what { grid-column: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity 0.22s var(--ease-out); }
 .boot-what.is-out { opacity: 0; }
-.boot-pct { flex: none; font-variant-numeric: tabular-nums; color: var(--accent); }
+.boot-pct { grid-column: 3; justify-self: start; font-variant-numeric: tabular-nums; color: var(--accent); }
 
 /* Ausblenden: erst die Texte (0,5 s), dann das ganze Bild */
 .boot-cap, .boot-look { transition: opacity 0.5s var(--ease-out); }
