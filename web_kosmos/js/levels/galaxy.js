@@ -28,11 +28,15 @@ const armR = (a, phi) => a.rRef * Math.exp(-(phi - a.phiRef) * Math.tan(a.pitch 
 const vRot = (R) => 230 * (1 - Math.exp(-R / 1.2));
 const omega = (R) => (vRot(R) / Math.max(R, 0.05)) * 1.0227e-3;
 
+// Ausblenden naher Punkte [px]: an der Station weich ab 20 px; im Flug ab 4 px (User 08.11.2026 „realistischer“: die bis
+// 36 px großen Punkte wurden auf der Fahrt zu Orion zu verschmierten Flecken – Warp-Look statt Raum)
+const NEAR = [20, 60], NEAR_FLY = [4, 14], HALO_FADE = 16;
 const STAR_VERT = /* glsl */ `
 attribute vec3 color;
 attribute float size;
 attribute float om;
 uniform float uPx, uScale, uT;
+uniform vec2 uNear;   // Bildpixel, ab denen ein Punkt ausblendet (Beginn, Ende)
 varying vec3 vCol;
 void main() {
   // differentielle Rotation: Azimut wächst in Drehrichtung (Drehung um +y mit −ω t)
@@ -46,7 +50,8 @@ void main() {
   gl_PointSize = d;
   // Energie erhalten: unter einem Pixel wird der Punkt dunkler statt kleiner; nahe der Kamera (ab 20 px) weich
   // ausblenden, damit der Flug durch die Scheibe ein Sternenfeld bleibt und keine Blasen-Wand wird
-  float near = 1.0 - smoothstep(20.0 * uPx, 60.0 * uPx, px);
+  // (uNear: Station 20–60 px; im Flug früher, dann löst sich ein Haufen in Licht auf, statt als Fleck auf die Kamera zu fliegen)
+  float near = 1.0 - smoothstep(uNear.x * uPx, uNear.y * uPx, px);
   vCol = color * min(1.0, (px * px) / (d * d) * 4.0) * near;
 }
 `;
@@ -189,7 +194,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     g.setAttribute('size', new THREE.Float32BufferAttribute(S, 1));
     g.setAttribute('om', new THREE.Float32BufferAttribute(O, 1));
     const m = new THREE.ShaderMaterial({
-      vertexShader: STAR_VERT, fragmentShader: frag, uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 } },
+      vertexShader: STAR_VERT, fragmentShader: frag, uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 }, uNear: { value: new THREE.Vector2(...NEAR) } },
       depthWrite: false, transparent: true, ...blending,
     });
     const pts = new THREE.Points(g, m);
@@ -240,7 +245,7 @@ export function buildHalo(det, rand) {
     const dir = new THREE.Vector3(gauss(rand), gauss(rand) * 0.85, gauss(rand)).normalize().multiplyScalar(r);
     put(dir.x, dir.y, dir.z, 3900 + rand() * 1200, 0.22 + rand() * 0.3, 0.045);
   }
-  return pointCloud(pos, col, size, { min: 1.1, max: 24, fade: 16 });
+  return pointCloud(pos, col, size, { min: 1.1, max: 24, fade: HALO_FADE });
 }
 
 // Fermi-Blasen (Su, Slatyer & Finkbeiner 2010): zwei Gammastrahlen-Lappen ≈ 50° über und unter dem Zentrum, von der
@@ -268,11 +273,13 @@ function marker(color, s, k = 1) {
   g.setAttribute('color', new THREE.Float32BufferAttribute(new THREE.Color(color).toArray().map((v) => v * k), 3));
   g.setAttribute('size', new THREE.Float32BufferAttribute([s], 1));
   g.setAttribute('om', new THREE.Float32BufferAttribute([0], 1));
-  const m = new THREE.ShaderMaterial({ vertexShader: STAR_VERT, fragmentShader: STAR_FRAG, uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 } }, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+  const m = new THREE.ShaderMaterial({ vertexShader: STAR_VERT, fragmentShader: STAR_FRAG, uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 }, uNear: { value: new THREE.Vector2(...NEAR) } }, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
   const p = new THREE.Points(g, m);
   p.frustumCulled = false;
   return p;
 }
+
+const _near = new THREE.Vector2();
 
 export function create(ctx) {
   const scene = new THREE.Scene();
@@ -387,8 +394,14 @@ export function create(ctx) {
     home: { pos: new THREE.Vector3(-14, 21, 19), target: new THREE.Vector3(-1.2, 0, 0.6) },
     orbit: { minDistance: 0.25, maxDistance: 80, cineSpeed: 0.5 },
     look: { exposure: 1.1, bloom: 0.09, sat: 1.1, con: 0.14 },
+    // Fahrten hinein und hinaus: kaum Zoom-Unschärfe und Lichtschleier (main.js stepTransition) – die Sterne bleiben Punkte
+    flightLook: { blur: 0.25, veil: 0.5 },
     update(dt, t, cam, flying) {
       if (!flying && rate) { T += dt * rate; spinAll(); }
+      // Schwelle für nahe Punkte gleitet in ≈ 0,3 s zwischen Station und Flug
+      const w = 1 - Math.exp(-dt / 0.3), goal = flying ? NEAR_FLY : NEAR;
+      for (const m of gal.userData.mats) m.uniforms.uNear.value.lerp(_near.set(...goal), w);
+      halo.material.uniforms.uFade.value += ((flying ? NEAR_FLY[0] : HALO_FADE) - halo.material.uniforms.uFade.value) * w;   // Kugelsternhaufen ebenso
       for (const m of gal.userData.mats) m.uniforms.uT.value = T;
       fermi.material.uniforms.uTime.value = t;
       neb.update(t, T, cam);

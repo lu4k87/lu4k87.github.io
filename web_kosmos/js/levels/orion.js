@@ -42,7 +42,8 @@ float fbmTail(vec3 p) {
 void sampleVol(vec3 p, out vec3 e, out float s) {
   vec3 f = texture(uField, p / ${(2 * EXT).toFixed(1)} + 0.5).rgb;
   float r = length(p);
-  float edge = smoothstep(15.0, 8.5, r);
+  // Rand des Leuchtens ausgefranst statt als Kugel (von weitem sonst eine runde rosa Scheibe)
+  float edge = smoothstep(14.0, 5.5, r + (f.g - 0.2) * 7.0 + f.r * 3.0) * smoothstep(15.5, 12.5, r);
   float zf = -0.3 + 0.045 * dot(p.xy, p.xy) + f.r * 3.0;
   float sd = p.z - zf;
   // feine Oktaven und Fäden nur nahe der Front (Haut, Balken), weich ausgeblendet; weiter weg reicht das grobe Feld
@@ -78,9 +79,14 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   col = uMode < 0.5 ? col : uMode < 1.5 ? sho : ir;
   col = max(mix(vec3(dot(col, vec3(0.2126, 0.7152, 0.0722))), col, uSat), 0.0);
   e = em * col * uGain;
-  float mol = max(smoothstep(0.25, -1.0, sd) * (0.6 + turb), 0.0) * smoothstep(16.0, 10.0, r) * uMol;
+  // Molekülwolke (Orion A) länglich Nord–Süd, Rand ausgefranst und dünn auslaufend: als Kugel stand sie im Anflug und
+  // nach der Landung als schwarze Scheibe mit scharfer Kante vor der Milchstraße
+  float cr = length(p * vec3(1.0, 0.55, 1.0)) + (f.g - 0.2) * 12.0 + f.r * 5.0;
+  float cloud = smoothstep(11.5, 2.5, cr) * smoothstep(15.5, 10.5, r);
+  float mol = max(smoothstep(0.25, -1.0, sd) * (0.6 + turb), 0.0) * cloud * cloud * uMol;
   // Dunkle Bucht und Staubfinger vor dem Nebel (Nordosten), feine Fäden aus Grat-Rauschen nur in ihrem Bereich
-  float bay = exp(-pow((p.z - 4.5) / 1.4, 2.0)) * smoothstep(0.05, 0.35, f.g + (p.y - p.x) * 0.05) * edge;
+  // weiche Ränder: mit schmalem Übergang stand die Bucht als scharfe schwarze Klinge vor dem Nebel
+  float bay = exp(-pow((p.z - 4.5) / 1.4, 2.0)) * smoothstep(-0.1, 0.5, f.g + (p.y - p.x) * 0.05) * edge * 0.6;
   float fz = exp(-pow((p.z - 3.2) / 2.2, 2.0)) * smoothstep(-1.0, 3.0, p.y - p.x * 0.4) * edge;
   float fingers = fz > 0.002 ? fz * smoothstep(0.55, 0.85, ridged(p * 0.7 + vec3(9.0, 2.0, 4.0), 3)) : 0.0;
   float lane43 = exp(-pow((dot(p.xy - vec2(-0.9, 1.0), normalize(vec2(0.75, -0.66)))) / 0.22, 2.0)) * smoothstep(2.6, 0.8, length(p.xy - vec2(-0.9, 1.0))) * smoothstep(-0.8, 0.8, sd + 0.4);
