@@ -6,14 +6,15 @@
 // Norma (= Großer Attraktor), Perseus (mit der Perseus-Pisces-Kette), Coma, Hercules, Shapley. Strömung: Galaxien
 // treiben zum Großen Attraktor und weiter zu Shapley – das Einzugsgebiet dieser Strömung ist Laniakea (Tully 2014);
 // die Strömung hier schematisch aus Punktmassen, keine gemessene Geschwindigkeitskarte.
-// Fahrt hinein zur Lokalen Gruppe (Station 8): Vorbeiflug an reifen Galaxien (pass, galaxyflight.js createFlyby) – Darstellung.
+// Fahrt hinein zur Lokalen Gruppe (Station 8): Vorbeiflug an reifen Galaxien (pass, galaxyflight.js createFlyby) – Darstellung;
+// Netz-Punkte blenden früh aus (FLYBY.web, Vorschau 08.11.2026 Fahrt:B: mehr leerer Raum).
 
 import * as THREE from 'three';
 import { registerLayers } from '../layers.js';
 import { pointCloud, disposeScene, volume, bakeField, offscreen } from '../vol.js';
 import { galToScene, mulberry32, gauss, blackbody, MPC } from '../astro.js';
 import { createFlyby } from '../galaxyflight.js';
-import { sstep } from '../flightplan.js';
+import { sstep, FLYBY } from '../flightplan.js';
 
 const R = 250;
 const at = (l, b, d) => new THREE.Vector3(...galToScene(l, b, d, 0));
@@ -309,7 +310,7 @@ ${GAS_FIELD}` });
   let gain0 = 1;
   const pass = { ...flyby,
     begin(from, anchor) { flyby.begin(from, anchor); gain0 = wu.uGain.value; wu.uFade.value = FADE; },
-    step(e) { flyby.step(e); wu.uFade.value = FADE + (2.5 - FADE) * sstep(0, 0.3, e); wu.uGain.value = gain0 * (1 - 0.92 * sstep(0.25, 0.7, e)); },
+    step(e) { flyby.step(e); wu.uFade.value = FADE + (2.5 - FADE) * sstep(0, 0.3, e); wu.uGain.value = gain0 * (1 - FLYBY.web[2] * sstep(FLYBY.web[0], FLYBY.web[1], e)); },
     end() { flyby.end(); wu.uFade.value = FADE; wu.uGain.value = gain0; } };
   const controls = [{ id: 'flow', label: 'Strömung', value: 'off', options: [['off', 'Aus'], ['on', 'Laniakea']], set: (v) => { flow.visible = v === 'on'; } },
     // Gas: Temperatur = Farben wie in IllustrisTNG, Röntgengas = nur heißes Haufengas (User 28.10.2026, Vorschau Gas:B + Gas:C)

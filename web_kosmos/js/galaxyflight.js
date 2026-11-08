@@ -14,7 +14,7 @@
 import * as THREE from 'three';
 import { mulberry32, gauss, blackbody } from './astro.js';
 import { NOISE } from './glsl.js';
-import { sstep, flybyField, FLYBY } from './flightplan.js';
+import { sstep, flybyField, deepField, FLYBY } from './flightplan.js';
 
 // ---------- Atlas: 4 × 4 Kacheln je 512 px, additiv auf Schwarz gemalt (einmal je Seite, das Canvas bleibt im Speicher) ----------
 function blob(rgb) {
@@ -409,7 +409,7 @@ export function glowPoints(list) {
 // eine eigene Form (galaxyField), gleichmäßig über das Bild verteilt (flybyField)
 export function createFlyby() {
   const rand = mulberry32(8);
-  const list = flybyField(rand).map((g) => {
+  const list = [...flybyField(rand), ...deepField(rand)].map((g) => {
     const gal = randGalaxy(rand);
     return { pos: new THREE.Vector3(g.x, g.y, g.z), size: g.size, gain: (0.45 + 1.25 * rand() ** 3) * (gal.p0[1] === 1 ? 0.8 : 1), ...gal };
   });

@@ -45,17 +45,33 @@ export const ZOOM = 22;
 // liegen logarithmisch gleich dicht entlang der Fahrt (der Zoom durchläuft jede Dekade gleich schnell → gleichmäßiger Strom),
 // seitlich proportional zum Abstand und gleichverteilt über die Fläche bis über den Bildrand hinaus (User 04.11.2026: nicht
 // nur ein Ring am Rand): sie ziehen überall vorbei, nur die Mitte (Ziel) bleibt frei, die Kamera streift keine.
+// Vorschau 08.11.2026 „Fahrt Netz → Lokale Gruppe“ Fahrt:B (User: Fahrt länger, mehr Volumen, mehr leerer Raum zwischen den
+// Galaxien): wenige nahe Galaxien weit gestreut, meist klein, dazu ein ferner Hintergrund (deepField) hinter dem Ziel, der
+// kaum zieht – nah schnell, fern langsam gibt der Fahrt Tiefe; die Punkte des Netzes blenden früher aus (web, levels/web.js).
 // w = Gewicht der Etappe (länger als ein normaler Flug), z = Bereich der Abstände (unten in Vielfachen von 1/ZOOM: die
-// letzten sind vor der Ankunft vorbei), side/size = seitlicher Abstand und Durchmesser je Abstand (Größen wie eine
-// Leuchtkraftfunktion: viele kleine, wenige große), fade = Ein-/Ausblenden, blur = Anteil der Zoom-Unschärfe auf dieser
-// Fahrt (main.js; voll zieht sie Punkte zu Warp-Streifen)
-export const FLYBY = { w: 2.3, n: 150, z: [1.8, 0.9], side: [0.2, 1.15], size: [0.03, 0.14], fade: [0.1, 0.85], blur: 0.15 };
+// letzten sind vor der Ankunft vorbei), side/size = seitlicher Abstand und Durchmesser je Abstand, pw = Steilheit der
+// Größenverteilung (wie eine Leuchtkraftfunktion: viele kleine, wenige große), fade = Ein-/Ausblenden, blur = Anteil der
+// Zoom-Unschärfe auf dieser Fahrt (main.js; voll zieht sie Punkte zu Warp-Streifen), web = Ausblenden der Netz-Punkte
+// [Beginn, Ende als Anteil der Fahrt, Stärke], deep = ferner Hintergrund (z = Tiefe hinter dem Anker, side/size je Abstand
+// zur Startpose)
+export const FLYBY = { w: 4.2, n: 55, z: [1.8, 0.9], side: [0.3, 1.8], size: [0.025, 0.12], pw: 2.1, fade: [0.1, 0.85], blur: 0.15,
+  web: [0.05, 0.4, 0.95], deep: { n: 600, z: [0.05, 3.5], side: [0.1, 0.8], size: [0.003, 0.013] } };
 export function flybyField(rand, zoom = ZOOM, n = FLYBY.n) {
   const lo = Math.log(FLYBY.z[0] / zoom), hi = Math.log(FLYBY.z[1]), [s0, s1] = FLYBY.side, [d0, d1] = FLYBY.size;
   return Array.from({ length: n }, (_, i) => {
     const z = Math.exp(lo + (hi - lo) * (i + rand()) / n);   // geschichtet: keine Lücke, keine Häufung
     const r = z * (s0 + (s1 - s0) * Math.sqrt(rand())), th = rand() * 2 * Math.PI;
-    return { x: r * Math.cos(th), y: r * Math.sin(th), z, size: z * (d0 + (d1 - d0) * Math.pow(rand(), 1.7)) };
+    return { x: r * Math.cos(th), y: r * Math.sin(th), z, size: z * (d0 + (d1 - d0) * Math.pow(rand(), FLYBY.pw)) };
+  });
+}
+// Ferne Galaxien hinter dem Anker (z < 0): seitlich und in der Größe proportional zum Abstand von der Startpose L = 1 + Tiefe,
+// also beim Start gleich verteilt über das Bild, nur die Mitte (Ziel) frei; mehr nahe am Ziel als ganz hinten
+export function deepField(rand, n = FLYBY.deep.n) {
+  const D = FLYBY.deep;
+  return Array.from({ length: n }, () => {
+    const dz = D.z[0] + (D.z[1] - D.z[0]) * Math.pow(rand(), 0.7), L = 1 + dz;
+    const r = L * (D.side[0] + (D.side[1] - D.side[0]) * Math.sqrt(rand())), th = rand() * 2 * Math.PI;
+    return { x: r * Math.cos(th), y: r * Math.sin(th), z: -dz, size: L * (D.size[0] + (D.size[1] - D.size[0]) * Math.pow(rand(), 2)) };
   });
 }
 
