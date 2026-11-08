@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kosmos · NGC 3603 – Kamerafahrt</title>
+  <link rel="icon" href="data:,">
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="css/fonts.css">
+  <style>
+    /* Eigenständige Seite (User 08.11.2026): Kamerafahrt durch NGC 3603 als Vorlage für einen Vorbeiflug an jungen Sternen,
+       noch nicht in der App eingebunden. Schrift und Schwarz wie intro_v3.html; Kinobalken zeichnet post.js ins Bild,
+       Kopf- und Fußzeile liegen in den Balken. Nichts scrollt (keine Standard-Scrollbar). */
+    :root { --ink: #eef2f8; --ink-soft: #d3dae6; --line: rgba(255, 255, 255, 0.28); --accent: #33ccff; --ease-out: cubic-bezier(0.22, 1, 0.36, 1); }
+    html, body { margin: 0; height: 100%; background: #000; color: var(--ink); overflow: hidden; font: 400 15px/1.5 'IBM Plex Sans', system-ui, sans-serif; }
+    #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; }
+
+    .top, .foot { position: fixed; left: 0; right: 0; z-index: 3; padding: 14px 20px; text-shadow: 0 1px 10px rgba(0, 0, 0, 0.95);
+      transition: opacity 0.5s var(--ease-out); }
+    .top { top: 0; display: flex; justify-content: space-between; gap: 6px 18px; flex-wrap: wrap; font: 500 13px/1.4 'IBM Plex Mono', monospace;
+      letter-spacing: 0.08em; color: var(--ink-soft); }
+    .top b { font-weight: 500; color: var(--ink); }
+    .foot { bottom: 0; display: grid; gap: 10px; }
+    body.no-hud .top, body.no-hud .foot { opacity: 0; pointer-events: none; }
+
+    /* Zeile 1: Zeit · Abschnitt · Satz zum Bild */
+    .cap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0; }
+    .cap .tc { font: 500 13px/1.4 'IBM Plex Mono', monospace; color: var(--ink-soft); min-width: 6ch; }
+    .cap .phase { font: 500 13px/1.4 'IBM Plex Mono', monospace; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+    .cap .fact { flex: 1 1 32ch; max-width: 70ch; color: var(--ink); text-wrap: pretty; }
+
+    /* Zeile 2: Abschnitte zum Springen · Tasten */
+    .row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 18px; }
+    .beats { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; }
+    .beats button { font: 500 13px/1 'IBM Plex Sans', sans-serif; color: var(--ink-soft); background: transparent; border: 1px solid transparent;
+      border-radius: 4px; padding: 7px 10px; cursor: pointer; transition: color 0.15s, border-color 0.15s, background 0.15s; }
+    .beats button:hover { color: var(--ink); border-color: var(--line); }
+    .beats button[aria-current="step"] { color: var(--ink); border-color: var(--line); background: rgba(255, 255, 255, 0.06); }
+    .beats button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .keys { margin: 0; font: 400 13px/1.5 'IBM Plex Mono', monospace; color: var(--ink-soft); }
+
+    /* Titelkarte zu Beginn der Fahrt (blendet mit der Zeit aus, beim Zurückspulen wieder ein) */
+    .card { position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      padding: 0 24px; text-align: center; pointer-events: none; text-shadow: 0 2px 22px rgba(0, 0, 0, 0.95); }
+    .card .eyebrow { margin: 0; font: 500 13px/1.4 'IBM Plex Mono', monospace; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-soft); }
+    .card h1 { margin: 0; font: 200 clamp(44px, 8vw, 88px)/1.05 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif; letter-spacing: 0.2em; padding-left: 0.2em; }
+    .card .sub { margin: 0; font: 500 15px/1.5 'IBM Plex Sans', sans-serif; letter-spacing: 0.12em; color: var(--accent); }
+    .card .load { margin: 8px 0 0; font: 400 13px/1.5 'IBM Plex Mono', monospace; color: var(--ink-soft); }
+    body.is-ready .card .load { display: none; }
+    body.is-fatal .card .load::after { content: " – WebGL 2 fehlt, die Szene kann nicht starten."; }
+
+    @media (max-width: 700px) {
+      .keys { display: none; }
+      .top, .foot { padding: 10px 16px; }
+      .cap .fact { flex-basis: 100%; }
+    }
+  </style>
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="stage" aria-label="Kamerafahrt durch NGC 3603: vorbei an Dunkelwolken, Sher 25 und Gassäulen, mitten durch den jungen Sternhaufen"></canvas>
+
+  <div class="top">
+    <span><b>NGC 3603</b> · Kamerafahrt · Vorlage</span>
+    <span>Modell nach Hubble · NASA, ESA, Hubble Heritage (STScI/AURA)</span>
+  </div>
+
+  <div class="card" id="card">
+    <p class="eyebrow">Kosmos · Milchstraße · Carina-Arm</p>
+    <h1>NGC 3603</h1>
+    <p class="sub">Vorbeiflug an jungen Riesensternen</p>
+    <p class="load" id="load">Szene wird vorbereitet …</p>
+  </div>
+
+  <div class="foot">
+    <p class="cap" aria-live="off"><span class="tc" id="tc">0,0 s</span><span class="phase" id="phase">Anflug</span><span class="fact" id="fact"></span></p>
+    <div class="row">
+      <ol class="beats" id="beats" aria-label="Abschnitte der Fahrt"></ol>
+      <p class="keys">Leertaste Pause · ← → spulen · R von vorn · B Kinobalken · H Texte</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createFilm, BEATS, END, beatAt } from './js/ngc3603.js';
+
+    const q = new URLSearchParams(location.search);
+    const $ = (id) => document.getElementById(id);
+    const fmt = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // ?t=24 hält bei 24 s an (Screenshots), ?bars=0 ohne Kinobalken, ?hud=0 ohne Texte, ?q=0|1|2 Qualität der Wolke
+    const state = { t: q.has('t') ? Math.min(END, Math.max(0, +q.get('t') || 0)) : 0, playing: !q.has('t') && !reduced, frames: 0, ready: false };
+    if (q.get('hud') === '0') document.body.classList.add('no-hud');
+
+    let film;
+    try { film = createFilm($('stage'), { quality: q.has('q') ? +q.get('q') : 1 }); }
+    catch (err) { document.body.classList.add('is-fatal'); throw err; }
+    if (q.get('bars') === '0') film.setBars(false);
+
+    // Abschnitte als Knöpfe: Klick springt an den Anfang des Abschnitts
+    const btns = BEATS.map(([t, name]) => {
+      const li = document.createElement('li'), b = document.createElement('button');
+      b.type = 'button'; b.textContent = name; b.addEventListener('click', () => seek(t));
+      li.append(b); $('beats').append(li);
+      return [t, b];
+    });
+
+    const resize = () => film.setSize(innerWidth, innerHeight);
+    addEventListener('resize', resize);
+    resize();
+
+    function seek(t) { state.t = Math.min(END, Math.max(0, t)); }
+    function toggle() { if (state.t >= END) state.t = 0; state.playing = !state.playing; }
+    addEventListener('keydown', (ev) => {
+      if (ev.target.closest && ev.target.closest('button') && (ev.key === ' ' || ev.key === 'Enter')) return;
+      if (ev.key === ' ') { ev.preventDefault(); toggle(); }
+      else if (ev.key === 'ArrowRight') seek(state.t + (ev.shiftKey ? 10 : 2));
+      else if (ev.key === 'ArrowLeft') seek(state.t - (ev.shiftKey ? 10 : 2));
+      else if (ev.key === 'r' || ev.key === 'R') { seek(0); state.playing = true; }
+      else if (ev.key === 'b' || ev.key === 'B') film.setBars(!film.bars);
+      else if (ev.key === 'h' || ev.key === 'H') document.body.classList.toggle('no-hud');
+    });
+    $('stage').addEventListener('click', toggle);
+
+    let shown = '';
+    function hud(t) {
+      const [bt, name, fact] = beatAt(t);
+      $('tc').textContent = `${fmt.format(t)} s`;
+      const key = `${name}|${state.playing}|${t >= END}`;
+      if (key !== shown) {
+        shown = key;
+        $('phase').textContent = t >= END ? 'Ende' : state.playing ? name : `${name} · Pause`;
+        $('fact').textContent = t >= END ? 'R oder Klick startet die Fahrt von vorn.' : fact;
+        btns.forEach(([t0, b]) => (t0 === bt ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')));
+      }
+      const k = Math.min(1, Math.max(0, (t - 3.5) / 2.2));
+      $('card').style.opacity = String(1 - k * k * (3 - 2 * k));
+    }
+
+    film.ready.then(() => { state.ready = true; document.body.classList.add('is-ready'); });
+    window.__ngc = state;   // Tests: Uhr und Bildzähler
+    let last = performance.now();
+    function loop(now) {
+      const real = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (state.ready) {
+        if (state.playing) { state.t = Math.min(END, state.t + real); if (state.t >= END) state.playing = false; }
+        film.apply(state.t);
+        film.render(now / 1000);
+        if (++state.frames === 3) window.__ngcReady = true;
+      }
+      hud(state.t);
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
