@@ -48,13 +48,13 @@ export const ZOOM = 22;
 // Vorschau 08.11.2026 „Fahrt Netz → Lokale Gruppe“ Fahrt:B (User: Fahrt länger, mehr Volumen, mehr leerer Raum zwischen den
 // Galaxien): wenige nahe Galaxien weit gestreut, meist klein, dazu ein ferner Hintergrund (deepField) hinter dem Ziel, der
 // kaum zieht – nah schnell, fern langsam gibt der Fahrt Tiefe; die Punkte des Netzes blenden früher aus (web, levels/web.js).
-// w = Gewicht der Etappe (länger als ein normaler Flug), z = Bereich der Abstände (unten in Vielfachen von 1/ZOOM: die
+// w = Gewicht der Etappe (≈ 7 s bei Flugdauer 3,6 s, User 08.11.2026: 15 s zu lang), z = Bereich der Abstände (unten in Vielfachen von 1/ZOOM: die
 // letzten sind vor der Ankunft vorbei), side/size = seitlicher Abstand und Durchmesser je Abstand, pw = Steilheit der
 // Größenverteilung (wie eine Leuchtkraftfunktion: viele kleine, wenige große), fade = Ein-/Ausblenden, blur = Anteil der
 // Zoom-Unschärfe auf dieser Fahrt (main.js; voll zieht sie Punkte zu Warp-Streifen), web = Ausblenden der Netz-Punkte
 // [Beginn, Ende als Anteil der Fahrt, Stärke], deep = ferner Hintergrund (z = Tiefe hinter dem Anker, side/size je Abstand
 // zur Startpose)
-export const FLYBY = { w: 4.2, n: 55, z: [1.8, 0.9], side: [0.3, 1.8], size: [0.025, 0.12], pw: 2.1, fade: [0.1, 0.85], blur: 0.15,
+export const FLYBY = { w: 1.95, n: 55, z: [1.8, 0.9], side: [0.3, 1.8], size: [0.025, 0.12], pw: 2.1, fade: [0.1, 0.85], blur: 0.15,
   web: [0.05, 0.4, 0.95], deep: { n: 600, z: [0.05, 3.5], side: [0.1, 0.8], size: [0.003, 0.013] } };
 export function flybyField(rand, zoom = ZOOM, n = FLYBY.n) {
   const lo = Math.log(FLYBY.z[0] / zoom), hi = Math.log(FLYBY.z[1]), [s0, s1] = FLYBY.side, [d0, d1] = FLYBY.size;
