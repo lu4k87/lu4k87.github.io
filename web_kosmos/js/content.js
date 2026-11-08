@@ -96,6 +96,10 @@ export const SOURCES = {
   'webb-2510': { t: 'Webb NIRCam: Roter Spinnennebel NGC 6537 (potm2510a)', by: 'ESA/Webb, NASA & CSA, J. H. Kastner, 28.10.2025', url: 'https://esawebb.org/images/potm2510a/' },
   'kastner-2025': { t: 'JWST/NIRCam imaging of the bipolar planetary nebula NGC 6537: the (Infra)red Spider, revealed', by: 'Kastner et al. 2025, ApJ 993, 79', url: 'https://doi.org/10.3847/1538-4357/ae0706' },
   'matsuura-2005': { t: 'The symmetric dust shell and the central star of the bipolar planetary nebula NGC 6537', by: 'Matsuura et al. 2005, MNRAS', url: 'https://arxiv.org/abs/astro-ph/0507641' },
+  'brandner-1997': { t: 'Ring Nebula and Bipolar Outflows Associated with the B1.5 Supergiant Sher #25 in NGC 3603', by: 'Brandner et al. 1997, ApJ 475, L45', url: 'https://doi.org/10.1086/310460' },
+  'rochau-2010': { t: 'Internal Dynamics and Membership of the NGC 3603 Young Cluster from Microarcsecond Astrometry', by: 'Rochau et al. 2010, ApJ 716, L90', url: 'https://doi.org/10.1088/2041-8205/716/1/L90' },
+  'harayama-2008': { t: 'The Initial Mass Function of the Massive Star-forming Region NGC 3603 from Near-Infrared Adaptive Optics Observations', by: 'Harayama et al. 2008, ApJ 675, 1319', url: 'https://doi.org/10.1086/524650' },
+  'heic0715a': { t: 'Hubble: Sternentstehungsgebiet NGC 3603 (heic0715a)', by: 'NASA, ESA und Hubble Heritage (STScI/AURA)-ESA/Hubble Collaboration, 2007', url: 'https://esahubble.org/images/heic0715a/' },
   'heic0910h': { t: 'Hubble WFC3: Schmetterlingsnebel NGC 6302 (heic0910h)', by: 'NASA, ESA und Hubble SM4 ERO Team, 09.09.2009', url: 'https://esahubble.org/images/heic0910h/' },
   'szyszka-2011': { t: 'NGC 6302: Flügel vor 2.250 ± 35 Jahren ausgeworfen', by: 'Szyszka et al. 2011, MNRAS', url: 'https://doi.org/10.1111/j.1365-2966.2011.19087.x' },
   'meaburn-2008': { t: 'NGC 6302: Entfernung 1,17 ± 0,14 kpc (≈ 3.800 Lj), Auswurf vor ≈ 2.200 Jahren', by: 'Meaburn et al. 2008, MNRAS 385, 269', url: 'https://doi.org/10.1111/j.1365-2966.2007.12782.x' },
@@ -1189,6 +1193,7 @@ export const STATIONS = {
       butterfly: { t: 'Schmetterlingsnebel', x: 'Planetarischer Nebel im Skorpion, rund 3.800 Lj entfernt, Richtung Zentrum. Hineinfliegen.', s: 'heic0910h' },
       tornado: { t: 'Kosmischer Tornado HH 49/50', x: 'Ausfluss eines jungen Sterns im Chamäleon, rund 630 Lj entfernt, deutlich unterhalb der Scheibenebene. Hineinfliegen.', s: 'webb-2506' },
       sgra: { t: 'Sagittarius A*', x: 'Das Schwarze Loch im Zentrum, 27.000 Lj entfernt. Hineinfliegen.', s: 'gravity-2022' },
+      ngc3603: { t: 'NGC 3603', x: 'Riesiges Sternentstehungsgebiet im Carina-Arm, rund 22.000 Lj entfernt, fast in der Ebene der Scheibe. Hineinfliegen.', s: 'rochau-2010' },
       pillars: { t: 'Säulen der Schöpfung', x: 'Im Adlernebel M16, rund 6.500 Lj entfernt im Sagittarius-Arm, fast in der Ebene der Scheibe. Hineinfliegen.', s: 'webb-2216' },
       bar: { t: 'Zentraler Balken', x: 'Eine längliche Struktur aus überwiegend alten, rötlichen Sternen: Halblänge 5,0 kpc (gut 16.000 Lj), 28–33° gegen die Linie Sonne–Zentrum gedreht.', s: 'wegg-2015' },
       omega: { t: 'ω Centauri', x: 'Der größte Kugelsternhaufen der Milchstraße: rund 10 Millionen Sterne, 17.000 Lj entfernt, vermutlich der Kern einer von der Milchstraße aufgenommenen Zwerggalaxie. Rund 150 Kugelsternhaufen umkreisen die Galaxis im Halo; ihre Sterne sind 10–13 Milliarden Jahre alt.', s: 'harris-2010' },
@@ -1222,6 +1227,25 @@ export const STATIONS = {
       m43: { t: 'M43 (de Mairans Nebel)', x: 'Eine eigene kleine Blase nordöstlich des Trapezes, durch eine Staubbahn vom Hauptnebel getrennt, ionisiert vom Stern NU Orionis (B0.5, ≈ 25.000 K). Entfernung wie M42, Durchmesser etwa 2 Lj.', s: 'odell-2001' },
       bnkl: { t: 'BN/KL-Region', x: 'Hinter der Ionisationsfront, tief in OMC-1, entstehen gerade massereiche Sterne (Becklin-Neugebauer-Objekt, Kleinmann-Low-Nebel). Vor etwa 500 Jahren zerfiel dort ein System junger Sterne; die Sterne flogen auseinander und lösten einen explosionsartigen Gasausfluss aus, den ALMA abbildet (Bally et al. 2017). Nur im Infrarot sichtbar.', s: 'bally-2017' },
       sho: { t: 'Hubble-Palette', x: 'Falschfarben nach Hubble-Vorbild: Schwefel ([S II] 672 nm) → rot, Wasserstoff (Hα 656 nm) → grün, Sauerstoff ([O III] 501 nm) → blau. Sie trennt die Linien, die im sichtbaren Licht fast gleich rot aussehen, und zeigt die Schichtung der Ionisation.', s: 'odell-2009' },
+    },
+  },
+  ngc3603: {
+    n: '03G', title: 'NGC 3603', kicker: 'Sternentstehung', parent: 'galaxy', width: 4e17, dist: 6.75 * KPC, lookback: 6.75 * KPC / 299792458, size: { v: 0.4e-3 * KPC, l: 'Ring um Sher 25', s: 'brandner-1997' },
+    lead: 'Eines der massereichsten jungen Sternentstehungsgebiete der Milchstraße. Im Zentrum steht ein dichter Haufen junger, heißer Sterne: Ihr UV-Licht und ihre Winde haben einen Hohlraum in die Molekülwolke geblasen, an dessen Wänden Säulen und Dunkelwolken verdampfen.',
+    facts: [
+      { c: 'Distanz', v: '≈ 22.000', u: 'Lj', l: 'Entfernung (6,6–6,9 kpc)', s: 'rochau-2010' },
+      { c: 'Alter', v: '≈ 1', u: 'Mio. Jahre', l: 'Alter des Haufens', s: 'rochau-2010' },
+      { c: 'Masse', v: '10–16', u: 'Tsd. M☉', l: 'Gesamtmasse des Haufens', s: 'harayama-2008' },
+      { c: 'Dichte', v: '10×', u: 'dichter', l: 'Kern gegenüber dem Orion-Nebel-Haufen (über 60.000 M☉ je pc³)', s: 'harayama-2008' },
+    ],
+    note: 'Volumen-Modell: Form nach der Hubble-Aufnahme heic0715a (nur Vorlage, Bild nicht eingebunden). Hohlraum am Rand einer Molekülwolke, zum Betrachter offen; Säulen, Bok-Globulen und Wand frei nach dem Bild, Lage der Sterne statistisch (Plummer-Profil) – keine Karte. Sher 25 mit Ring (0,4 pc, 64° geneigt) und Ausströmungen nach Brandner et al. 1997. Sterne mit Beugungsstrahlen wie bei Hubble, Licht hinter Staub gedämpft und gerötet. Beim Hineinfliegen folgt eine Kamerafahrt von 58 s durch den Haufen; Klick oder Ziehen bricht sie ab.',
+    sources: ['rochau-2010', 'harayama-2008', 'brandner-1997', 'heic0715a'],
+    hotspots: {
+      cluster: { t: 'Haufen HD 97950', x: 'Der junge Sternhaufen im Zentrum, etwa 1 Million Jahre alt. Hubble hat die Bewegung von über 800 Sternen über 10 Jahre gemessen: Die Sterne laufen mit rund 4,5 km/s durcheinander, schwere so schnell wie leichte – der Haufen ist dynamisch noch nicht im Gleichgewicht.', s: 'rochau-2010' },
+      sher25: { t: 'Sher 25', x: 'Ein blauer Überriese (B1.5) nördlich des Haufens mit einem Gasring von 0,4 pc Durchmesser, 64° gegen die Himmelsebene geneigt, der sich mit 20 km/s ausdehnt. Darüber und darunter strömt Gas mit rund 83 km/s aus – ähnlich wie um die Supernova 1987A.', s: 'brandner-1997' },
+      pillars: { t: 'Säulen', x: 'Säulen aus Gas und Staub zeigen mit dem Kopf zum Haufen. Sein UV-Licht verdampft die Köpfe und lässt ihre Haut leuchten, dahinter liegt Schatten. Form im Modell frei nach der Hubble-Aufnahme.', s: 'heic0715a' },
+      globules: { t: 'Bok-Globulen', x: 'Dichte, dunkle Knoten aus Staub und Gas. Ihr Rand zur Haufenseite leuchtet im UV-Licht, nach außen ziehen sie einen Schweif. Form im Modell frei nach der Hubble-Aufnahme.', s: 'heic0715a' },
+      cavity: { t: 'Hohlraum', x: 'Strahlung und Winde der jungen Sterne haben einen Hohlraum in die Molekülwolke geblasen, der zu uns hin offen ist. Es leuchtet nur die Front, die das UV-Licht als erste trifft.', s: 'heic0715a' },
     },
   },
   spider: {
@@ -1346,7 +1370,7 @@ export const STATIONS = {
     },
   },
   sgra: {
-    n: '03G', title: 'Sagittarius A*', kicker: 'Schwarzes Loch', parent: 'galaxy', width: 6e11, dist: 8.277 * KPC, lookback: 8.277 * KPC / 299792458, size: { v: 2.54e10, l: 'Durchmesser Horizont', s: 'gravity-2022' },
+    n: '03H', title: 'Sagittarius A*', kicker: 'Schwarzes Loch', parent: 'galaxy', width: 6e11, dist: 8.277 * KPC, lookback: 8.277 * KPC / 299792458, size: { v: 2.54e10, l: 'Durchmesser Horizont', s: 'gravity-2022' },
     lead: 'Im Zentrum der Milchstraße: 4,3 Millionen Sonnenmassen. Licht wird so stark abgelenkt, dass wir die Rückseite der Scheibe über und unter dem Schatten sehen.',
     facts: [
       { c: 'Masse', v: '4,30', u: 'Mio. M☉', l: 'Masse (aus Sternbahnen)', s: 'gravity-2022' },

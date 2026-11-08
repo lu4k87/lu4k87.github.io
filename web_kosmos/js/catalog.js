@@ -57,7 +57,7 @@ export const CONST_INFO = {
   Leo: 'Der Löwe mit Regulus; sein Kopf ist die „Sichel“. Frühlingssternbild.',
   Vir: 'Die Jungfrau mit Spica; hinter ihr liegt der Virgo-Galaxienhaufen, ein Knoten im Kosmischen Netz (Station 05).',
   Sco: 'Der Skorpion mit dem roten Antares; sein Schwanz zeigt in Richtung des Zentrums der Milchstraße.',
-  Sgr: 'Die „Teekanne“: In Richtung des Schützen liegt das galaktische Zentrum mit Sagittarius A* (Station 03G).',
+  Sgr: 'Die „Teekanne“: In Richtung des Schützen liegt das galaktische Zentrum mit Sagittarius A* (Station 03H).',
   Cru: 'Das Kreuz des Südens, kleinstes Sternbild; daneben der dunkle Kohlensack, eine Staubwolke.',
   Cen: 'Der Zentaur mit α Centauri, dem nächsten Sternsystem (4,2 Lj), und ω Centauri, dem größten Kugelsternhaufen.',
   Per: 'Perseus mit dem Bedeckungsveränderlichen Algol; die Perseiden im August kommen aus dieser Richtung.',

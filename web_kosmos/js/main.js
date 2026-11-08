@@ -33,6 +33,7 @@ const LOADERS = {
   galaxy: () => import('./levels/galaxy.js'),
   orion: () => import('./levels/orion.js'),
   pillars: () => import('./levels/pillars.js'),
+  ngc3603: () => import('./levels/ngc3603.js'),
   spider: () => import('./levels/spider.js'),
   tornado: () => import('./levels/tornado.js'),
   butterfly: () => import('./levels/butterfly.js'),
@@ -719,7 +720,8 @@ async function goTo(targetId, opt = {}) {
 
 // ---------- Fahrplan: alle Etappen auf einer Zeitachse, Tempo stetig, kein Halt – auch nicht an einer Wende ----------
 const homeWidth = (lv) => lv.home.pos.distanceTo(lv.home.target) * Math.tan(THREE.MathUtils.degToRad(lv.camera.fov) / 2) * lv.unit;
-const arrival = (lv) => poseAt(lv.home.target, lv.home.pos, lv.home.pos.distanceTo(lv.home.target) * ARRIVE);
+// lv.arrive: eigene Landepose (NGC 3603 landet am Anfang ihrer Fahrt, lv.film), bei reduzierter Bewegung die Heimpose-Regel
+const arrival = (lv) => (lv.arrive && !still() ? pose(lv.arrive.pos, lv.arrive.target) : poseAt(lv.home.target, lv.home.pos, lv.home.pos.distanceTo(lv.home.target) * ARRIVE));
 function planChain(lvs, dur) {
   const legs = lvs.slice(1).map((to, i) => {
     const dec = Math.abs(Math.log10(homeWidth(lvs[i]) / homeWidth(to)));
@@ -1011,7 +1013,7 @@ function stepTransition(dt) {
     hud.setFlight(false);
     hud.hideMarkers(false);
     if (state.wish && state.wish !== state.id) goTo(state.wish);
-    else state.wish = null;
+    else { state.wish = null; if (to.film) startFilm(to); }
     if (tour) tour.since = 0;
   }
 }
@@ -1187,8 +1189,22 @@ function startIntro(lv) {
   state.controls.enabled = false;
   hud.intro(true);
 }
+// Fahrt der Station (lv.film, z. B. NGC 3603) nach der Landung: Kamera folgt film.at(t), endet in der Heimpose; Eingabe
+// bricht ab (endIntro dreht dann um das gerade angeblickte Ziel weiter)
+function startFilm(lv) {
+  if (still()) return;
+  state.intro = { film: lv.film, s: 0 };
+  state.controls.enabled = false;
+  hud.intro(true);
+}
 function stepIntro(dt) {
   const it = state.intro;
+  if (it.film) {
+    it.s = Math.min(it.film.dur, it.s + dt);
+    it.tgt = it.film.at(it.s, state.active.camera).clone();
+    if (it.s >= it.film.dur) endIntro();
+    return;
+  }
   it.t = Math.min(1, it.t + dt / it.dur);
   // Anfahren aus dem Stand, langes Ausrollen: Tempo 12 t (1 − t)², am Anfang und Ende null
   const e = 1 - Math.pow(1 - it.t, 3) * (1 + 3 * it.t);

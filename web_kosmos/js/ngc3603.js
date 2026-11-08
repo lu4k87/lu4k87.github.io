@@ -1,6 +1,6 @@
 // NGC 3603 – Kamerafahrt durch ein junges Sternentstehungsgebiet (Vorlage, User 08.11.2026). Vorbild: Hubble-Aufnahme
-// heic0715a (NASA, ESA und Hubble Heritage (STScI/AURA)-ESA/Hubble Collaboration). Eigenständige Seite web/ngc3603.html,
-// noch nicht in der App (main.js) eingebunden – zeigt, wie ein Vorbeiflug an solchen Sternen aussehen kann.
+// heic0715a (NASA, ESA und Hubble Heritage (STScI/AURA)-ESA/Hubble Collaboration). Bausteine (buildNebula, filmPose) nutzt
+// die Station levels/ngc3603.js der App; createFilm spielt die Fahrt auf der Test-/Vorlagenseite web/ngc3603.html.
 //
 // Modell (Einheit 1 Lj, Haufen HD 97950 im Ursprung, Blick von der Erde = −z, Norden = +y):
 //   Blase am Rand einer Molekülwolke: Strahlung und Winde des Haufens haben einen Hohlraum geblasen, der zum Betrachter
@@ -13,7 +13,7 @@
 //   der Achse, Kopf in Knollen zerfallen, davor ein strähniger Schleier (Photoverdampfung). Bok-Globulen: dichte, zerklüftete
 //   Staubknoten in Kometenform (stumpf zur Haufenseite, Schweif nach außen) mit leuchtendem Rand. Sher 25: blauer Überriese mit Ring
 //   (0,4 pc, ≈ 64° geneigt) und Sanduhr-Ausströmungen bis ≈ 0,5 pc (Brandner et al. 1997, ApJ 475, L45).
-//   Haufen: Kern ≈ 1 Mio. Jahre, 1–1,9 · 10⁴ Sonnenmassen, Entfernung 6–7,6 kpc (Harayama et al. 2008, Rochau et al. 2010);
+//   Haufen: ≈ 1 Mio. Jahre, Entfernung 6,6–6,9 kpc (Rochau et al. 2010), 1,0–1,6 · 10⁴ Sonnenmassen (Harayama et al. 2008);
 //   Lage der Sterne statistisch (Plummer-Profil), Säulen/Globulen/Wand frei nach dem Bild – Modell, keine Karte.
 //   Sterne als Punktquellen: Fluss = L/d², Bild wie bei Hubble mit vier Beugungsstrahlen (Streben des Fangspiegels; Rot
 //   streut weiter, Beugung ∝ λ). Licht hinter Staub wird gedämpft und gerötet (Extinktion je Stern im Vertex-Shader
@@ -37,16 +37,16 @@ const RC = 11;    // mittlerer Radius des Hohlraums
 const WALL = new THREE.Vector3(0.92, -0.2, -0.35).normalize();   // Richtung der Molekülwolke vom Haufen aus (im Bild rechts)
 const BAND = new THREE.Vector3(0.4, -0.92, -0.1).normalize();    // Längsrichtung der Wand (Gasband oben → unten rechts)
 // Säulen: Achse vom Haufen weg, Abstand des Kopfes, Breite (Radius); alle auf der Seite der Wand
-const PILLARS = [
+export const PILLARS = [
   [[0.85, 0.45, -0.2], 5.4, 0.5],     // Fahne oben rechts, zeigt auf den Haufen (wie im Hubble-Bild)
   [[0.75, -0.55, 0.05], 6.0, 0.8],    // große Säule unten rechts (Vorbeiflug)
   [[0.3, -0.4, -0.85], 6.8, 0.65],    // dahinter
 ].map(([a, tip, w]) => ({ a: new THREE.Vector3(...a).normalize(), tip, w }));
 // Bok-Globulen: Mitte, Radius (klein oben rechts wie im Hubble-Bild, eine nah an der Bahn)
-const GLOBULES = [
+export const GLOBULES = [
   [[6.0, 8.5, 6.0], 0.42], [[7.1, 9.3, 5.2], 0.26], [[5.3, 7.7, 7.0], 0.18], [[-4.2, -6.4, 9.0], 0.45], [[2.6, 4.0, 15.0], 0.8],
 ].map(([c, r]) => ({ c: new THREE.Vector3(...c), r }));
-const SHER = new THREE.Vector3(-0.9, 2.6, 1.2);                     // ≈ 0,8 pc nördlich des Kerns
+export const SHER = new THREE.Vector3(-0.9, 2.6, 1.2);                     // ≈ 0,8 pc nördlich des Kerns
 const SHER_N = new THREE.Vector3(0.85, 0.25, 0.45).normalize();     // Achse des Rings, ≈ 63° gegen die Sichtlinie
 const f4 = (v) => v.toFixed(4);
 
@@ -69,10 +69,10 @@ export const END = KEYS[KEYS.length - 1][0];
 const EXPO = [[0, 1.45], [9, 1.38], [20, 1.12], [29, 0.92], [34, 0.5], [38, 0.62], [44, 0.95], [51, 1.1], [58, 1.15]];
 const ROLL = [[0, 0], [15, -2.5], [27, 3.5], [36, -5], [44, 2.5], [58, 0]];
 export const BEATS = [
-  [0, 'Anflug', 'Riesiges H-II-Gebiet im Carina-Arm der Milchstraße, rund 20.000–25.000 Lichtjahre entfernt'],
+  [0, 'Anflug', 'Riesiges H-II-Gebiet im Carina-Arm der Milchstraße, rund 22.000 Lichtjahre entfernt'],
   [10, 'Dunkelwolken', 'Bok-Globulen: dichte Staubknoten – ihr Rand leuchtet im UV-Licht des Haufens'],
   [20, 'Sher 25', 'Blauer Überriese mit Gasring (0,4 pc) und zwei Ausströmungen, ähnlich dem Ring um SN 1987A'],
-  [31, 'Durch den Haufen', 'HD 97950: rund 10.000–19.000 Sonnenmassen, etwa 1 Million Jahre jung'],
+  [31, 'Durch den Haufen', 'HD 97950: rund 10.000–16.000 Sonnenmassen, etwa 1 Million Jahre jung'],
   [40, 'Säulen', 'Säulen aus Gas und Staub zeigen zum Haufen – sein UV-Licht verdampft ihre Köpfe'],
   [49, 'Rückblick', 'Strahlung und Winde der jungen Sterne haben einen Hohlraum in die Wolke geblasen'],
 ];
@@ -486,31 +486,39 @@ function buildSky(rand) {
   return pts;
 }
 
-// ---------- Aufbau ----------
-export function createFilm(canvas, { quality = 1 } = {}) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
-  if (!renderer.capabilities.isWebGL2) throw new Error('webgl2');
-  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-  renderer.setClearColor(0x000000, 1);
-  const post = createPost(renderer);
-  const rt = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, depthBuffer: false });
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
-  const rand = mulberry32(3603);
+// ---------- Bausteine: gemeinsam für die Testseite (createFilm) und die Station der App (levels/ngc3603.js) ----------
+// Kamera auf der Fahrt zur Zeit t (s): Ort, Blickziel, Rollen; reine Funktion der Zeit, gibt das Blickziel zurück
+const aimV = new THREE.Vector3();
+export function filmPose(t, camera) {
+  const k = progress(t) / (KEYS.length - 1);
+  camCurve.getPoint(k, camera.position);
+  aimCurve.getPoint(k, aimV);
+  camera.up.set(0, 1, 0);
+  camera.lookAt(aimV);
+  camera.rotateZ(rollAt(t));
+  camera.updateMatrixWorld();
+  return aimV;
+}
+export { exposureAt };
+// Endpose der Fahrt (Heimpose der Station: dort beginnt das freie Umsehen ohne Sprung)
+export const FILM_END = { pos: new THREE.Vector3(...KEYS[KEYS.length - 1][1]), target: new THREE.Vector3(...KEYS[KEYS.length - 1][2]) };
+export const FILM_START = { pos: new THREE.Vector3(...KEYS[0][1]), target: new THREE.Vector3(...KEYS[0][2]) };
 
+// Himmel, Wolke (offscreen), Sterne, Staubkörner; quality 0–2 = Auflösung der Wolke und Schrittweite je Abstand
+const QUAL = [[0.4, 0.016], [0.6, 0.011], [0.85, 0.008]];
+export function buildNebula(renderer, { quality = 1 } = {}) {
+  const rand = mulberry32(3603);
   const sky = buildSky(rand);
   sky.renderOrder = 0;
-  scene.add(sky);
 
   const field = bakeField(renderer, { size: 144, extent: EXT, body: FIELD });
   const field2 = bakeField(renderer, { size: 144, extent: EXT, body: FIELD2 });
   const cloud = cloudMesh(field.texture, field2.texture);
-  const Q = [[0.4, 0.016], [0.6, 0.011], [0.85, 0.008]][Math.max(0, Math.min(2, quality))];
+  const Q = QUAL[Math.max(0, Math.min(2, quality))];
   cloud.material.uniforms.uK.value = Q[1];
   const vol = offscreen(renderer, cloud);
   vol.setScale(Q[0]);
   vol.quad.renderOrder = 1;
-  scene.add(vol.quad);
 
   const pathPts = [];
   for (let i = 0; i <= 600; i++) pathPts.push(camCurve.getPoint(i / 600));
@@ -527,7 +535,6 @@ export function createFilm(canvas, { quality = 1 } = {}) {
   const stars = new THREE.Points(sg, starMat);
   stars.frustumCulled = false;
   stars.renderOrder = 2;
-  scene.add(stars);
 
   // Staubkörner nah an der Bahn: ziehen beim Flug vorbei (Gefühl für Tempo und Tiefe), vom Haufen angeleuchtet
   const mp = [], mc = [], ms = [];
@@ -541,7 +548,36 @@ export function createFilm(canvas, { quality = 1 } = {}) {
   }
   const motes = pointCloud(mp, mc, ms, { min: 0.8, max: 5, fade: 4 });
   motes.renderOrder = 3;
-  scene.add(motes);
+
+  return {
+    objects: [sky, vol.quad, stars, motes], vol, cloud, stars, sky, motes,
+    ready: Promise.all([field.ready, field2.ready]),
+    // dpr = Bildpunkte je CSS-Pixel des Ziels, H = Höhe des Ziels in Bildpunkten
+    setPx(dpr, H, fov) {
+      starMat.uniforms.uPx.value = dpr;
+      sky.material.uniforms.uPx.value = dpr;
+      motes.userData.setPx(dpr, H, fov);
+    },
+    dispose() {
+      for (const o of [sky, stars, motes]) { o.geometry.dispose(); o.material.dispose(); }
+      vol.dispose(); field.dispose(); field2.dispose();
+    },
+  };
+}
+
+// ---------- Testseite web/ngc3603.html: eigener Renderer, Fahrt als Film ----------
+export function createFilm(canvas, { quality = 1 } = {}) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
+  if (!renderer.capabilities.isWebGL2) throw new Error('webgl2');
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  renderer.setClearColor(0x000000, 1);
+  const post = createPost(renderer);
+  const rt = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, depthBuffer: false });
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.01, 1000);
+  const neb = buildNebula(renderer, { quality });
+  scene.add(...neb.objects);
+  const vol = neb.vol;
 
   const look = {
     exposure: 1, bloom: 0.1, sat: 1.22, con: 0.22, sh: new THREE.Vector3(0.95, 0.98, 1.07), hi: new THREE.Vector3(1.05, 1.0, 0.94),
@@ -549,15 +585,8 @@ export function createFilm(canvas, { quality = 1 } = {}) {
   };
   let barsOn = true, H = 1, W = 1;
 
-  const aim = new THREE.Vector3();
   function apply(t) {
-    const k = progress(t) / (KEYS.length - 1);
-    camCurve.getPoint(k, camera.position);
-    aimCurve.getPoint(k, aim);
-    camera.up.set(0, 1, 0);
-    camera.lookAt(aim);
-    camera.rotateZ(rollAt(t));
-    camera.updateMatrixWorld();
+    filmPose(t, camera);
     look.exposure = exposureAt(t);
   }
 
@@ -572,9 +601,7 @@ export function createFilm(canvas, { quality = 1 } = {}) {
     camera.aspect = w / h;
     camera.fov = w / h < 1 ? 72 : 50;   // hochkant: mehr Blickwinkel, damit die Fahrt lesbar bleibt
     camera.updateProjectionMatrix();
-    starMat.uniforms.uPx.value = dpr;
-    sky.material.uniforms.uPx.value = dpr;
-    motes.userData.setPx(dpr, H, camera.fov);
+    neb.setPx(dpr, H, camera.fov);
   }
 
   function render(time) {
@@ -586,7 +613,7 @@ export function createFilm(canvas, { quality = 1 } = {}) {
     post.render(rt, null, null, look, time);
   }
 
-  const ready = Promise.all([field.ready, field2.ready]).then(() => renderer.compileAsync(scene, camera)).then(() => renderer.compileAsync(vol.scene, camera));
+  const ready = neb.ready.then(() => renderer.compileAsync(scene, camera)).then(() => renderer.compileAsync(vol.scene, camera));
   return {
     ready, apply, render, setSize,
     setBars(on) { barsOn = on; },
