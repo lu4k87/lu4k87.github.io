@@ -3,7 +3,7 @@
 // uns offen), davor eine leuchtende Schicht von ≈ 0,1 pc; θ¹ Ori C steht ≈ 0,2 pc vor der Front. Emission ∝ Dichte ×
 // UV-Fluss (1/d²), Linien nach Abstand: [O III] 501 nm innen (grünlich), Hα 656 nm überall, [S II] 672 nm außen.
 // Dahinter ist die Wolke undurchsichtig (keine Sterne), davor dünner Staub (Dunkle Bucht im Nordosten) mit Staubfingern.
-// Orion-Balken als Grat im Südosten, M43 (de Mairans Nebel) als eigene Blase um NU Ori im Nordosten. Farbmodi: sichtbar,
+// Orion-Balken ≈ 2′ südöstlich als Stelle, an der sich die Front zum Betrachter aufstellt (Wand mit Schatten dahinter), M43 (de Mairans Nebel) als eigene Blase um NU Ori im Nordosten. Farbmodi: sichtbar,
 // Hubble-Palette (SHO: [S II] → rot, Hα → grün, [O III] → blau) und Infrarot (Staub durchsichtig, eingebettete junge
 // Sterne und die BN/KL-Region hinter der Front werden sichtbar, wie bei 2MASS/JWST).
 // Leistung: grobe Rauschfelder (Verwerfung der Front, Dunkle Bucht, erste Oktaven der Turbulenz) liegen in einer 3D-Textur
@@ -45,6 +45,16 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   // Rand des Leuchtens ausgefranst statt als Kugel (von weitem sonst eine runde rosa Scheibe)
   float edge = smoothstep(14.0, 5.5, r + (f.g - 0.2) * 7.0 + f.r * 3.0) * smoothstep(15.5, 12.5, r);
   float zf = -0.3 + 0.045 * dot(p.xy, p.xy) + f.r * 3.0;
+  // Orion-Balken ≈ 2′ südöstlich des Trapezes, quer zur Richtung zum Trapez (NO–SW): bb = Abstand quer (weg vom Trapez),
+  // ba = entlang; leicht gebogen und an den Enden weich
+  vec2 bq = p.xy - (uStar.xy + vec2(-0.7071, -0.7071) * 1.15);
+  float ba = dot(bq, vec2(-0.7071, 0.7071)) + (f.b - 0.1) * 0.5;
+  float bb = dot(bq, vec2(-0.7071, -0.7071)) + 0.05 * ba * ba + (f.r) * 0.25;
+  float ba2 = ba * ba / 1.21;
+  float along = exp(-ba2 * ba2);
+  // Wand: die Front stellt sich hinter dem Balken zum Betrachter auf (O'Dell 2009) – von der Seite gesehen leuchtet die Haut
+  // als dünne Kante, dahinter liegt die Front im Schatten des Trapezes
+  zf += 1.7 * min(uBar, 2.0) * smoothstep(-0.05, 0.3, bb) * exp(-max(bb, 0.0) / 0.7) * along;
   float sd = p.z - zf;
   // feine Oktaven und Fäden nur nahe der Front (Haut, Balken), weich ausgeblendet; weiter weg reicht das grobe Feld
   float bw = max(uShell, 1.0);
@@ -57,10 +67,20 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   turb *= uTurb;
   float d = length(p - uStar);
   float flux = 1.0 / (1.0 + d * d * 0.07 / uUV);
+  flux *= 1.0 - 0.6 * smoothstep(0.1, 0.5, bb) * exp(-max(bb, 0.0) / 0.9) * along;
   // leuchtende Haut vor der Front, mit feinen Fäden (Grat-Rauschen) aufgeraut
   float skin = exp(-pow((sd - 0.4) / max((0.5 + 0.3 * turb) * uShell, 0.12), 2.0)) * (1.0 + uFil * (0.6 * fil - 0.3));
-  vec2 bq = p.xy - vec2(3.6, -2.8);
-  float bar = exp(-pow(dot(bq, vec2(0.6, 0.8)) / 0.4, 2.0)) * exp(-pow(dot(bq, vec2(-0.8, 0.6)) / 3.2, 2.0)) * exp(-pow(sd / 1.1, 2.0)) * (1.0 + uFil * (0.5 * fil - 0.2)) * uBar;
+  vec2 cq = p.xy - uStar.xy;
+  float cl = length(cq);
+  // Fäden radial vom Trapez weg gestreckt (Strahlungsdruck, Winde): Rauschen längs des Radius gestaucht
+  if (band > 0.0) {
+    vec3 rh = normalize(p - uStar);
+    vec3 sq = p - rh * dot(p - uStar, rh) * 0.82;
+    float st = ridged(sq * 1.5 + vec3(7.0, 3.0, 2.0), 3);
+    skin *= mix(1.0, 0.35 + 1.5 * smoothstep(0.4, 0.92, st), band * smoothstep(0.8, 2.5, cl) * min(uFil, 2.0) * 0.85);
+  }
+  // Wand: Kante entsteht aus der aufgestellten Haut; nur ein Hauch Verstärkung am Grat
+  float bar = smoothstep(-0.12, 0.05, bb) * exp(-max(bb, 0.0) / 0.3) * along * exp(-pow(sd / 0.8, 2.0)) * (1.0 + uFil * (0.6 * fil - 0.25)) * uBar * 0.5;
   float ne = (skin * (0.3 + 1.5 * max(turb + 0.3, 0.0)) + bar * 1.5) * edge;
   float cav = smoothstep(-0.2, 1.5, sd) * exp(-d / 4.5) * 0.16 * (0.5 + max(turb + 0.5, 0.0)) * edge * uCav;
   // M43: kleine Blase um NU Ori, durch eine Staubbahn von M42 getrennt
@@ -86,8 +106,13 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   float mol = max(smoothstep(0.25, -1.0, sd) * (0.6 + turb), 0.0) * cloud * cloud * uMol;
   // Dunkle Bucht und Staubfinger vor dem Nebel (Nordosten), feine Fäden aus Grat-Rauschen nur in ihrem Bereich
   // weiche Ränder: mit schmalem Übergang stand die Bucht als scharfe schwarze Klinge vor dem Nebel
-  float bay = exp(-pow((p.z - 4.5) / 1.4, 2.0)) * smoothstep(-0.1, 0.5, f.g + (p.y - p.x) * 0.05) * edge * 0.6;
-  float fz = exp(-pow((p.z - 3.2) / 2.2, 2.0)) * smoothstep(-1.0, 3.0, p.y - p.x * 0.4) * edge;
+  // Dunkle Bucht als Zunge aus Nordosten, Spitze nah am Trapez („Fischmaul“), Ränder unregelmäßig
+  vec2 ya = vec2(-0.78, 0.62), yq = p.xy - uStar.xy;
+  float yal = dot(yq, ya), yac = abs(dot(yq, vec2(ya.y, -ya.x)));
+  float yw = 0.5 + 0.42 * max(yal, 0.0) + (f.g - 0.2) * 3.0 + (f.b - 0.1) * 2.6;
+  float lobe = smoothstep(0.5, 1.5, yal) * smoothstep(1.6, -1.2, yac - yw) * smoothstep(11.0, 7.0, yal);
+  float bay = exp(-pow((p.z - 4.5) / 1.4, 2.0)) * lobe * edge * 0.75;
+  float fz = exp(-pow((p.z - 3.2) / 2.2, 2.0)) * smoothstep(1.2, -0.4, yac - yw - 1.0) * smoothstep(0.8, 2.0, yal) * edge;
   float fingers = fz > 0.002 ? fz * smoothstep(0.55, 0.85, ridged(p * 0.7 + vec3(9.0, 2.0, 4.0), 3)) : 0.0;
   float lane43 = exp(-pow((dot(p.xy - vec2(-0.9, 1.0), normalize(vec2(0.75, -0.66)))) / 0.22, 2.0)) * smoothstep(2.6, 0.8, length(p.xy - vec2(-0.9, 1.0))) * smoothstep(-0.8, 0.8, sd + 0.4);
   float dust = (bay * 0.9 + fingers * 1.4 + lane43 * 1.6) * uDustT * uDust;
@@ -157,7 +182,7 @@ export function create(ctx) {
     { id: 'trapez', kind: 'info', pos: STAR.clone() },
     { id: 'proplyds', kind: 'info', pos: new THREE.Vector3(0.4, -0.3, 0.75) },
     { id: 'omc', kind: 'info', pos: new THREE.Vector3(-1.2, 0.6, -2.8) },
-    { id: 'ionbar', kind: 'info', pos: new THREE.Vector3(3.7, -2.9, 0.9) },
+    { id: 'ionbar', kind: 'info', pos: new THREE.Vector3(-0.85, -0.85, 0.6) },
     { id: 'bay', kind: 'info', pos: new THREE.Vector3(-3.0, 3.4, 4.5) },
     { id: 'm43', kind: 'info', pos: M43.clone() },
     { id: 'bnkl', kind: 'info', pos: BNKL.clone(), visible: () => mode === 'ir' },
@@ -193,7 +218,8 @@ export function create(ctx) {
     { id: 'turb', type: 'range', label: 'Turbulenz (Klumpen)', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uTurb') },
     { id: 'shell', type: 'range', label: 'Dicke der Leuchtschicht', min: 0.5, max: 3, step: 0.25, value: 1, fmt: times, set: to('uShell'),
       hint: 'Vor der Front leuchtet eine Schicht von etwa 0,1 pc (O’Dell 2009); dicker wirkt weicher und nebliger.' },
-    { id: 'bar', type: 'range', label: 'Orion-Balken', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uBar') },
+    { id: 'bar', type: 'range', label: 'Orion-Balken', min: 0, max: 4, step: 0.25, value: 1, fmt: times, set: to('uBar'),
+      hint: 'Hinter dem Balken stellt sich die Front zum Betrachter auf; von der Seite leuchtet sie als Kante (O’Dell 2009). Höher = steilere Wand.' },
     { id: 'cav', type: 'range', label: 'Leuchten im Hohlraum', min: 0, max: 6, step: 0.25, value: 1, fmt: times, set: to('uCav'),
       hint: 'Schwaches Leuchten des ionisierten Gases zwischen Front und Betrachter.' },
     { id: 'm43', type: 'toggle', label: 'M43 (de Mairans Nebel)', value: true, set: to('uM43', (v) => (v ? 1 : 0)) },
