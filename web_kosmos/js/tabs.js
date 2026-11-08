@@ -22,7 +22,7 @@ const ICON_OF = {
   sun: ['Sonne', 'Licht'], flame: ['Glut'], corona: ['Korona'], fx: ['Optik', 'Pulsar', 'Blitz'],
   globe: ['Erde', 'Mars', 'Neptun', 'Triton', 'Planet', 'Oberfläche', 'Ozean', 'Lufthülle', 'Atmosphäre', 'Kugel'],
   planet: ['Planeten', 'Ringe', 'System'], moon: ['Monde'], orbit: ['Bahn', 'Achsen', 'Drehung'],
-  field: ['Feld', 'Bögen', 'Polarlicht'], burst: ['Ausbrüche', 'Fontänen', 'Vulkane', 'Strahlen', 'Keulen', 'Stoßfronten'],
+  field: ['Feld', 'Bögen', 'Polarlicht'], burst: ['Ausbrüche', 'Fontänen', 'Vulkane', 'Strahlen', 'Keulen', 'Stoßfronten', 'Sternzerriss'],
   wave: ['Ausfluss', 'Strömung', 'Wind', 'Gezeiten', 'Bewegung'], layers: ['Aufbau', 'Schichten', 'Struktur', 'Kern', 'Allgemein', 'Modell'],
   cloud: ['Nebel', 'Gas', 'Gaswolke', 'Krebsnebel', 'Staub', 'Flügel', 'Umgebung', 'Wolken', 'Exosphäre'],
   sky: ['Himmel', 'Sternhimmel', 'Sterne', 'Stern', 'Funkeln', 'Hintergrund', 'Strahlung'],
