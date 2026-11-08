@@ -1,5 +1,5 @@
-// Eigener Mauszeiger über der 3D-Ansicht (Vorschau 30.10.2026 „5 Ideen für einen eigenen Maus-Cursor“, Standard A Orbit-Ring):
-// Orbit-Ring · Peil-Sucher · Komet · Hex-Sonde · Aktions-Etikett, Wahl in den Allgemeinen Einstellungen → Oberfläche „Mauszeiger“
+// Eigener Mauszeiger über der 3D-Ansicht (Vorschau 30.10.2026 „5 Ideen für einen eigenen Maus-Cursor“; Standard seit Vorschau
+// 08.11.2026 „normaler Pfeil-Zeiger“ Pfeil:C = Pfeil mit Aktions-Ring): Pfeil · Orbit-Ring · Peil-Sucher · Komet · Hex-Sonde · Aktions-Etikett, Wahl in den Allgemeinen Einstellungen → Oberfläche „Mauszeiger“
 // (settings.S.cursor, „System“ = aus). Gilt nur mit Maus oder Touchpad über der Szene (#stage) und den Abzeichen
 // (.hsb, .hsl); über Panels und Suche bleibt der System-Zeiger – außer mit „Mauszeiger gilt: Überall“ (settings.S.cursorAll),
 // dann auch dort (Bedienelemente = Zustand „link“), nur Textfelder behalten die Schreibmarke. Touch und Stift sind unverändert (Geräte mit
@@ -21,7 +21,15 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const HEX = 'M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z';   // Form der .hex in hud.js
 const ARROW = '<path d="M1 1 L1 18.5 L5.6 14.4 L8.7 21.2 L11.6 19.9 L8.6 13.2 L14.6 13.2 Z" fill="#fff" stroke="#03161a" stroke-width="1.4" stroke-linejoin="round"/>';
 const TAIL = 16;
+// Pfeil: Spitze (1,5|1,5) = Klickpunkt; Symbol der nächsten Aktion im Abzeichen rechts unter dem Pfeil
+const PA = 'M1.5 1.5L1.5 18.6L5.9 14.6L8.9 21.3L11.7 20.1L8.8 13.6L14.8 13.4Z';
+const ICONS = '<svg class="kc-i-dive" viewBox="0 0 18 18"><path d="M5 7.5l4 4 4-4"/></svg>'
+  + '<svg class="kc-i-info" viewBox="0 0 18 18"><path d="M9 8.2v5"/><circle cx="9" cy="5.2" r="0.6" fill="currentColor"/></svg>'
+  + '<svg class="kc-i-drag" viewBox="0 0 18 18"><path d="M13.6 9.4a4.6 4.6 0 1 1-1.4-3.6"/><path d="M12.8 3.2v2.9H9.9"/></svg>';
 const BUILD = {
+  arrow: () => '<div class="kc-cr"><div class="kc-crim"><div class="kc-orbit"><i class="kc-moon"></i></div></div></div><div class="kc-ping"><i></i></div>'
+    + `<div class="kc-pa"><svg class="kc-pglow" viewBox="0 0 20 24"><path d="${PA}"/></svg><svg class="kc-pbody" viewBox="0 0 20 24"><path d="${PA}"/></svg></div>`
+    + `<div class="kc-cb"><b>${ICONS}</b></div>`,
   orbit: () => '<div class="kc-ring"><div class="kc-rim"><div class="kc-orbit"><i class="kc-moon"></i></div></div></div><i class="kc-core"></i>',
   seeker: () => '<div class="kc-box"><i></i><i></i><i></i><i></i></div><i class="kc-dot"></i><p class="kc-tag"></p>',
   comet: () => '<i class="kc-t"></i>'.repeat(TAIL) + '<div class="kc-halo"><i></i></div><div class="kc-head"><i></i></div>',
@@ -100,7 +108,11 @@ export function mountCursor(canvas = document.getElementById('stage')) {
     const state = st.drag ? 'drag' : st.zone === 'dive' || st.zone === 'info' ? st.zone : st.zone === 'ui' && st.link ? 'link' : 'rest';
     if (el.dataset.state !== state) el.dataset.state = state;
     el.classList.toggle('is-down', st.press);
-    if (kind === 'orbit') {
+    if (kind === 'arrow') {
+      T($('.kc-pa'), x, y, st.press ? 'scale(0.9)' : '');
+      T($('.kc-cr'), x, y); T($('.kc-ping'), x, y); T($('.kc-cb'), x, y);
+      if (state === 'drag') el.style.setProperty('--kc-rot', `${still ? 0 : st.rot.toFixed(1)}deg`);   // Bogen dreht mit
+    } else if (kind === 'orbit') {
       const sp = still ? 0 : Math.min(1, Math.hypot(st.vx, st.vy) / 30), k = state === 'drag' ? 1 + sp * 0.6 : 1;
       T($('.kc-ring'), x, y, k > 1.001 ? `rotate(${st.ang}rad) scale(${k}, ${1 / Math.sqrt(k)})` : '');
       T($('.kc-core'), x, y);
@@ -145,6 +157,8 @@ export function mountCursor(canvas = document.getElementById('stage')) {
     last = now;
     if (!shown()) { raf = 0; return; }
     st.still += dt;
+    // Pfeil: 3 s Ruhe im freien Raum → blendet langsam aus (wie Stationsleiste/Infotafel), jede Bewegung holt ihn zurück
+    el.classList.toggle('is-idle', kind === 'arrow' && st.zone === 'space' && !st.press && st.still > 3);
     const d = Math.exp(-dt * 10);
     st.vx *= d; st.vy *= d;
     render(dt);
@@ -173,6 +187,11 @@ export function mountCursor(canvas = document.getElementById('stage')) {
     st.press = st.drag = false;
     // nach dem Ziehen (Zeiger an der Szene gefangen) einmal nachsehen, was jetzt darunter liegt
     setZone(document.elementFromPoint(e.clientX, e.clientY));
+    // Pfeil: angenommener Klick auf ein Ziel = eine Ringwelle
+    if (kind === 'arrow' && !calm() && (st.zone === 'dive' || st.zone === 'info')) {
+      const p = $('.kc-ping');
+      p.classList.remove('go'); void p.offsetWidth; p.classList.add('go');
+    }
   };
   addEventListener('pointerup', release);
   addEventListener('pointercancel', release);
