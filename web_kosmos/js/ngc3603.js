@@ -22,8 +22,10 @@
 //   Fortschritt k(t) monoton kubisch (Fritsch–Carlson) → Tempo stetig, kein Ruck; Blende je Abschnitt (beim Durchflug
 //   durch den Haufen weiter zu). apply(t) ist reine Funktion der Zeit → ?t=24 zeigt das Bild bei 24 s angehalten.
 // Bild: Wolke per Strahlverfolgung in eigener Auflösung (vol.js offscreen), Schrittweite wächst mit dem Abstand zur
-//   Kamera (nah fein, fern grob); Rauschfelder einmal gebacken (bakeField: FIELD grob, FIELD2 mittlere Größen für Risse,
-//   Staubfäden, Faltung); Bloom, ACES, Grading wie die App (post.js).
+//   Kamera (nah fein, fern grob), durch leere Teile des Hohlraums springt der Strahl; Rauschfelder einmal gebacken
+//   (bakeField: FIELD grob, FIELD2 mittlere Größen für Risse, Staubfäden, Faltung, DETAIL kachelbar für die feinen Oktaven:
+//   Front in Falten, Strähnen längs einer Faserrichtung, Staubfasern – je nach Größe eines Bildpunkts ein- und ausgeblendet);
+//   Front geschichtet ([O III] → Hα → [S II]), Staub streut das Licht des Haufens; Bloom, ACES, Grading wie die App (post.js).
 
 import * as THREE from 'three';
 import { NOISE, SKY_VERTEX } from './glsl.js';
@@ -123,34 +125,78 @@ vec4 field(vec3 p) {
 }
 `;
 
+// Detail-Textur (kachelbar, 4 unabhängige Rauschkanäle mit je NDC Zellen je Kachel, Wiederholung an den Rändern): feine
+// Oktaven der Wolke als Texturzugriff statt Gradientenrauschen je Schritt – so bleibt viel Feinheit bezahlbar
+const NDC = 6;
+const DETAIL = /* glsl */ `
+float gcell(vec3 i, vec3 c, vec3 f, vec3 off) { return dot(hash3(mod(i + c, ${NDC}.0) + off), f - c); }
+float pnoise(vec3 x, vec3 off) {
+  vec3 i = floor(x), f = fract(x);
+  vec3 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+  return mix(mix(mix(gcell(i, vec3(0, 0, 0), f, off), gcell(i, vec3(1, 0, 0), f, off), u.x),
+                 mix(gcell(i, vec3(0, 1, 0), f, off), gcell(i, vec3(1, 1, 0), f, off), u.x), u.y),
+             mix(mix(gcell(i, vec3(0, 0, 1), f, off), gcell(i, vec3(1, 0, 1), f, off), u.x),
+                 mix(gcell(i, vec3(0, 1, 1), f, off), gcell(i, vec3(1, 1, 1), f, off), u.x), u.y), u.z);
+}
+vec4 field(vec3 p) {
+  vec3 x = (p * 0.5 + 0.5) * ${NDC}.0;
+  return vec4(pnoise(x, vec3(0.0)), pnoise(x, vec3(17.0, 3.0, 29.0)), pnoise(x, vec3(41.0, 23.0, 7.0)), pnoise(x, vec3(5.0, 61.0, 13.0)));
+}
+`;
+
 const NP = PILLARS.length, NG = GLOBULES.length;
 const MEDIUM = /* glsl */ `
 #define NP ${NP}
 #define NG ${NG}
 const float EXT = ${f4(EXT)}, RV = ${f4(RV)}, RC = ${f4(RC)};
 const vec3 WALL = vec3(${f4(WALL.x)}, ${f4(WALL.y)}, ${f4(WALL.z)}), BAND = vec3(${f4(BAND.x)}, ${f4(BAND.y)}, ${f4(BAND.z)});
-uniform highp sampler3D uField, uField2;
+uniform highp sampler3D uField, uField2, uDetail;
 uniform vec4 uPil[NP];     // xyz Achse, w Abstand des Kopfes
 uniform float uPilW[NP];   // Breite
 uniform vec4 uGlob[NG];    // xyz Mitte, w Radius
 uniform vec3 uSher, uSherN;
 uniform float uGain, uDust;
+// Setzt die Strahlverfolgung je Schritt: gFp Größe eines Bildpunkts am Ort (Lj) → Detailstufe, gDt Schrittweite, gRd Blickrichtung.
+// medium() liefert gSafe: Abstand, in dem sicher keine feine Struktur liegt (Sprung durch den leeren Hohlraum), und gMax:
+// höchste Schrittweite für den nächsten Schritt (dünne Ränder von Globulen und Säulen).
+float gFp = 1e3, gDt = 0.1, gSafe = 0.0, gMax = 1e3;
+vec3 gRd = vec3(0.0, 0.0, 1.0);
+// Detail-Rauschen mit Zellgröße l (Lj), Werte etwa −1 … 1
+vec4 detail(vec3 p, float l) { return texture(uDetail, p * (1.0 / (${NDC}.0 * l))); }
 
-// fine: feine Oktave (nah an der Kamera) · star: 1 = nur Dichte für die Extinktion der Sterne (weiche Säulen, Globulen
-// rechnet der Stern exakt als Sehne)
+// fine: 1 = feine Oktaven je nach Pixelgröße (Wolke), 0 = nur grobe Felder · star: 1 = nur Dichte für die Extinktion der
+// Sterne (weiche Säulen, Globulen rechnet der Stern exakt als Sehne)
 void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
   e = vec3(0.0);
   s = 0.0;
+  gSafe = 0.0;
+  gMax = 1e3;
   float r = length(p);
   if (r > RV) return;
   vec3 uvw = p * (0.5 / EXT) + 0.5;
   vec4 f = texture(uField, uvw), f2 = texture(uField2, uvw);
   vec3 d = p / max(r, 1e-3);
   float tb = f.g, fil = smoothstep(0.22, 0.78, f.b);
-  if (fine > 0.01) {
-    tb += fine * 0.22 * gnoise(p * 0.9 + vec3(3.0, 1.0, 7.0));
-    float fr = 1.0 - abs(gnoise(p * 2.3 + vec3(1.0, 9.0, 4.0)));
-    fil = mix(fil, fil * (0.35 + 1.3 * fr * fr), fine);
+  // Detailstufen: eine Oktave zählt erst ab ≈ 2 Bildpunkten Größe und blendet darunter weich aus (kein Flimmern im Flug)
+  float w1 = fine * smoothstep(1.5, 4.0, 1.4 / gFp), w2 = fine * smoothstep(1.5, 4.0, 0.55 / gFp);
+  float w3 = fine * smoothstep(1.5, 4.0, 0.22 / gFp), w4 = fine * smoothstep(1.5, 4.0, 0.09 / gFp);
+  // verwirbelte Lage (Strömung aus dem mittleren Feld): feine Strukturen folgen dem Gas statt eines Rasters
+  vec3 pw = p + vec3(f2.x, f2.z, f.g) * 3.2;
+  vec4 A = vec4(0.0), B = A, C = A, D = A;
+  if (w1 > 0.0) {
+    A = detail(pw, 1.4) * w1;
+    // Faserrichtung entlang der Front, dreht langsam mit der Strömung: feine Oktaven längs 5× gestreckt → Strähnen und
+    // Grate wie bei Hubble statt gleichmäßiger Poren (Schwamm)
+    vec3 td = BAND + vec3(f2.z, f.g, f2.x) * 1.8;
+    td = normalize(td - d * dot(td, d) + vec3(1e-4));
+    vec3 pq = pw + A.xyz * 0.6;
+    vec3 qs = pq - td * dot(pq, td) * 0.8;
+    B = detail(qs, 0.5) * w2;
+    C = detail(qs + B.xyz * 0.15, 0.2) * w3;
+    D = w4 > 0.0 ? detail(qs + C.xyz * 0.08, 0.08) * w4 : D;
+    tb += 0.22 * A.x;
+    float fr = 1.0 - abs(B.x / max(w2, 1e-3));
+    fil = mix(fil, fil * (0.45 + 1.1 * fr * fr), 0.6 * w2);
   }
   float flux = 1.0 / (1.0 + r * r / 40.0);   // UV des Haufens ∝ 1/d², weich im Kern
   // Wand der Molekülwolke: zum Betrachter offen, Rand ausgefranst; Front gefaltet (Turbulenz), damit die dünne Haut von
@@ -158,23 +204,31 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
   // breiter, verrauschter Übergang zur offenen Seite und Faltung in mittlerer Größe: sonst zeichnet sich der Rand der
   // Schale als glatter heller Umriss ab (Kante der Haut von der Seite gesehen)
   float wd = dot(d, WALL);
-  float side = smoothstep(-0.05, 0.75, wd + 0.45 * f.a + 0.35 * tb + 0.4 * (f.b - 0.45) + 0.35 * f2.x);
+  float side = smoothstep(-0.05, 0.75, wd + 0.45 * f.a + 0.35 * tb + 0.4 * (f.b - 0.45) + 0.35 * f2.x + 0.12 * B.y);
   // Risse: Löcher in der Wand, zum offenen Rand hin häufiger → der Rand zerfällt in Fetzen statt eines Ovals
-  side *= smoothstep(-0.16, 0.06, f2.x + 0.12 * wd);
+  side *= smoothstep(-0.16, 0.06, f2.x + 0.12 * wd + 0.05 * A.w);
   // asymmetrisch: zur Molekülwolke hin näher am Haufen; Faltung (f2.z) legt die Front in Überhänge → mehrere helle Grate
   float bd = dot(d, BAND);
   float Rw = (RC * (1.0 + 0.6 * f.r) + 4.5 * tb + 3.0 * (f.b - 0.45)) * (1.0 - 0.15 * wd) * (1.0 + 0.45 * bd * bd) + 4.0 * f2.z;
   float rs = r - Rw;
-  // dünne Staubfäden kurz vor und auf der Front: schwarze Bahnen vor dem hellen Gas
+  // Front in drei kleineren Größen gewellt: von der Kante gesehen viele überlappende, scharfe Grate statt eines weichen Saums
+  rs -= 0.45 * A.y + 0.25 * B.z + 0.08 * C.x;
+  // dünne Staubfäden kurz vor und auf der Front: schwarze Bahnen vor dem hellen Gas, dazu feine Fasern (Detailstufe)
   float laneF = smoothstep(0.64, 0.79, f2.y) * exp(-pow((rs + 0.8) / 1.4, 2.0)) * side;
+  if (w2 > 0.0) {
+    float lf = 1.0 - abs(B.w / max(w2, 1e-3) + 0.35 * C.w);
+    laneF += w2 * smoothstep(0.86, 0.97, lf) * exp(-pow((rs + 0.55) / 0.9, 2.0)) * side * 0.8;
+  }
   // Säulen: Zylinder mit rundem Kopf, nach außen breiter, Achse leicht gewunden, Oberfläche zerfressen
   float bodyP = 0.0, headP = 0.0, rimP = 0.0, shade = 0.0, evP = 0.0;
+  float safe = max(-rs - 4.0, 0.0) * 0.35;
   for (int i = 0; i < NP; i++) {
     vec3 a = uPil[i].xyz;
     float tip = uPil[i].w, h = dot(p, a), fi = float(i);
-    if (h < tip - 3.0) continue;
-    vec3 q = p - a * h;
     float w0 = uPilW[i];
+    vec3 q = p - a * h;
+    safe = min(safe, max(max(tip - 3.0 - h, length(q) - w0 * (1.6 + 0.2 * max(h - tip, 0.0)) - 2.5), 0.0) * 0.7);
+    if (h < tip - 3.0) continue;
     vec3 bx = normalize(cross(a, vec3(0.31, 0.95, 0.12))), by = cross(a, bx);
     q -= (bx * (sin(h * 0.55 + fi * 2.1) * 0.35 + sin(h * 1.3 + fi) * 0.12) + by * sin(h * 0.42 + fi * 4.7) * 0.3) * w0 * smoothstep(tip - 1.0, tip + 3.0, h);
     float qd = length(q);
@@ -185,14 +239,15 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
     float str = 0.0;
     if (star < 0.5 && sd < 1.6) {
       str = gnoise(vec3(dot(q, bx), dot(q, by), h * 0.12) * (3.2 / w0) + vec3(fi * 5.0, 1.0, 2.0));
-      // Kopf in Knollen und Finger zerfallen (Gas verdampft ungleich), Körper mit scharfen Rillen
+      // Kopf in Knollen und Finger zerfallen (Gas verdampft ungleich), Körper mit scharfen Rillen, feine Narben (Detailstufe)
       if (abs(sd) < 0.9) {
         float head = smoothstep(tip + 2.5 * w0, tip, h);
         sd += w * (0.3 + 0.12 * head) * gnoise(p * (1.1 / w0) + vec3(fi * 7.0, 3.0, 1.0))
-            + w * 0.14 * head * gnoise(p * (3.0 / w0) + vec3(2.0, fi, 6.0)) + w * 0.09 * str;
+            + w * 0.14 * head * gnoise(p * (3.0 / w0) + vec3(2.0, fi, 6.0)) + w * 0.09 * str + 0.05 * C.y + 0.025 * D.x;
       }
     }
     float soft = star > 0.5 ? 0.9 : 0.05;
+    if (abs(sd) < 0.5) gMax = min(gMax, 0.05);
     // dichter Kern, Kante scharf (Ionisationsfront), außen nur die Strähnen
     bodyP = max(bodyP, smoothstep(soft, -soft * 1.6, sd) * smoothstep(Rw + 5.0, Rw + 1.0, h) * 0.65);
     if (star > 0.5) continue;
@@ -210,16 +265,37 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
     shade = max(shade, smoothstep(w * 1.1, w * 0.75, qd) * smoothstep(tip - 0.2, tip + 0.6, h));
   }
   float bodyW = side * smoothstep(-0.2, 0.8, rs) * exp(-max(rs, 0.0) / 10.0) * (0.35 + 2.0 * max(tb + 0.2, 0.0));
+  // Staub in der Wand fleckig (Klumpen und Löcher in mehreren Größen) statt gleichmäßig
+  bodyW *= clamp(1.0 + 0.45 * A.z + 0.25 * B.y, 0.5, 1.5);
   // Staubbahnen vor der Wand (nur Absorption) und schwache Hα-Fäden weit draußen – nie ein flächiger Schleier
   float shell = exp(-pow((r - 21.0) / 8.0, 2.0));
   float lane = smoothstep(0.42, 0.8, f.b) * smoothstep(-0.1, 0.25, f.a) * shell * smoothstep(-0.15, 0.35, dot(d, WALL));
-  float env = smoothstep(0.38, 0.8, f.b) * smoothstep(-0.25, 0.1, -f.a) * shell;
+  float env = smoothstep(0.38, 0.8, f.b + 0.15 * A.x) * smoothstep(-0.25, 0.1, -f.a) * shell;
   if (star > 0.5) { s = (bodyW * 0.9 + bodyP * 3.0 + lane * 1.4 + laneF * 3.2) * uDust; return; }
-  // Haut der Ionisationsfront auf der Wand, im Schatten der Säulen dunkel; feine Fäden (f2.w) zerreißen die Haut
+  // Haut der Ionisationsfront auf der Wand, im Schatten der Säulen dunkel; feine Fäden (f2.w + Detailstufen) zerreißen die
+  // Haut in Strähnen wie bei Hubble
   fil *= 0.45 + 1.1 * f2.w;
-  float skinW = exp(-pow((rs - 0.2) / 0.42, 2.0)) * side * side * (1.0 - shade) * (0.02 + 2.4 * fil * fil);
-  // Hohlraum: dünnes ionisiertes Gas, nur nah am Haufen
-  float cav = rs < 0.0 ? exp(-r / 3.5) * max(tb + 0.25, 0.0) * 0.025 : 0.0;
+  if (w2 > 0.0) {
+    float g2 = 1.0 - abs(w3 > 0.0 ? C.y / w3 : 0.0), g3 = 1.0 - abs(w4 > 0.0 ? D.x / w4 : 0.0);
+    fil *= mix(1.0, 0.45 + 1.0 * g2 * g2, 0.65 * w3) * mix(1.0, 0.75 + 0.4 * g3 * g3, 0.5 * w4);
+  }
+  // Front geschichtet wie in echten H-II-Gebieten (Ionisationsschichten): zum Haufen hin [O III] blaugrün, auf der Front
+  // Hα + [N II], dahinter [S II] dunkelrot. Haut dünner als früher, aber nie schmaler als ein Schritt (sonst Rauschen);
+  // Helligkeit über die Dicke erhalten
+  float wS = max(0.24, 0.75 * gDt), amp = 0.42 / wS;
+  float x = rs - 0.2;
+  float skin0 = side * side * (1.0 - shade) * (0.02 + 2.4 * fil * fil) * amp;
+  float sMid = exp(-pow(x / wS, 2.0)) * skin0, sIn = exp(-pow((x + 0.7 * wS) / wS, 2.0)) * skin0;
+  float sOut = exp(-pow((x - 1.0 * wS) / (1.5 * wS), 2.0)) * skin0;
+  // Verdampfungsströme vor der Front: zarte Strähnen zum Haufen hin (quer fein, längs gestreckt)
+  float vei = 0.0;
+  if (w2 > 0.0 && rs < 0.3 && rs > -3.5) {
+    vec3 qv = pw - d * dot(pw, d) * 0.85;
+    float sv = 1.0 - abs(detail(qv, 0.3).x);
+    vei = w2 * pow(sv, 7.0) * exp(min(rs, 0.0) / 1.1) * side * (1.0 - shade) * (0.25 + fil);
+  }
+  // Hohlraum: dünnes ionisiertes Gas, nah am Haufen bläulich; Wölkchen durch die Detailstufe
+  float cav = rs < 0.0 ? exp(-r / 4.5) * max(tb + 0.3 + 0.25 * B.x, 0.0) * 0.03 : 0.0;
   // Bok-Globulen: dichter, unregelmäßiger Kern, Schweif vom Haufen weg, leuchtender Rand zur Haufenseite
   float glob = 0.0, rimG = 0.0;
   for (int j = 0; j < NG; j++) {
@@ -227,7 +303,9 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
     float g = uGlob[j].w;
     vec3 v = p - c;
     float dg = length(v);
+    safe = min(safe, max(dg - g * 5.5, 0.0) * 0.8);
     if (dg > g * 5.0) continue;
+    if (dg < g * 1.8) gMax = min(gMax, max(0.02, 0.6 * (0.05 * g + 0.012)));
     vec3 ax = normalize(c);
     float al = dot(v, ax), pe = length(v - ax * al);
     // Kometenform: zur Haufenseite stumpf, nach außen gestreckt; Rand in drei Größen zerklüftet (Knoten, Buchten)
@@ -235,51 +313,68 @@ void medium(vec3 p, float fine, float star, out vec3 e, out float s) {
     vec3 el = normalize(cross(ax, vec3(sin(fj * 2.4), cos(fj * 1.7), 0.5)));
     vec3 vw = v + el * (g * 0.45 * gnoise(v * (0.8 / g) + c.zxy));
     dg = length(vw - ax * dot(vw, ax) * (al > 0.0 ? 0.5 : 0.15) - el * dot(vw, el) * 0.5);
-    float gr = g * (1.0 + 0.5 * gnoise(v * (1.0 / g) + c) + 0.22 * gnoise(v * (2.3 / g) - c) + 0.1 * gnoise(v * (5.5 / g) + c.yzx));
+    float gr = g * (1.0 + 0.5 * gnoise(v * (1.0 / g) + c) + 0.22 * gnoise(v * (2.3 / g) - c) + 0.1 * gnoise(v * (5.5 / g) + c.yzx)) + 0.03 * C.w;
     glob += smoothstep(gr, gr * 0.6, dg) * 9.0 / g + smoothstep(gr * 1.5, gr * 0.95, dg) * 0.8 / g;
     if (al > 0.0) glob += smoothstep(gr * 0.75, 0.0, pe + al * 0.14) * exp(-al / (g * 2.2)) * 3.0 / g;
     float fac = clamp(dot(v / max(dg, 1e-3), -ax) * 1.4 - 0.1, 0.0, 1.0);
     rimG += exp(-pow((dg - gr * 0.88) / (0.05 * g + 0.012), 2.0)) * fac * fac / (1.0 + dot(c, c) / 40.0);
   }
-  // Farben: Hα + [N II] tiefrot (hell → lachs, über ACES), nah am Haufen [O III] und Streulicht bläulich
-  vec3 HA = vec3(1.0, 0.31, 0.13), O3 = vec3(0.45, 0.72, 1.0), HOT = vec3(1.0, 0.7, 0.5);
+  // Farben: Hα + [N II] tiefrot (hell → orange über ACES), helle Fronten nah am Haufen golden, [O III] und Streulicht
+  // blaugrün, [S II] dunkelrot
+  vec3 HA = vec3(1.0, 0.31, 0.13), O3 = vec3(0.34, 0.76, 1.0), HOT = vec3(1.0, 0.7, 0.5);
+  vec3 GOLD = vec3(1.0, 0.56, 0.26), S2 = vec3(0.8, 0.14, 0.1);
   float o3 = exp(-r / 6.5);
   vec3 cg = mix(HA, O3, o3 * 0.6);
-  e = (skinW + headP * 1.6 + rimP * 0.3) * flux * mix(cg, HOT, 0.3 * flux)
+  vec3 cFront = mix(HA, GOLD, smoothstep(0.08, 0.5, flux));
+  // Anteile so, dass die Lichtmenge der Haut insgesamt wie bei einer Schicht bleibt (nur anders verteilt)
+  e = (sMid * cFront * 0.6 + sIn * O3 * (0.03 + 0.6 * exp(-r / 4.0)) + sOut * S2 * 0.25) * flux
+    + (headP * 1.6 + rimP * 0.3) * flux * mix(cg, HOT, 0.3 * flux)
     + evP * flux * mix(HOT, O3, 0.45) * 0.2
+    + vei * flux * mix(cFront, O3, 0.35 + 0.4 * o3) * 0.16
     + rimG * HOT * 1.4
-    + cav * mix(HA, O3, 0.5 + 0.5 * o3)
-    + env * HA * 0.006
-    + (bodyW + bodyP) * flux * vec3(0.5, 0.22, 0.12) * 0.006;
+    + cav * mix(HA, O3, 0.6 + 0.4 * o3)
+    + env * HA * 0.008;
+  // Staub streut das Licht des Haufens (Henyey-Greenstein, g = 0,45): im Gegenlicht helle Säume, von vorn matt; Licht dringt
+  // nur gut 1 Lj in die Wand, im Schatten der Säulen nichts; Farbe warm (Sternlicht durch Staub gerötet)
+  float cth = dot(d, -gRd);
+  float hg = 0.7975 / pow(1.2025 - 0.9 * cth, 1.5);
+  float lit = (1.0 - shade) * exp(-max(rs, 0.0) / 1.3);
+  e += (bodyW * lit + bodyP * 0.35 + laneF * 0.5) * flux * hg * vec3(1.0, 0.66, 0.42) * 0.012;
   // Kern: Licht tausender unaufgelöster Sterne
   e += vec3(0.75, 0.86, 1.0) * (exp(-r * r / 0.12) * 0.5 + exp(-r / 0.9) * 0.012);
-  // Sher 25: dünner Ring, schwache Sanduhr, bläulicher Schein (aus der Nähe ein Detail, von weitem kaum sichtbar)
+  safe = min(safe, 0.35 * r);
+  // Sher 25: dünner Ring, schwache Sanduhr, bläulicher Schein (aus der Nähe ein Detail, von weitem kaum sichtbar). Ring und
+  // Keulen nie dünner als ein Bildpunkt, Helligkeit dafür gedämpft (gleiche Lichtmenge je Bildpunkt, kein Flimmern)
   vec3 v = p - uSher;
   float dv = length(v);
-  if (dv < 3.2) {
+  safe = min(safe, max(dv - 2.2, 0.0));
+  if (dv < 2.0) {
     float hh = dot(v, uSherN), rr = length(v - uSherN * hh);
-    float ring = exp(-pow(length(vec2(rr - 0.65, hh)) / 0.045, 2.0)) * (0.4 + 1.0 * smoothstep(-0.3, 0.5, gnoise(v * 5.0)));
+    float sr = max(0.045, 1.2 * gFp), sl = max(0.05, 1.2 * gFp);
+    float ring = exp(-pow(length(vec2(rr - 0.65, hh)) / sr, 2.0)) * (0.4 + 1.0 * smoothstep(-0.3, 0.5, gnoise(v * 5.0))) * pow(0.045 / sr, 2.0);
     float ell = length(vec2(rr / 0.62, (abs(hh) - 0.8) / 0.8));
-    float lobe = exp(-pow((ell - 1.0) / 0.05, 2.0)) * smoothstep(0.1, 0.4, abs(hh)) * smoothstep(0.1, 0.5, rr)
-               * smoothstep(0.1, 0.7, 1.0 - abs(gnoise(v * 3.0 + 2.0)));
+    float lobe = exp(-pow((ell - 1.0) * 0.8 / sl, 2.0)) * smoothstep(0.1, 0.4, abs(hh)) * smoothstep(0.1, 0.5, rr)
+               * smoothstep(0.1, 0.7, 1.0 - abs(gnoise(v * 3.0 + 2.0))) * pow(0.05 / sl, 2.0);
     e += ring * vec3(1.0, 0.32, 0.4) * 0.5 + lobe * vec3(0.9, 0.45, 0.6) * 0.035 + exp(-dv * dv / 0.04) * vec3(0.6, 0.75, 1.0) * 0.1;
     s += ring * 0.3;
   }
+  gSafe = safe;
   e *= uGain;
-  s += (bodyW * 0.9 + bodyP * 3.0 + glob + lane * 1.4 + laneF * 3.2 + skinW * 0.03) * uDust;
+  s += (bodyW * 0.9 + bodyP * 3.0 + glob + lane * 1.4 + laneF * 3.2 + (sMid + sIn) * 0.03) * uDust;
 }
 `;
 
-const mediumUniforms = (fieldTex, field2Tex) => ({
-  uField: { value: fieldTex }, uField2: { value: field2Tex },
+const mediumUniforms = (fieldTex, field2Tex, detailTex = null) => ({
+  uField: { value: fieldTex }, uField2: { value: field2Tex }, uDetail: { value: detailTex },
   uPil: { value: PILLARS.map((p) => new THREE.Vector4(p.a.x, p.a.y, p.a.z, p.tip)) },
   uPilW: { value: PILLARS.map((p) => p.w) },
   uGlob: { value: GLOBULES.map((g) => new THREE.Vector4(g.c.x, g.c.y, g.c.z, g.r)) },
   uSher: { value: SHER }, uSherN: { value: SHER_N }, uGain: { value: 1.5 }, uDust: { value: 0.6 },
 });
 
-// Strahlverfolgung durch die Kugel RV; Schrittweite ∝ Abstand zur Kamera (uK), nah an Sher 25 fein
-function cloudMesh(fieldTex, field2Tex) {
+// Strahlverfolgung durch die Kugel RV; Schrittweite ∝ Abstand zur Kamera (uK), nah an Sher 25 fein; durch leere Teile des
+// Hohlraums springt der Strahl (gSafe), so reichen die Schritte auch für lange Wege (sonst schwarze Flecken)
+function cloudMesh(fieldTex, field2Tex, detailTex) {
   const mat = new THREE.ShaderMaterial({
     vertexShader: 'varying vec3 vP; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
     fragmentShader: /* glsl */ `
@@ -289,24 +384,32 @@ ${NOISE}
 ${MEDIUM}
 void main() {
   vec3 ro = cameraPosition, rd = normalize(vP - cameraPosition);
+  // Winkel eines Bildpunkts (rad) aus der Änderung der Blickrichtung zum Nachbarn → Größe eines Bildpunkts im Abstand t
+  float pa = max(length(fwidth(rd)) * 0.7, 1e-5);
+  gRd = rd;
   float b = dot(ro, rd), c = dot(ro, ro) - RV * RV, h = b * b - c;
   if (h <= 0.0) discard;
   h = sqrt(h);
   float t0 = max(-b - h, 0.0), t1 = -b + h;
   if (t1 <= 0.0) discard;
-  float jit = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
-  float t = t0 + clamp(t0 * uK, uDmin, uDmax) * jit;
+  // Versatz je Bildpunkt in jedem Schritt (Stützstelle an derselben relativen Stelle des Abschnitts): Nachbarn tasten nie im
+  // Gleichtakt ab → keine Streifen an dünnen Häuten, auch wenn die Schrittweite wächst oder der Strahl springt
+  float jit = hash12(gl_FragCoord.xy);
+  float t = t0;
   vec3 L = vec3(0.0);
   float T = 1.0;
-  for (int i = 0; i < 420; i++) {
+  for (int i = 0; i < 480; i++) {
     if (t > t1) break;
-    vec3 p = ro + rd * t;
-    float dt = clamp(t * uK, uDmin, uDmax);
-    vec3 ps = p - uSher;
-    if (dot(ps, ps) < 10.0) dt = min(dt, max(0.035, t * 0.0025));   // fern: Ring ohnehin nur 1–2 px breit
+    float dt = min(clamp(t * uK, uDmin, uDmax), max(gMax, uDmin * 0.5));
+    vec3 ps = ro + rd * t - uSher;
+    if (dot(ps, ps) < 4.0) dt = min(dt, max(0.035, t * 0.0025));   // fern: Ring ohnehin nur 1–2 px breit
+    vec3 p = ro + rd * (t + jit * dt);
+    gFp = t * pa;
+    gDt = dt;
     vec3 e;
     float s;
-    medium(p, 1.0 - smoothstep(5.0, 12.0, t), 0.0, e, s);
+    medium(p, 1.0, 0.0, e, s);
+    dt = max(dt, min(gSafe, uDmax));
     float a = exp(-s * dt);
     L += T * e * (s > 1e-4 ? (1.0 - a) / s : dt);
     T *= a;
@@ -315,7 +418,7 @@ void main() {
   }
   gl_FragColor = vec4(L, 1.0 - T);
 }`,
-    uniforms: { ...mediumUniforms(fieldTex, field2Tex), uK: { value: 0.015 }, uDmin: { value: 0.035 }, uDmax: { value: 1.2 } },
+    uniforms: { ...mediumUniforms(fieldTex, field2Tex, detailTex), uK: { value: 0.015 }, uDmin: { value: 0.035 }, uDmax: { value: 1.2 } },
     side: THREE.BackSide, transparent: true, depthWrite: false, depthTest: false,
     blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
   });
@@ -513,7 +616,10 @@ export function buildNebula(renderer, { quality = 1 } = {}) {
 
   const field = bakeField(renderer, { size: 144, extent: EXT, body: FIELD });
   const field2 = bakeField(renderer, { size: 144, extent: EXT, body: FIELD2 });
-  const cloud = cloudMesh(field.texture, field2.texture);
+  // Detail-Textur kachelt (Wiederholung statt Kante); vor dem ersten Backen gesetzt, damit der Zielpuffer so angelegt wird
+  const detail = bakeField(renderer, { size: 96, extent: 1, body: DETAIL });
+  detail.texture.wrapS = detail.texture.wrapT = detail.texture.wrapR = THREE.RepeatWrapping;
+  const cloud = cloudMesh(field.texture, field2.texture, detail.texture);
   const Q = QUAL[Math.max(0, Math.min(2, quality))];
   cloud.material.uniforms.uK.value = Q[1];
   const vol = offscreen(renderer, cloud);
@@ -529,7 +635,7 @@ export function buildNebula(renderer, { quality = 1 } = {}) {
   sg.setAttribute('lum', new THREE.Float32BufferAttribute(st.lum, 1));
   const starMat = new THREE.ShaderMaterial({
     vertexShader: STAR_VERT, fragmentShader: STAR_FRAG,
-    uniforms: { ...mediumUniforms(field.texture, field2.texture), uPx: { value: 1 }, uStarGain: { value: 6200 }, uExt: { value: 1 } },
+    uniforms: { ...mediumUniforms(field.texture, field2.texture, detail.texture), uPx: { value: 1 }, uStarGain: { value: 6200 }, uExt: { value: 1 } },
     blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true,
   });
   const stars = new THREE.Points(sg, starMat);
@@ -551,7 +657,7 @@ export function buildNebula(renderer, { quality = 1 } = {}) {
 
   return {
     objects: [sky, vol.quad, stars, motes], vol, cloud, stars, sky, motes,
-    ready: Promise.all([field.ready, field2.ready]),
+    ready: Promise.all([field.ready, field2.ready, detail.ready]),
     // dpr = Bildpunkte je CSS-Pixel des Ziels, H = Höhe des Ziels in Bildpunkten
     setPx(dpr, H, fov) {
       starMat.uniforms.uPx.value = dpr;
@@ -560,7 +666,7 @@ export function buildNebula(renderer, { quality = 1 } = {}) {
     },
     dispose() {
       for (const o of [sky, stars, motes]) { o.geometry.dispose(); o.material.dispose(); }
-      vol.dispose(); field.dispose(); field2.dispose();
+      vol.dispose(); field.dispose(); field2.dispose(); detail.dispose();
     },
   };
 }
