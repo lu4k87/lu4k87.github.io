@@ -159,6 +159,8 @@ body.ui-off :is(.topbar, .band, .bottombar, #station, #cfg, #panel, #hotspots, .
   pointer-events: none !important;
   visibility: hidden !important;
 }
+/* Ruhe: Band blendet ohne Maus in seinem Bereich langsam aus (hud.js wakeBand), Platz bleibt – die Bühne springt nicht */
+body.band-rest .band { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.8s ease, visibility 0.8s ease; }
 body.ui-off .hud { grid-template-columns: minmax(0, 1fr) auto 0; }
 body.ui-off .top-actions > :not(.qg--view) { display: none !important; }
 body.ui-off .qg--view > :not(.qg-row), body.ui-off .qg--view .qg-row > :not(#qk-ui) { display: none !important; }

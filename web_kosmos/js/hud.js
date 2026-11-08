@@ -183,6 +183,19 @@ export function createHud(h) {
   const groups = () => CHAPTERS.map(([hub]) => [hub, ROUTE.filter((r) => chapter(r) === hub)]).filter(([, rs]) => rs.length);
   let cv = null, wires = null, drawer = null, dcv = null, dwires = null, tip = null;
   let pos = {}, fit = null, bandH = 0, hovId = null, shown = ['', ''], sleep = 0, comet = null;
+  // Ruhe (User 08.11.2026): ohne Maus im Bereich des Bands blendet es nach „Start nach“ der Leerlauf-Fahrt (mind. 3 s) weich
+  // aus; Maus oder Tippen oben in seinem Bereich (Band + offene Schublade), Fokus im Band oder Ankunft holen es zurück
+  let rest = 0;
+  function wakeBand() {
+    document.body.classList.remove('band-rest');
+    clearTimeout(rest);
+    rest = setTimeout(() => {
+      if (nav.matches(':hover, :focus-within')) return wakeBand();
+      hideTip();
+      document.body.classList.add('band-rest');
+    }, Math.max(3, settings.S.cineDelay) * 1000);
+  }
+  const inBandZone = (y) => y <= Math.max(nav.getBoundingClientRect().bottom, drawer?.classList.contains('is-open') ? drawer.getBoundingClientRect().bottom : 0) + 24;
 
   function buildRail() {
     rail.innerHTML = `<div class="bd-cv"><svg class="bd-wires" aria-hidden="true"></svg>${groups().map(([hub, rs], i) => {
@@ -217,12 +230,16 @@ export function createHud(h) {
       hot(null);
       clearTimeout(sleep);
       sleep = setTimeout(() => { if (nav.matches(':hover, :focus-within')) return; hovId = null; renderDrawer(); }, 700);
+      wakeBand();   // Wartezeit bis zur Ruhe zählt ab dem Verlassen
     };
     nav.addEventListener('pointerover', over);
     nav.addEventListener('focusin', over);
     nav.addEventListener('pointerout', out);
     nav.addEventListener('pointerleave', leave);
     nav.addEventListener('focusout', (e) => { if (!nav.contains(e.relatedTarget)) leave(); });
+    addEventListener('pointermove', (e) => { if (inBandZone(e.clientY)) wakeBand(); }, { passive: true });
+    addEventListener('pointerdown', (e) => { if (inBandZone(e.clientY)) wakeBand(); }, { passive: true });
+    nav.addEventListener('focusin', wakeBand);
     // Pfeiltasten im Band: links/rechts in der Zeile, runter in den Zweig, hoch zum Parent (die Reisetasten der Szene ruhen hier)
     nav.addEventListener('keydown', (e) => {
       const b = e.target.closest?.('[data-go]');
@@ -448,6 +465,7 @@ export function createHud(h) {
     railCur = id;
     // Band: Marken setzen, Zweig der neuen Station öffnen (beim Zeigen bleibt der gezeigte), Lichtpunkt bis hierher
     if (!hovId) hot(null);
+    wakeBand();
     markBand();
     renderDrawer();
     runComet();
