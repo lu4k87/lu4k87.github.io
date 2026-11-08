@@ -14,6 +14,36 @@ import { mulberry32, gauss, blackbody } from './astro.js';
 const RAD = Math.PI / 180;
 const MAX_ARMS = 6, MAX_RINGS = 3;
 
+// Hubble-Look (Vorschau 08.11.2026 Ort:A+B+C) als Faktor je Art des Punkts – Regler im Reiter Station, ohne neu zu backen:
+// Attribut kind 0 alt · 1 jung (bläulich) · 2 rosa Knoten · 3 Bulge (golden); uLook = (Junge Sterne blau, Rosa Knoten, Kern warm),
+// 1 = Look der Vorlage NGC 4536, 0 = ohne (Temperaturfarbe), 2 = doppelt. blu = Tönung der jungen Sterne in den Punkt-Farben
+export const BLU = [0.78, 0.9, 1.18], WARM = [1.0, 0.87, 0.69];   // WARM: Bulge 3500–4400 K statt 4000–5200 K (Verhältnis der Planck-Farben)
+const g3 = (c) => `vec3(${c.join(', ')})`;
+export const lookGlsl = (blu = BLU) => /* glsl */ `
+uniform vec3 uLook;
+vec3 lookCol(vec3 c, float kind) {
+  if (kind < 0.5) return c;
+  // junge Sterne: Tönung auf den stärksten Kanal normiert – über 1× sinken Rot/Grün (Blau ist bei hellen Sternen gesättigt)
+  if (kind < 1.5) return c * pow(${g3(blu.map((v) => +(v / Math.max(...blu)).toFixed(4)))}, vec3(uLook.x - 1.0));
+  if (kind < 2.5) return c * uLook.y;
+  return c * pow(${g3(WARM)}, vec3(uLook.z - 1.0));
+}`;
+export const lookUniform = () => ({ value: new THREE.Vector3(1, 1, 1) });
+// Faktoren für uLook aus den Reglern: on = Schalter „Hubble-Look“; ohne Look bleiben die rosa Knoten halb so hell
+export const lookVec = (L) => { const k = L.on === false ? 0 : 1; return [L.blue * k, L.hii * (0.5 + 0.5 * k), L.warm * k]; };
+// Zeilen im Reiter Station (Vorschau 08.11.2026 „Hubble-Look-Regler“ Regler:A): Schalter mit drei Feinreglern in der Gruppe der
+// Galaxie; look = { on, blue, hii, warm }, apply() setzt die Uniforms. Aus = Temperaturfarben, Feinregler gesperrt
+export function lookLayers(look, apply) {
+  const only = { sub: true, active: () => look.on !== false, only: 'Wirkt, solange „Hubble-Look“ an ist.' };
+  const R = (id, key, label, hint) => ({ id, type: 'range', label, value: 1, min: 0, max: 2, step: 0.1, unit: '×', hint, set: (x) => { look[key] = x; apply(); }, ...only });
+  return [
+    { id: 'lookOn', type: 'toggle', label: 'Hubble-Look (Vorlage NGC 4536)', value: true, set: (x) => { look.on = x; apply(); } },
+    R('lookBlue', 'blue', 'Junge Sterne blau', 'Bläulicher Ton der jungen Sterne in den Armen wie in Hubble-Aufnahmen. 0× = reine Temperaturfarbe.'),
+    R('lookHii', 'hii', 'Rosa Knoten', 'Helligkeit der HII-Gebiete (Hα + Hβ) in den Armen. 0× = aus.'),
+    R('lookWarm', 'warm', 'Kern warm', 'Goldton der alten Sterne im Bulge. 0× = ohne Tönung.'),
+  ];
+}
+
 // Ω(R) − Ωp in rad je Mio. Jahre (1 km/s/kpc = 1,0227·10⁻³ rad/Myr); R in Modelleinheiten, uSc rechnet in kpc um
 const OMEGA = /* glsl */ `
 uniform vec3 uRot;
@@ -153,13 +183,15 @@ export function galaxyGlow({ arms = [], rings = [], scale = 1, rot, seed = 0, h 
   return mesh;
 }
 
+const SF_BLU = [0.75, 0.9, 1.25];
 const SF_VERT = /* glsl */ `
 attribute vec3 color;
-attribute float size;
+attribute float size, kind;
 attribute vec4 aFlow;   // R (Modell), Azimut bei der Geburt, Lebensdauer [Mio. J.], Phase 0 … 1
 uniform float uPx, uScale, uT;
 varying vec3 vCol;
 ${OMEGA}
+${lookGlsl(SF_BLU)}
 void main() {
   float age = mod(uT + aFlow.w * aFlow.z, aFlow.z), a = age / aFlow.z;
   float phi = aFlow.y + dOm(aFlow.x) * age;
@@ -171,7 +203,7 @@ void main() {
   float near = 1.0 - smoothstep(20.0 * uPx, 60.0 * uPx, px);
   // aufleuchten, lange gleich hell, weich verlöschen: am Ende dunkel, der Neubeginn springt also nicht
   float life = smoothstep(0.0, 0.15, a) * (1.0 - smoothstep(0.55, 1.0, a));
-  vCol = color * life * min(1.0, (px * px) / (d * d) * 4.0) * near;
+  vCol = lookCol(color, kind) * life * min(1.0, (px * px) / (d * d) * 4.0) * near;
 }`;
 const SF_FRAG = /* glsl */ `
 varying vec3 vCol;
@@ -185,12 +217,13 @@ void main() {
 // jeder dritte Geburtsort als Haufen aus 3–8 Sternen, HII-Knoten magenta-rosa und größer
 export function starFormation({ arms = [], rings = [], n, scale = 1, rot, seed = 1, gain = 1, rIn = 3, rOut = 17, hii = 0.03 }) {
   const rand = mulberry32(seed);
-  const pos = [], col = [], size = [], flow = [];
-  const put = (R, phi, y, c, s, life, ph) => {
+  const pos = [], col = [], size = [], flow = [], kinds = [];
+  const put = (R, phi, y, c, s, life, ph, kind) => {
     pos.push(0, y, 0);   // SF_VERT skaliert den ganzen Ort mit uSc
     col.push(c[0] * gain, c[1] * gain, c[2] * gain);
     size.push(s * scale);
     flow.push(R, phi, life, ph);
+    kinds.push(kind);
   };
   const wSum = arms.reduce((s, a) => s + a.w, 0) + rings.reduce((s, r) => s + r.w, 0);
   // Geburtsort an der Staubbahn (Innenkante) eines Arms oder Rings
@@ -214,29 +247,31 @@ export function starFormation({ arms = [], rings = [], n, scale = 1, rot, seed =
   for (let i = 0; i < n; i++) {
     const b = birth();
     if (!b) continue;
-    const c0 = blackbody(14000 + rand() * 20000).map(((f) => (v) => v * f)(0.7 + rand() * 0.8)), c = [c0[0] * 0.75, c0[1] * 0.9, c0[2] * 1.25];
+    const c0 = blackbody(14000 + rand() * 20000).map(((f) => (v) => v * f)(0.7 + rand() * 0.8)), c = c0.map((v, k) => v * SF_BLU[k]);
     const life = 10 + rand() * 25, ph = rand(), m = rand() < 0.35 ? 3 + Math.floor(rand() * 6) : 1;
-    for (let j = 0; j < m; j++) put(b.R + (j ? gauss(rand) * 0.08 : 0), b.phi + (j ? gauss(rand) * 0.08 / b.R : 0), gauss(rand) * 0.06, c, 0.04 + rand() * 0.05, life, ph);
+    for (let j = 0; j < m; j++) put(b.R + (j ? gauss(rand) * 0.08 : 0), b.phi + (j ? gauss(rand) * 0.08 / b.R : 0), gauss(rand) * 0.06, c, 0.04 + rand() * 0.05, life, ph, 1);
   }
   for (let i = 0; i < n * hii; i++) {
     const b = birth();
     if (!b) continue;
     const life = 3 + rand() * 5, ph = rand(), c = [1.0, 0.3, 0.62].map(((f) => (v) => v * f)(0.8 + 0.9 * rand()));
-    for (let j = 2 + Math.floor(rand() * 5); j > 0; j--) put(b.R + gauss(rand) * 0.05, b.phi + gauss(rand) * 0.05 / b.R, gauss(rand) * 0.02, c, 0.105 + rand() * 0.105, life, ph);
+    for (let j = 2 + Math.floor(rand() * 5); j > 0; j--) put(b.R + gauss(rand) * 0.05, b.phi + gauss(rand) * 0.05 / b.R, gauss(rand) * 0.02, c, 0.105 + rand() * 0.105, life, ph, 2);
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   g.setAttribute('size', new THREE.Float32BufferAttribute(size, 1));
   g.setAttribute('aFlow', new THREE.Float32BufferAttribute(flow, 4));
+  g.setAttribute('kind', new THREE.Float32BufferAttribute(kinds, 1));
   const mat = new THREE.ShaderMaterial({
     vertexShader: SF_VERT, fragmentShader: SF_FRAG,
-    uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 }, uRot: rotUniform(rot), uSc: { value: scale } },
+    uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 }, uRot: rotUniform(rot), uSc: { value: scale }, uLook: lookUniform() },
     blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
   });
   const pts = new THREE.Points(g, mat);
   pts.frustumCulled = false;
   pts.userData.setPx = (pr, H, fov) => { mat.uniforms.uPx.value = pr; mat.uniforms.uScale.value = (H / 2) / Math.tan(fov * RAD / 2); };
+  pts.userData.setLook = (b, h, w) => mat.uniforms.uLook.value.set(b, h, w);
   return pts;
 }
 

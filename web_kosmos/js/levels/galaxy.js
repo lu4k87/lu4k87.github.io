@@ -10,6 +10,7 @@ import { registerLayers } from '../layers.js';
 import { galToScene, diskPoint, spiralPhi, mulberry32, gauss, blackbody, KPC } from '../astro.js';
 import { pointCloud, volume, disposeScene } from '../vol.js';
 import { nebulaVolume } from '../galaxyneb.js';
+import { BLU, lookGlsl, lookUniform, lookLayers, lookVec } from '../galaxyfx.js';
 
 const RAD = Math.PI / 180;
 export const R0 = 8.277, Z_SUN = 0.0208;   // GRAVITY 2022; Bennett & Bovy 2019
@@ -34,10 +35,11 @@ const NEAR = [20, 60], NEAR_FLY = [4, 14], HALO_FADE = 16;
 const STAR_VERT = /* glsl */ `
 attribute vec3 color;
 attribute float size;
-attribute float om;
+attribute float om, kind;
 uniform float uPx, uScale, uT;
 uniform vec2 uNear;   // Bildpixel, ab denen ein Punkt ausblendet (Beginn, Ende)
 varying vec3 vCol;
+${lookGlsl()}
 void main() {
   // differentielle Rotation: Azimut wächst in Drehrichtung (Drehung um +y mit −ω t)
   float a = -om * uT;
@@ -52,7 +54,7 @@ void main() {
   // ausblenden, damit der Flug durch die Scheibe ein Sternenfeld bleibt und keine Blasen-Wand wird
   // (uNear: Station 20–60 px; im Flug früher, dann löst sich ein Haufen in Licht auf, statt als Fleck auf die Kamera zu fliegen)
   float near = 1.0 - smoothstep(uNear.x * uPx, uNear.y * uPx, px);
-  vCol = color * min(1.0, (px * px) / (d * d) * 4.0) * near;
+  vCol = lookCol(color, kind) * min(1.0, (px * px) / (d * d) * 4.0) * near;
 }
 `;
 const STAR_FRAG = /* glsl */ `
@@ -80,18 +82,19 @@ void main() {
 // Sterne in Gruppen statt gleichmäßig gestreut; die Streuung sinkt dann auf die Hälfte), lf = Helligkeit je Punkt nach
 // einer steilen Leuchtkraftfunktion (wenige hell, viele schwach, Mittel gleich) statt fast gleich hell wie Glitzer
 // junge Sterne bläulich wie in Hubble-Aufnahmen (Vorschau 08.11.2026, Vorlage NGC 4536); alte Sterne unverändert
-const blu = (c) => [c[0] * 0.78, c[1] * 0.9, c[2] * 1.18];
+const blu = (c) => c.map((v, k) => v * BLU[k]);
 export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = true, faceTilt = 0, arms = ARMS, rings = [], young = true, bar = 1, bulge = 1, diffuse = 1, grain = 1, hii = 1, assoc = 0, lf = false } = {}) {
   const rand = mulberry32(seed);
-  const pos = [], col = [], size = [], om = [];
+  const pos = [], col = [], size = [], om = [], kd = [];
   const dpos = [], dcol = [], dsize = [], dom = [];
   const push = (arr, x, y, z) => arr.push(x, y, z);
-  const add = (p, c, s, k = 1) => {
+  const add = (p, c, s, k = 1, kind = 0) => {
     if (lf && s < 0.5) k *= 0.3 + 3.5 * rand() ** 4;
     push(pos, p[0] * scale, p[1] * scale, p[2] * scale);
     push(col, c[0] * k * gain, c[1] * k * gain, c[2] * k * gain);
     size.push(s * scale * (s < 0.5 ? grain : 1));
     om.push(omega(Math.hypot(p[0], p[2])));
+    kd.push(kind);
   };
   const addDust = (p, a, s) => {
     push(dpos, p[0] * scale, p[1] * scale, p[2] * scale);
@@ -133,7 +136,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     const y = gauss(rand) * (0.12 + R * 0.012);
     const p = diskPoint(R, phi, y);
     const T = ad > 0.5 && rand() < 0.35 ? 7000 + rand() * 12000 : 3600 + rand() * 2800;
-    add(p, T > 6900 ? blu(old(T)) : old(T), 0.035 + rand() * 0.03, 0.22 + ad * 0.25);
+    add(p, T > 6900 ? blu(old(T)) : old(T), 0.035 + rand() * 0.03, 0.22 + ad * 0.25, T > 6900 ? 1 : 0);
   }
   // junge, helle Sterne entlang der Arme
   for (let i = 0; i < (young ? N * 0.22 * (assoc ? 0.5 : 1) : 0); i++) {
@@ -143,7 +146,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     if (R < 3 || R > 17 || rand() > fade) continue;
     const off = gauss(rand) * a.width * 0.6 * (0.7 + R / 12);
     const p = diskPoint(R + off, phi + gauss(rand) * 0.015, gauss(rand) * 0.06);
-    add(p, blu(old(13000 + rand() * 20000)), 0.04 + rand() * 0.05, 0.6 + rand() * 0.8);
+    add(p, blu(old(13000 + rand() * 20000)), 0.04 + rand() * 0.05, 0.6 + rand() * 0.8, 1);
   }
   // Sternassoziationen und junge Haufen (≈ 30–150 pc) in der Mitte der Arme, Größe der Gruppen sehr ungleich
   for (let i = 0; i < (young ? assoc : 0); i++) {
@@ -153,7 +156,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     if (R < 3 || R > 16 || rand() > fade) continue;
     const c = diskPoint(R + gauss(rand) * a.width * 0.35 * (0.7 + R / 12), phi, gauss(rand) * 0.03);
     const r = 0.03 + rand() * 0.09, m = 6 + Math.floor(rand() ** 2.5 * 60);
-    for (let j = 0; j < m; j++) add([c[0] + gauss(rand) * r, c[1] + gauss(rand) * r * 0.3, c[2] + gauss(rand) * r], blu(old(14000 + rand() * 20000)), 0.03 + rand() * 0.035, 0.63 + rand() * 1.26);
+    for (let j = 0; j < m; j++) add([c[0] + gauss(rand) * r, c[1] + gauss(rand) * r * 0.3, c[2] + gauss(rand) * r], blu(old(14000 + rand() * 20000)), 0.03 + rand() * 0.035, 0.63 + rand() * 1.26, 1);
   }
   // HII-Regionen: rosa Knoten (Hα + Hβ) am Innenrand der Arme
   for (let i = 0; i < (young ? N * 0.006 * hii : 0); i++) {
@@ -162,7 +165,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     if (R < 3.2 || R > 15 || rand() > fade) continue;
     const c = diskPoint(R - a.width * 0.25, phi, gauss(rand) * 0.03);
     const k = 2 + Math.floor(rand() * 6);
-    for (let j = 0; j < k; j++) add([c[0] + gauss(rand) * 0.06, c[1] + gauss(rand) * 0.02, c[2] + gauss(rand) * 0.06], [1.0, 0.3, 0.62], 0.105 + rand() * 0.105, 0.5 + 0.7 * rand());
+    for (let j = 0; j < k; j++) add([c[0] + gauss(rand) * 0.06, c[1] + gauss(rand) * 0.02, c[2] + gauss(rand) * 0.06], [1.0, 0.3, 0.62], 0.105 + rand() * 0.105, 0.5 + 0.7 * rand(), 2);
   }
   // Balken (dreiachsig, „Erdnuss“) und Bulge aus alten Sternen
   const ba = BAR.angle * RAD;
@@ -176,7 +179,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
   for (let i = 0; i < N * 0.06 * bulge; i++) {
     const r = expR(0.45, 3);
     const d = new THREE.Vector3(gauss(rand), gauss(rand) * 0.7, gauss(rand)).normalize().multiplyScalar(r);
-    add([d.x, d.y, d.z], old(3500 + rand() * 900), 0.045, 0.6 + 0.8 * Math.exp(-r / 0.5));
+    add([d.x, d.y, d.z], old(3500 + rand() * 900), 0.045, 0.6 + 0.8 * Math.exp(-r / 0.5), 3);
   }
   // diffuses Licht der unaufgelösten Sterne
   for (let i = 0; i < N * 0.03 * diffuse; i++) {
@@ -184,7 +187,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     const ad = armDensity(R, phi);
     add(diskPoint(R, phi, gauss(rand) * 0.1), old(5200), 0.7 + rand() * 0.6, 0.009 + ad * 0.008);
   }
-  if (bulge) add([0, 0, 0], old(4600), 3.2, 0.06 * bulge);
+  if (bulge) add([0, 0, 0], old(4600), 3.2, 0.06 * bulge, 3);
   // Staub: Innenkante der Arme + dünne Schicht der Scheibe
   if (dust) {
     for (let i = 0; i < N * 0.09; i++) {
@@ -204,14 +207,15 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     }
   }
 
-  const mk = (P, Cc, S, O, frag, blending) => {
+  const mk = (P, Cc, S, O, frag, blending, K = new Float32Array(O.length)) => {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(Cc, 3));
     g.setAttribute('size', new THREE.Float32BufferAttribute(S, 1));
     g.setAttribute('om', new THREE.Float32BufferAttribute(O, 1));
+    g.setAttribute('kind', new THREE.Float32BufferAttribute(K, 1));
     const m = new THREE.ShaderMaterial({
-      vertexShader: STAR_VERT, fragmentShader: frag, uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 }, uNear: { value: new THREE.Vector2(...NEAR) } },
+      vertexShader: STAR_VERT, fragmentShader: frag, uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 }, uNear: { value: new THREE.Vector2(...NEAR) }, uLook: lookUniform() },
       depthWrite: false, transparent: true, ...blending,
     });
     const pts = new THREE.Points(g, m);
@@ -219,7 +223,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     return pts;
   };
   const group = new THREE.Group();
-  const stars = mk(pos, col, size, om, STAR_FRAG, { blending: THREE.AdditiveBlending });
+  const stars = mk(pos, col, size, om, STAR_FRAG, { blending: THREE.AdditiveBlending }, kd);
   group.add(stars);
   const mats = [stars.material];
   if (dust && dpos.length) {
@@ -233,6 +237,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
   group.rotation.x = faceTilt;
   group.userData.mats = mats;
   group.userData.setPx = (pr, H, fov) => mats.forEach((m) => { m.uniforms.uPx.value = pr; m.uniforms.uScale.value = (H / 2) / Math.tan(fov * RAD / 2); });
+  group.userData.setLook = (b, h, w) => stars.material.uniforms.uLook.value.set(b, h, w);
   return group;
 }
 
@@ -298,7 +303,7 @@ function marker(color, s, k = 1) {
   g.setAttribute('color', new THREE.Float32BufferAttribute(new THREE.Color(color).toArray().map((v) => v * k), 3));
   g.setAttribute('size', new THREE.Float32BufferAttribute([s], 1));
   g.setAttribute('om', new THREE.Float32BufferAttribute([0], 1));
-  const m = new THREE.ShaderMaterial({ vertexShader: STAR_VERT, fragmentShader: STAR_FRAG, uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 }, uNear: { value: new THREE.Vector2(...NEAR) } }, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+  const m = new THREE.ShaderMaterial({ vertexShader: STAR_VERT, fragmentShader: STAR_FRAG, uniforms: { uPx: { value: 1 }, uScale: { value: 600 }, uT: { value: 0 }, uNear: { value: new THREE.Vector2(...NEAR) }, uLook: lookUniform() }, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
   const p = new THREE.Points(g, m);
   p.frustumCulled = false;
   return p;
@@ -392,9 +397,11 @@ export function create(ctx) {
   let spinIdx = 1;
   const num = (v) => String(v).replace('.', ',');
   const nebOnly = { active: () => neb.object.visible, only: 'Wirkt, solange „Gas und Staub als 3D-Nebel“ an ist.' };
+  const look = { blue: 1, hii: 1, warm: 1 };
   registerLayers('galaxy', [
     { id: 'halo', type: 'toggle', group: 'Milchstraße', label: 'Halo mit Kugelsternhaufen', value: true, set: (v) => { halo.visible = v; } },
     { id: 'marks', type: 'toggle', label: 'Leuchtpunkte der Stationen', value: true, set: (v) => marks.forEach((k) => { k.m.visible = v; }) },
+    ...lookLayers(look, () => gal.userData.setLook(...lookVec(look))),
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Drehung im Zeitraffer', value: spinIdx, min: 0, max: SPINS.length - 1, step: 1, autoplay: false,
       fmt: (i) => `${num(SPINS[Math.round(i)])} Mio. Jahre/s`,
       hint: 'Sterne, Arme und die Leuchtpunkte der Stationen drehen differentiell: innen schneller, außen langsamer (flache Rotationskurve ≈ 230 km/s).',

@@ -15,6 +15,7 @@ import * as THREE from 'three';
 import { mulberry32, gauss, blackbody } from './astro.js';
 import { NOISE } from './glsl.js';
 import { sstep, flybyField, deepField, FLYBY } from './flightplan.js';
+import { settings } from './settings.js';
 
 // ---------- Atlas: 4 × 4 Kacheln je 512 px, additiv auf Schwarz gemalt (einmal je Seite, das Canvas bleibt im Speicher) ----------
 function blob(rgb) {
@@ -245,7 +246,7 @@ void main() {
 }`;
 const PROC_FRAG = /* glsl */ `
 ${NOISE}
-uniform float uGain;
+uniform float uGain, uArmBlue, uFib;   // Einstellungen „Arme blau“, „Staubfasern“ (1 = Look NGC 4536, 0 = ohne)
 varying vec2 vXY; varying vec3 vC, vN, vE1, vE2, vTint; varying vec4 vP0, vP1; varying float vA, vR;
 void main() {
   if (vA < 0.002) discard;
@@ -268,7 +269,7 @@ void main() {
   float hw = exp(-h * h / (2.0 * hz * hz));                                   // Höhe über der Ebene
   float path = pow((1.0 + hz * hz) / (acv * acv + hz * hz), 0.3);          // Weglänge durch die Schicht (Kante heller)
   vec3 tint = vTint;
-  vec3 cDisc = tint * vec3(1.0, 0.96, 0.9), cArm = tint * vec3(0.55, 0.78, 1.35), cBulge = tint * vec3(1.25, 0.82, 0.48);   // Arme blau, Bulge golden wie NGC 4536 (Vorschau 08.11.2026)
+  vec3 cDisc = tint * vec3(1.0, 0.96, 0.9), cArm = tint * max(vec3(0.0), mix(vec3(0.8, 0.9, 1.06), vec3(0.55, 0.78, 1.35), uArmBlue)), cBulge = tint * vec3(1.25, 0.82, 0.48);   // Arme blau, Bulge golden wie NGC 4536 (Vorschau 08.11.2026)
   vec3 light = vec3(0.0);
   if (ell) {
     // Ellipse: glattes Sphäroid (abgeplattet entlang aN), warm, ohne Struktur
@@ -286,7 +287,7 @@ void main() {
       gate = smoothstep(rIn * 0.8, rIn + 0.15, r) * (1.0 - smoothstep(0.75, 1.0, r));
       tex = irr ? max(0.0, 0.3 + 1.5 * (n1 + 0.5 * n2)) : max(0.1, 0.85 + (0.5 + 0.7 * clump) * n1);
       dn = ridged(q * 11.0 + 3.0, 4);   // feine Staubfasern
-      lane = pow(0.5 + 0.5 * cos(arms * phase + 1.1), 3.0) * gate * (0.35 + 0.65 * dn);
+      lane = pow(0.5 + 0.5 * cos(arms * phase + 1.1), 3.0) * gate * mix(1.0, 0.35 + 0.65 * dn, min(uFib, 1.0));
       hii = smoothstep(0.35, 0.6, fbm(q * 14.0 + 21.0, 2)) * (irr ? disc * tex * 0.6 : armP * gate * disc);
     }
     float armAmp = arms > 0.5 ? mix(0.5, 0.25, clump) : 0.0;
@@ -296,8 +297,8 @@ void main() {
     float sinI = sqrt(max(0.0, 1.0 - acv * acv));
     float nearSide = smoothstep(0.15, -0.35, dot(X, v) / R);
     float dustK = dust * (0.4 + 0.6 * sinI) * (0.45 + 0.55 * nearSide);
-    float dustF = 1.0 - clamp(1.5 * dustK * (0.85 * lane + 0.7 * smoothstep(0.3, 0.7, dn) * disc), 0.0, 0.92);
-    light = (mix(cDisc, cArm, clamp(armP * gate * 0.75 + smoothstep(0.35, 0.9, r) * 0.6, 0.0, 1.0)) * dsk + cBulge * barD * 1.2 + vec3(1.0, 0.45, 0.9) * hii * 1.3) * hw * path * dustF;
+    float dustF = 1.0 - clamp(1.5 * dustK * (0.85 * lane + 0.7 * uFib * smoothstep(0.3, 0.7, dn) * disc), 0.0, 0.92);
+    light = (mix(cDisc, cArm, clamp(armP * gate * 0.75 + smoothstep(0.35, 0.9, r) * 0.6 * min(uArmBlue, 1.0), 0.0, 1.0)) * dsk + cBulge * barD * 1.2 + vec3(1.0, 0.45, 0.9) * hii * 1.3) * hw * path * dustF;
     // Bulge als Sphäroid in der Tafel, Hof der alten Sterne
     float xb = rb / max(bulge, 0.02);
     float bulgeD = irr ? 0.0 : pow(1.0 + xb * xb, -1.6) + 0.6 * exp(-xb * xb * 12.0);
@@ -313,7 +314,7 @@ export function galaxyField(list) {
   const n = list.length;
   const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
     vertexShader: PROC_VERT, fragmentShader: PROC_FRAG,
-    uniforms: { uS: { value: 1 }, uGain: { value: 1 }, uNear: { value: new THREE.Vector2(0.3, 1.2) } },
+    uniforms: { uS: { value: 1 }, uGain: { value: 1 }, uNear: { value: new THREE.Vector2(0.3, 1.2) }, uArmBlue: { value: 1 }, uFib: { value: 1 } },
     transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide,
   }), n);
   const p0 = new Float32Array(n * 4), p1 = new Float32Array(n * 4), nn = new Float32Array(n * 3), e1 = new Float32Array(n * 3);
@@ -427,6 +428,8 @@ export function createFlyby() {
       group.scale.setScalar(D);
       u.uS.value = D;
       u.uGain.value = 0;
+      u.uArmBlue.value = settings.S.flyBlue;
+      u.uFib.value = settings.S.flyFib;
       group.visible = true;
     },
     step(e) {

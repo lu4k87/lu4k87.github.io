@@ -15,7 +15,7 @@ import { SOLAR_SYSTEM } from './content.js';
 
 const KEY = 'kosmos.settings.v1';
 export const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, barsH: 1, axes: false,
-  sunK: 1, shade: 1, shadow: 1, soft: 1, spec: 1, gloss: 0, cursor: 'arrow', cursorRev: 2, cursorAll: 'scene' };
+  sunK: 1, shade: 1, shadow: 1, soft: 1, spec: 1, gloss: 0, cursor: 'arrow', cursorRev: 2, cursorAll: 'scene', flyBlue: 1, flyFib: 1 };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
 export const GRADES = [['Neutral', { exposure: 1, bloom: 0.12, con: 0.12, sat: 1.04, sh: [0.96, 0.99, 1.06], hi: [1.04, 1, 0.95], vig: 0.38 }],
@@ -65,6 +65,8 @@ function clean(raw) {
   S.vig = Math.min(3, Math.max(0, S.vig));
   S.barsH = Math.min(2, Math.max(0.5, S.barsH));
   S.lensAmt = Math.min(5, Math.max(0, S.lensAmt));
+  S.flyBlue = Math.min(2, Math.max(0, S.flyBlue));
+  S.flyFib = Math.min(2, Math.max(0, S.flyFib));
   if (![0, 30, 60].includes(S.fpsCap)) S.fpsCap = 0;
   for (const [k, [lo, hi]] of Object.entries({ ...MW_RANGE, ...LIGHT_RANGE, ...CAM_RANGE })) S[k] = Math.min(hi, Math.max(lo, S[k]));
   return S;
@@ -229,7 +231,10 @@ const GROUPS = [
     ['lensOptic', PICK('lensOptic', 'Art der Optik', [['master', 'Filmkamera'], ['classic', 'Schlicht']]) + NOTE('Filmkamera: Regenbogenring, heller Bogen und ein farbiger Lichtfleck gegenüber der Sonne. Schlicht: nur ein zarter Lichtkranz.'), 'flareNs'],
     ['lensGhost', TOG('lensGhost', 'Farbiger Lichtfleck (Geisterbild)'), 'flareNs'],
     ['ghostMotion', TOG('ghostMotion', 'Lichtfleck wandert beim Schwenken') + NOTE('Wie in einem echten Objektiv wandert der Fleck beim Schwenken auf der Linie durch die Bildmitte.'), 'flareNs'],
-    ['anamorphic', TOG('anamorphic', 'Waagrechter Lichtstreif (anamorph)'), 'flare']] },
+    ['anamorphic', TOG('anamorphic', 'Waagrechter Lichtstreif (anamorph)'), 'flare'],
+    SUB('Galaxien im Vorbeiflug'),   // Fahrt Kosmisches Netz → Lokale Gruppe (galaxyflight.js; Vorschau 08.11.2026 „Hubble-Look-Regler“ F2)
+    ...HALF(['flyBlue', RANGE('flyBlue', 'Arme blau', 0, 2, 0.1, '×') + NOTE('Farbe der Arme nach außen wie bei NGC 4536; 0× = warmweiß.')],
+      ['flyFib', RANGE('flyFib', 'Staubfasern', 0, 2, 0.1, '×') + NOTE('Feine dunkle Fasern in den Armen; 0× = glatte Staubbahnen.')])] },
   { id: 'ui', icon: 'ui', title: 'Oberfläche', rows: [['panel', TOG('panel', 'Infotafel zeigen')], ['scaleCompare', TOG('scaleCompare', 'Maßstabs-Vergleich')], ['timeline', TOG('timeline', 'Zeitleiste der Station zeigen')],
     ['', TOG('', 'Grafiken bewegt', '', 'data-figs')],
     ['cursor', PICK('cursor', 'Mauszeiger', CURSORS) + NOTE('Nur mit Maus oder Touchpad. Bei Bewegung „Ruhig“ oder „Aus“ ohne Umlauf und Schweif.')],

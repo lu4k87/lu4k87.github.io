@@ -12,7 +12,7 @@ import { registerLayers } from '../layers.js';
 import { buildGalaxy } from './galaxy.js';
 import { DWARFS, ROT, M31_ARMS, M31_RINGS, M33_ARMS, SUN, at, orient } from './local.js';
 import { nebulaVolume } from '../galaxyneb.js';
-import { starFormation, lightBlobs, streamCloud } from '../galaxyfx.js';
+import { starFormation, lightBlobs, streamCloud, lookLayers, lookVec } from '../galaxyfx.js';
 import { pointCloud, disposeScene } from '../vol.js';
 import { mulberry32, gauss, blackbody, KPC } from '../astro.js';
 
@@ -175,6 +175,16 @@ export function create(ctx) {
   let T = 0, spdIdx = 1, playing = !ctx.still, labelsOn = false;
   const num = (v) => String(v).replace('.', ',');
   const nebOnly = { active: () => neb.object.visible, only: 'Wirkt, solange „Gas und Staub als 3D-Nebel“ an ist.' };
+  // Hubble-Look: Sterne, junge Sterne + Knoten über uLook, der eine Lichthof des Kerns über seine Farbe (4300 K → 3500 K bei 1×)
+  const look = { blue: 1, hii: 1, warm: 1 };
+  const coreCol = core.geometry.attributes.color;
+  const applyLook = () => {
+    const [b, h, w] = lookVec(look);
+    stars.userData.setLook(b, h, w);
+    young.userData.setLook(b, h, w);
+    coreCol.array.set(blackbody(Math.max(2000, 4300 - 800 * w)).map((v) => v * 0.3));
+    coreCol.needsUpdate = true;
+  };
   registerLayers('andromeda', [
     { id: 'clock', type: 'play', group: 'Zeit', label: 'Sternentstehung im Zeitraffer', value: spdIdx, min: 0, max: SPEEDS.length - 1, step: 1, autoplay: !ctx.still,
       fmt: (i) => SPEEDS[Math.round(i)][1], set: (i, p) => { spdIdx = Math.round(i); playing = p; }, get: () => ({ value: spdIdx, playing }),
@@ -185,6 +195,7 @@ export function create(ctx) {
     { id: 'sats', type: 'toggle', label: 'Begleitgalaxien', value: true, set: (v) => { satGroup.visible = v; } },
     { id: 'nuc', type: 'toggle', label: 'Doppelkern im Zentrum', value: true, set: (v) => { nuc.visible = v; } },
     { id: 'core', type: 'range', label: 'Leuchten des Bulge', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { core.material.uniforms.uGain.value = v; core.visible = v > 0; } },
+    ...lookLayers(look, applyLook),
     { id: 'neb', type: 'toggle', group: 'Nebel', label: 'Gas und Staub als 3D-Nebel', value: true, set: (v) => neb.setOn(v) },
     { id: 'nebGas', type: 'range', sub: true, label: 'Leuchten des Gases', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => neb.setGas(v), ...nebOnly },
     { id: 'nebDust', type: 'range', sub: true, label: 'Staub', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => neb.setDust(v), ...nebOnly },
