@@ -14,7 +14,7 @@ import { nbsp } from './figs.js';
 import { SOLAR_SYSTEM } from './content.js';
 
 const KEY = 'kosmos.settings.v1';
-export const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, barsH: 1, axes: false,
+export const DEFAULTS = { motion: 'full', quality: 'auto', cine: true, dive: 3.6, exposure: 1, bloom: true, lens: true, lensAmt: 1, lensOptic: 'master', lensGhost: true, ghostMotion: true, anamorphic: true, rayleigh: true, grain: true, deep: 1, fpsCap: 0, panel: true, timeline: true, scaleCompare: true, small: 6, stars: true, grade: 'station', vig: 1, bars: false, barsFmt: 2.39, axes: false,
   sunK: 1, shade: 1, shadow: 1, soft: 1, spec: 1, gloss: 0, cursor: 'arrow', cursorRev: 2, cursorAll: 'scene', flyBlue: 1, flyFib: 1 };
 // Farblook: Belichtung, Bloom, Kontrast, Sättigung, Tönung Schatten/Lichter, Vignette – Kino = Mischung aus HDR, Ruhig, Tiefe Glut.
 // Global (main.js über globalGrade) oder je Station „Station“ = eigener Look; die Sonne wählt bei „Station“ selbst (levels/sun.js)
@@ -63,7 +63,7 @@ function clean(raw) {
   S.small = Math.min(12, Math.max(1, S.small));
   S.deep = Math.min(4, Math.max(0, S.deep));
   S.vig = Math.min(3, Math.max(0, S.vig));
-  S.barsH = Math.min(2, Math.max(0.5, S.barsH));
+  S.barsFmt = Math.min(2.76, Math.max(1.85, S.barsFmt));
   S.lensAmt = Math.min(5, Math.max(0, S.lensAmt));
   S.flyBlue = Math.min(2, Math.max(0, S.flyBlue));
   S.flyFib = Math.min(2, Math.max(0, S.flyFib));
@@ -85,7 +85,7 @@ export function onSettings(fn) {
   listeners.push(fn);
   return () => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1); };
 }
-// Regler „Höhe der Kinobalken“ zeigt die Balken beim Ziehen kurz an, auch wenn der Kino-Modus aus ist (main.js)
+// Regler „Format der Kinobalken“ zeigt die Balken beim Ziehen kurz an, auch wenn der Kino-Modus aus ist (main.js)
 let peekT = -1e9;
 export const barsPeek = () => performance.now() - peekT < 1500;
 // Sternhimmel (Katalog und statistisch) folgt dem globalen Schalter „Sternhimmel“; schaltet nur die Kinder,
@@ -118,7 +118,7 @@ const PICK = (key, label, opts, ordered = false) => pickHtml(key, label, opts, {
 const TOG = (key, label, extra = '', attr = `data-key="${key}"`) => `
   <label class="b-row cfg-toggle"><span class="cfg-label">${label}${extra}</span><input type="checkbox" ${attr}><span class="switch" aria-hidden="true"></span></label>`;
 const RANGE = (key, label, min, max, step, unit, extra = '') => `
-  <label class="b-row b-stack"><span class="b-top"><span class="cfg-label">${label}${extra}</span><span class="cfg-val"><output data-out="${key}"></output> <span class="cfg-unit">${unit}</span></span></span>
+  <label class="b-row b-stack"><span class="b-top"><span class="cfg-label">${label}${extra}</span><span class="cfg-val"><output data-out="${key}"></output>${unit[0] === ':' ? '' : ' '}<span class="cfg-unit">${unit}</span></span></span>
     <span class="b-track"><input type="range" data-key="${key}" min="${min}" max="${max}" step="${step}"></span></label>`;
 const NOTE = (text) => `<p class="cfg-note lay-hint">${nbsp(text)}</p>`;
 // Zeile = Bedienung + Hinweis darunter + ↺ „Standard“ am Zeilenende (nur bei geändertem Wert); w = Wirkung (Schlüssel in WHERE):
@@ -178,8 +178,8 @@ const atOf = (x) => (typeof x === 'function' ? x() : x);
 // Reihenfolge: was im Bild ist (Bild, Himmel, Licht, Planeten), dann Bedienung
 const GROUPS = [
   { id: 'look', icon: 'look', title: 'Bild', hero: true, rows: [['grade', LOOKS], ...HALF(['exposure', RANGE('exposure', 'Belichtung', 0.25, 4, 0.05, '×')],
-    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')]), ['bars', TOG('bars', 'Kinobalken 2,39:1')],
-    ['barsH', RANGE('barsH', 'Höhe der Kinobalken', 0.5, 2, 0.05, '×') + NOTE('1× = Kinoformat 2,39:1. Beim Ziehen sind die Balken kurz zu sehen.')]] },
+    ['vig', RANGE('vig', 'Vignette', 0, 3, 0.05, '×')]), ['bars', TOG('bars', 'Kinobalken')],
+    ['barsFmt', RANGE('barsFmt', 'Format der Kinobalken', 1.85, 2.76, 0.01, ':1') + NOTE('2,39:1 = Kino (Scope), 1,85:1 = Breitbild, 2,76:1 = breitestes Filmformat. Gleiches Bild im Fenster und im Vollbild; beim Ziehen sind die Balken kurz zu sehen.')]] },
   { id: 'sky', icon: 'sky', title: 'Himmel', rows: [
     ['stars', TOG('stars', 'Sternhimmel') + NOTE('Hauptschalter für Sterne, Milchstraße und Tiefen Himmel: aus = reines Schwarz.'), 'sky'],
     ['deep', RANGE('deep', 'Tiefer Himmel', 0, 4, 0.1, '×') + NOTE('Was eine Langzeitbelichtung hinter den Sternen sieht: ferne Galaxien und schwach leuchtender Staub der Milchstraße (Zirrus) – statistisch verteilt, überhöht, mit bloßem Auge unsichtbar. 0× = reines Schwarz.'), 'deep'],
@@ -363,7 +363,7 @@ export function mountSettings(root, btn, lay = document.getElementById('btn-lay'
     if (i.dataset.pick) { setSetting(i.dataset.pick, num(i.dataset.pick, pickOf(i))); return; }
     if (i.matches('[data-mwstyle]')) { if (i.value) for (const [k, v] of Object.entries(MW_STYLES.find(([id]) => id === i.value)[2])) setSetting(k, v); return; }
     if (!i.dataset.key) return;
-    if (i.dataset.key === 'barsH') peekT = performance.now();
+    if (i.dataset.key === 'barsFmt') peekT = performance.now();
     setSetting(i.dataset.key, i.type === 'checkbox' ? i.checked : +i.value);
   });
   onSettings((keys) => { sync(); if (keys.includes('timeline')) rebuildLayers(); });

@@ -1351,9 +1351,10 @@ function frame(nowMs) {
   const ea = ehtOf(tr ? tr.outer : lv), eb = ehtOf(tr ? tr.inner : null);
   look.ehtA.set(ea ? ea[0] : 0, ea ? ea[1] : 0, ea ? ea[2] : 0);
   look.ehtB.set(eb ? eb[0] : 0, eb ? eb[1] : 0, eb ? eb[2] : 0);
-  // Kinobalken: Auftakt fest, sonst Zahnrad „Kinobalken 2,39:1“ (Balkenhöhe je Seite aus dem Fensterformat × Regler „Höhe der
-  // Kinobalken“, 1× = 2,39:1; beim Ziehen des Reglers kurz sichtbar)
-  bars += ((state.opener ? OPEN_BARS * state.opener.o.tune.bars : state.intro ? OPEN_BARS : settings.S.bars || barsPeek() ? Math.max(0, (1 - innerWidth / innerHeight / 2.39) / 2) * settings.S.barsH : 0) - bars) * Math.min(1, real * 2.5);
+  // Kinobalken: Auftakt fest, sonst Zahnrad „Kinobalken“ mit Regler „Format der Kinobalken“ (Bildformat 1,85–2,76:1, Standard 2,39:1;
+  // Balkenhöhe je Seite aus Fenster- und Bildformat → Fenster und Vollbild zeigen dasselbe Format; beim Ziehen des Reglers kurz sichtbar).
+  // Früher Faktor auf die Balkenhöhe (0,5–2×): 2× ergab im 16:9-Vollbild 3,66:1 (User 08.11.2026 „viel zu breit“)
+  bars += ((state.opener ? OPEN_BARS * state.opener.o.tune.bars : state.intro ? OPEN_BARS : settings.S.bars || barsPeek() ? Math.max(0, (1 - innerWidth / innerHeight / settings.S.barsFmt) / 2) : 0) - bars) * Math.min(1, real * 2.5);
   look.bars = bars;
   const mixed = op && op.out.mix > 0;
   post.render(op ? op.rt : tr ? tr.outer.rt : lv.rt, mixed ? lv.rt : tr ? tr.inner.rt : null,

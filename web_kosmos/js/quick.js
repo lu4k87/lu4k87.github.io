@@ -12,7 +12,7 @@ import { settings, setSetting, onSettings, DEFAULTS, looksHtml, gradeName } from
 import { pickHtml, pickOf, showPick, layersOf } from './layers.js';
 
 // Schalter an/aus: Knopf-Id → [Schlüssel, Name]
-const KEYS = { 'qk-cine': ['cine', 'Kamerafahrt im Leerlauf'], 'qk-bars': ['bars', 'Kinobalken 2,39:1'], 'qk-scale': ['scaleCompare', 'Maßstabs-Vergleich'] };
+const KEYS = { 'qk-cine': ['cine', 'Kamerafahrt im Leerlauf'], 'qk-bars': ['bars', 'Kinobalken'], 'qk-scale': ['scaleCompare', 'Maßstabs-Vergleich'] };
 // Stufen: ein Klick = nächste Stufe (am Ende wieder die erste); Knopf leuchtet, sobald der Wert vom Standard abweicht
 const STEPS = {
   'qk-motion': ['motion', 'Animation', [['full', 'Voll'], ['calm', 'Ruhig'], ['off', 'Aus']]],
