@@ -35,13 +35,14 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
 // Arme und Ringe als Felder (Uniforms aus armUniforms): young = Kern des Arms (junge Sterne), arm = breite Hülle,
-// lane = Staubbahn an der Innenkante; auch für die Nebel der Milchstraße (galaxyneb.js)
+// lane = Staubbahn an der Innenkante, spur = Zone der Staubfedern an der Außenseite (dort laufen die Federn stromab
+// in den Raum zwischen den Armen, z. B. M51); auch für die Nebel der Milchstraße (galaxyneb.js)
 const ARM_FN = /* glsl */ `
 #ifndef PI
 #define PI 3.14159265
 #endif
-void armField(float R, float phi, out float young, out float arm, out float lane) {
-  young = 0.0; arm = 0.0; lane = 0.0;
+void armField(float R, float phi, out float young, out float arm, out float lane, out float spur) {
+  young = 0.0; arm = 0.0; lane = 0.0; spur = 0.0;
   for (int i = 0; i < ${MAX_ARMS}; i++) {
     if (i >= uNArms) break;
     vec4 A = uArmA[i], B = uArmB[i];   // A: rRef, φRef, tan ψ, Stärke · B: Breite, Spanne Anfang/Ende, sin ψ
@@ -55,6 +56,7 @@ void armField(float R, float phi, out float young, out float arm, out float lane
     arm += fade * exp(-0.125 * s * s / (sig * sig));
     float ls = (s + 0.45 * wid) / (0.45 * sig);
     lane += fade * exp(-0.5 * ls * ls);
+    spur += fade * smoothstep(0.2 * wid, 0.9 * wid, s) * exp(-max(s, 0.0) / (2.4 * wid));
   }
   for (int i = 0; i < ${MAX_RINGS}; i++) {
     if (i >= uNRings) break;
@@ -63,7 +65,12 @@ void armField(float R, float phi, out float young, out float arm, out float lane
     young += G.z * exp(-0.5 * d * d);
     arm += G.z * exp(-0.125 * d * d);
     lane += G.z * exp(-0.5 * ld * ld);
+    spur += G.z * smoothstep(0.3, 1.0, d) * exp(-max(d, 0.0) / 2.4);
   }
+}
+void armField(float R, float phi, out float young, out float arm, out float lane) {
+  float spur;
+  armField(R, phi, young, arm, lane, spur);
 }
 `;
 const ARM_GLSL = /* glsl */ `

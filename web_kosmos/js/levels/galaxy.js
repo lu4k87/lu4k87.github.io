@@ -75,15 +75,20 @@ void main() {
 
 // Optionen für andere Galaxien (Station Lokale Gruppe): eigene Arme/Ringe, young = false (junge Sterne und HII-Regionen
 // liefert dann galaxyfx.js mit Lebenslauf), bar/bulge/diffuse = Anteil von Balken, Bulge und diffusem Licht (1 = Milchstraße)
-export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = true, faceTilt = 0, arms = ARMS, rings = [], young = true, bar = 1, bulge = 1, diffuse = 1 } = {}) {
+// grain = Größe der Sternpunkte (diffuses Licht ausgenommen; Milchstraße 0,5: das Licht liefert der Nebel, die Punkte
+// sind nur noch die aufgelösten Sterne darin), hii = Anteil der rosa Knoten, assoc = Zahl der Sternassoziationen (junge
+// Sterne in Gruppen statt gleichmäßig gestreut; die Streuung sinkt dann auf die Hälfte), lf = Helligkeit je Punkt nach
+// einer steilen Leuchtkraftfunktion (wenige hell, viele schwach, Mittel gleich) statt fast gleich hell wie Glitzer
+export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = true, faceTilt = 0, arms = ARMS, rings = [], young = true, bar = 1, bulge = 1, diffuse = 1, grain = 1, hii = 1, assoc = 0, lf = false } = {}) {
   const rand = mulberry32(seed);
   const pos = [], col = [], size = [], om = [];
   const dpos = [], dcol = [], dsize = [], dom = [];
   const push = (arr, x, y, z) => arr.push(x, y, z);
   const add = (p, c, s, k = 1) => {
+    if (lf && s < 0.5) k *= 0.3 + 3.5 * rand() ** 4;
     push(pos, p[0] * scale, p[1] * scale, p[2] * scale);
     push(col, c[0] * k * gain, c[1] * k * gain, c[2] * k * gain);
-    size.push(s * scale);
+    size.push(s * scale * (s < 0.5 ? grain : 1));
     om.push(omega(Math.hypot(p[0], p[2])));
   };
   const addDust = (p, a, s) => {
@@ -129,7 +134,7 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     add(p, old(T), 0.035 + rand() * 0.03, 0.22 + ad * 0.25);
   }
   // junge, helle Sterne entlang der Arme
-  for (let i = 0; i < (young ? N * 0.22 : 0); i++) {
+  for (let i = 0; i < (young ? N * 0.22 * (assoc ? 0.5 : 1) : 0); i++) {
     const a = arms[Math.floor(rand() * arms.length)];
     if (rand() > a.w) continue;
     const { phi, R, fade } = armPoint(a);
@@ -138,8 +143,18 @@ export function buildGalaxy({ n = 220000, seed = 9, scale = 1, gain = 1, dust = 
     const p = diskPoint(R + off, phi + gauss(rand) * 0.015, gauss(rand) * 0.06);
     add(p, old(8000 + rand() * 16000), 0.04 + rand() * 0.05, 0.6 + rand() * 0.8);
   }
+  // Sternassoziationen und junge Haufen (≈ 30–150 pc) in der Mitte der Arme, Größe der Gruppen sehr ungleich
+  for (let i = 0; i < (young ? assoc : 0); i++) {
+    const a = arms[Math.floor(rand() * arms.length)];
+    if (rand() > a.w) continue;
+    const { phi, R, fade } = armPoint(a);
+    if (R < 3 || R > 16 || rand() > fade) continue;
+    const c = diskPoint(R + gauss(rand) * a.width * 0.35 * (0.7 + R / 12), phi, gauss(rand) * 0.03);
+    const r = 0.03 + rand() * 0.09, m = 6 + Math.floor(rand() ** 2.5 * 60);
+    for (let j = 0; j < m; j++) add([c[0] + gauss(rand) * r, c[1] + gauss(rand) * r * 0.3, c[2] + gauss(rand) * r], old(9000 + rand() * 16000), 0.03 + rand() * 0.035, 0.45 + rand() * 0.9);
+  }
   // HII-Regionen: rosa Knoten (Hα + Hβ) am Innenrand der Arme
-  for (let i = 0; i < (young ? N * 0.006 : 0); i++) {
+  for (let i = 0; i < (young ? N * 0.006 * hii : 0); i++) {
     const a = arms[Math.floor(rand() * arms.length)];
     const { phi, R, fade } = armPoint(a);
     if (R < 3.2 || R > 15 || rand() > fade) continue;
@@ -229,14 +244,22 @@ export const GLOBULARS = [
 export function buildHalo(det, rand) {
   const pos = [], col = [], size = [];
   const put = (x, y, z, T, k, s) => { pos.push(x, y, z); col.push(...blackbody(T).map((v) => v * k)); size.push(s); };
-  const cluster = (c, n, r, k) => { for (let i = 0; i < n; i++) put(c.x + gauss(rand) * r, c.y + gauss(rand) * r, c.z + gauss(rand) * r, 4700 + rand() * 900, k * (0.5 + rand()), 0.06); };
-  for (const [, , l, b, d] of GLOBULARS) cluster(new THREE.Vector3(...galToScene(l, b, d, R0, Z_SUN)), Math.round(26 * det) + 6, 0.07, 2.2);
+  // Kugelsternhaufen: heller, kompakter Kern (Halblichtradius nur wenige pc) und wenige aufgelöste Sterne darum, nach
+  // innen dichter (r ∝ u²) – vorher 30 gleich große Punkte in 70 pc, das sah aus der Nähe wie ein Haufen Popcorn aus
+  const cluster = (c, n, r, k) => {
+    put(c.x, c.y, c.z, 5200, k * 2.2, 0.035);
+    for (let i = 0; i < n; i++) {
+      const d = new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).normalize().multiplyScalar(r * rand() ** 2 * 2.5);
+      put(c.x + d.x, c.y + d.y, c.z + d.z, 4700 + rand() * 900, k * (0.25 + 0.5 * rand()), 0.022);
+    }
+  };
+  for (const [, , l, b, d] of GLOBULARS) cluster(new THREE.Vector3(...galToScene(l, b, d, R0, Z_SUN)), Math.round(26 * det) + 6, 0.025, 2.2);
   // Halo-Haufen: r aus N(<r) ∝ r⁻⁰·⁵ zwischen 1,5 und 40 kpc, leicht abgeplattet
   for (let i = 0; i < 140; i++) {
     const u = rand();
     const r = Math.pow(Math.pow(1.5, -0.5) - u * (Math.pow(1.5, -0.5) - Math.pow(40, -0.5)), -2);
     const dir = new THREE.Vector3(gauss(rand), gauss(rand) * 0.8, gauss(rand)).normalize().multiplyScalar(r);
-    cluster(dir, Math.round(14 * det) + 4, 0.05, 1.2);
+    cluster(dir, Math.round(14 * det) + 4, 0.018, 1.2);
   }
   // alte Halo-Sterne, dünn und rötlich
   for (let i = 0; i < Math.round(9000 * det); i++) {
@@ -284,10 +307,10 @@ const _near = new THREE.Vector2();
 export function create(ctx) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.005, 400);
-  const gal = buildGalaxy({ n: Math.round(260000 * ctx.detail), dust: false });
+  const gal = buildGalaxy({ n: Math.round(340000 * ctx.detail), dust: false, grain: 0.5, hii: 0.35, gain: 0.6, diffuse: 0.3, assoc: Math.round(1600 * ctx.detail), lf: true });
   scene.add(gal);
   // Gas und Staub als 3D-Nebel (Vorschau 28.10.2026 Nebel:A) statt Staub-Punkten (die machten im Zentrum einen dunklen Fleck)
-  const neb = nebulaVolume(ctx.renderer, { arms: ARMS, detail: ctx.detail });
+  const neb = nebulaVolume(ctx.renderer, { arms: ARMS, detail: ctx.detail, fine: true });
   scene.add(neb.object);
   const halo = buildHalo(ctx.detail, mulberry32(17));
   scene.add(halo);
