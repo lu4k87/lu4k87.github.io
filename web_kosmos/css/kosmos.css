@@ -1039,8 +1039,13 @@ body:is(.st-open, .cfg-open) .caption.is-crowded { visibility: hidden; }
 .panel-body > :nth-child(n+5) { --i: 4; }
 body.is-flying .panel-body > * { opacity: 0; transform: translateY(6px); transition-duration: 0.45s; transition-delay: 0s; pointer-events: none; }
 /* Rahmen und Fußzeile blenden mit aus – sonst steht im Flug eine leere Tafel da; Platz im Raster bleibt (kein Springen) */
-.panel { transition: opacity 0.6s var(--ease-out); }
+.panel { transition: opacity 1.2s var(--ease-out); }   /* Einblenden dezent: Ankunft und Wecken aus der Ruhe (User 08.11.2026) */
 body.is-flying .panel { opacity: 0; transition-duration: 0.45s; pointer-events: none; }
+/* Ruhe der Infotafel (hud.js wakePanel): nach 5 s ganz langsam aus – 3 s, bewusst länger als das Einblenden (Wunsch User statt
+   „schneller raus“). Platz bleibt (Bühne springt nicht); in Ruhe nimmt nur der Rahmen die Maus an: weckt die Tafel, kein Klick
+   auf unsichtbare Knöpfe, kein Durchgriff auf die Szene. Tab-Fokus bleibt möglich und weckt sie ebenfalls */
+body.panel-rest .panel { opacity: 0; transition: opacity 3s cubic-bezier(0.45, 0, 0.55, 1); }
+body.panel-rest .panel > * { pointer-events: none; }
 
 /* ---------- Auftakt, Laden, Fehler ---------- */
 body.is-intro .hud, body.is-intro .hotspots { opacity: 0; pointer-events: none; }

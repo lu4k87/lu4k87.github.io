@@ -13,6 +13,7 @@ import { renderScaleCompare } from './scale_compare.js';
 import { mountQuick } from './quick.js';
 
 const $ = (s) => document.querySelector(s);
+const PANEL_REST = 5;   // s bis die Infotafel in Ruhe ausblendet (User 08.11.2026: „nach ca. 5 s“)
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const HEX = 'M20 2L35.59 11L35.59 29L20 38L4.41 29L4.41 11z';
 const hex = (inner = '', cls = '') => `<svg class="hex ${cls}" viewBox="0 0 40 40" aria-hidden="true"><path class="hex-shape" d="${HEX}"/>${inner}</svg>`;
@@ -58,6 +59,26 @@ export function createHud(h) {
   addEventListener('kosmos:info', () => { if (!settings.S.panel) setSetting('panel', true); });
   // Panel links auf/zu (schmal weicht die Infotafel dem Panel) → Szene neu einpassen
   addEventListener('kosmos:side', () => h.onRelayout());
+  // Ruhe der Infotafel (User 08.11.2026): je Station erst zeigen, nach PANEL_REST s ganz langsam ausblenden; Maus oder Tippen
+  // in ihrem Bereich (16 px Rand), Fokus darin, Ankunft oder Ende des Auftakts holen sie dezent zurück. Über der Tafel, im Flug
+  // und im Auftakt zählt die Wartezeit neu (Ankunft und Auftakt-Ende wecken ohnehin)
+  const panelBox = $('#panel');
+  let panelRest = 0;
+  function wakePanel() {
+    body.classList.remove('panel-rest');
+    clearTimeout(panelRest);
+    panelRest = setTimeout(() => {
+      if (body.matches('.is-flying, .is-intro') || panelBox.matches(':hover, :focus-within')) return wakePanel();
+      body.classList.add('panel-rest');
+    }, PANEL_REST * 1000);
+  }
+  const inPanelZone = (e) => {
+    const r = panelBox.getBoundingClientRect();
+    return r.width > 0 && e.clientX >= r.left - 16 && e.clientX <= r.right + 16 && e.clientY >= r.top - 16 && e.clientY <= r.bottom + 16;
+  };
+  addEventListener('pointermove', (e) => { if (inPanelZone(e)) wakePanel(); }, { passive: true });
+  addEventListener('pointerdown', (e) => { if (inPanelZone(e)) wakePanel(); }, { passive: true });
+  panelBox.addEventListener('focusin', wakePanel);
 
   // ---------- Stationsleiste ----------
   // Band oben über die volle Breite (Vorschau 26.10.2026 „Stationsleiste oben“ Leiste:C, Baum-Panorama): Zeilen Route →
@@ -466,6 +487,7 @@ export function createHud(h) {
     // Band: Marken setzen, Zweig der neuen Station öffnen (beim Zeigen bleibt der gezeigte), Lichtpunkt bis hierher
     if (!hovId) hot(null);
     wakeBand();
+    wakePanel();
     markBand();
     renderDrawer();
     runComet();
@@ -967,6 +989,7 @@ export function createHud(h) {
 
   function setFlight(on, st, multi) {
     body.classList.toggle('is-flying', on);
+    if (!on) wakePanel();   // Ankunft: Tafel steht wieder volle PANEL_REST s
     // Abflug: Titel der alten Station blendet mit der Infotafel aus, der neue kommt kurz vor der Ankunft
     if (on) { pull.classList.remove('is-on'); caption.classList.remove('is-on'); clearTimeout(capTimer); side.close(); }
     if (on && st) $('#flight-to').textContent = multi ? `Kurs auf ${st.title} …` : `Flug: ${st.title}`;
@@ -1036,7 +1059,7 @@ export function createHud(h) {
     setLoading: (on) => body.classList.toggle('is-loading', on),
     // Punktreihe im Fuß entfällt (Fuss:C, doppelt zur Stationsleiste); das Ziel eines Flugs nennt die Flug-Zeile im Kopf
     setRouteTarget: () => {},
-    intro: (on) => body.classList.toggle('is-intro', on),
+    intro: (on) => { body.classList.toggle('is-intro', on); if (!on) wakePanel(); },
     hint: (text) => setHint(text || ''),
     // offene Karte: main.js hält die Leerlauf-Fahrt an, damit das Bild beim Lesen ruht
     reading: () => card.classList.contains('is-open'),
