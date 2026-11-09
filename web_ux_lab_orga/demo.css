@@ -1,0 +1,5 @@
+/* Leiste „Demo – fiktive Daten“ der Klick-Demo (tools/export_demo.py) – nur Tokens aus app/static/tokens.css */
+.demo-bar{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:9px 16px;background:var(--accent-soft);color:var(--accent-ink);border-bottom:1px solid var(--accent-line);font-size:14px;line-height:1.45}
+.demo-bar b{font-weight:600}
+.demo-msg{font-weight:600}
+.demo-msg:empty{display:none}

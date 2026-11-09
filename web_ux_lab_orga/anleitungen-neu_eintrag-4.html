@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Anleitung hochladen · UX Lab Orga</title>
+<link rel="stylesheet" href="static/fonts.css">
+<link rel="stylesheet" href="static/tokens.css">
+<link rel="stylesheet" href="static/css/fa.css">
+<link rel="stylesheet" href="static/app.css">
+<script src="static/app.js" defer></script>
+<link rel="stylesheet" href="demo.css">
+<script src="demo.js"></script>
+</head>
+<body>
+
+
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="app navA">
+
+  <aside class="side">
+    <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
+    <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it on" href="zugaenge.html" aria-current="page"><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+    </div><div class="grp"><span>Projekte</span>
+      <a class="it " href="projekte.html" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+    </div><div class="grp"><span>Verwaltung</span>
+      <a class="it " href="nutzer.html" data-demo-area="rechte" ><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it " href="einstellungen.html" ><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
+    </div></nav>
+    <div class="me">
+      <a href="profil.html" ><span class="av " aria-hidden="true">D</span><span class="break"><b>Demo-Admin</b><small class="sm2">Admin</small></span></a>
+      <form method="post" action="#"><button class="btn ghost sm" aria-label="Abmelden" title="Abmelden"><i class="fa-solid fa-arrow-right-from-bracket " aria-hidden="true"></i></button></form>
+    </div>
+  </aside>
+
+  <main id="main" class="" tabindex="-1"><div class="demo-bar" role="note"><b>Demo</b><span>Alle Personen, Geräte und Daten sind erfunden · Speichern, Hochladen und Anmelden sind abgeschaltet</span><span class="demo-msg" role="status" aria-live="polite"></span></div>
+  
+    <div class="topbar">
+      <form class="search" role="search" action="#"><i class="fa-solid fa-magnifying-glass " aria-hidden="true"></i><label class="vh" for="q">Suchen</label><input id="q" name="q" type="search" placeholder="Personen suchen …" autocomplete="off"></form>
+      <span class="sp"></span>
+      
+
+
+
+
+
+
+
+
+<div class="hi">
+  
+
+  <button type="button" class="hi-team" popovertarget="hi-onpop">
+    <span class="hi-avs" aria-hidden="true"><span class="av " aria-hidden="true">D</span></span>
+    <span class="hi-on-t">1 online</span><span class="vh"> – wer gerade online ist</span></button>
+  <div class="hi-pop" id="hi-onpop" popover role="dialog" aria-labelledby="hi-onpop-h"><div class="hi-pop-h" id="hi-onpop-h">Gerade online</div>
+    <ul class="hi-list"><li><span class="av " aria-hidden="true">D</span><span>Demo-Admin (du)<small>Admin</small></span></li></ul>
+    <p class="hi-note">aktiv in den letzten 5 Minuten</p></div>
+  
+
+
+  <button type="button" class="hi-bell" popovertarget="hi-bellpop" aria-label="1 fällig"><i class="fa-solid fa-bell " aria-hidden="true"></i><span class="hi-badge" aria-hidden="true">1</span></button>
+  <div class="hi-pop" id="hi-bellpop" popover role="dialog" aria-labelledby="hi-bellpop-h"><div class="hi-pop-h" id="hi-bellpop-h">Fällig</div>
+    <ul class="hi-list"><li><a href="geraete-4.html"><i class="fa-solid fa-box hi-w" aria-hidden="true"></i><span>Rückgabe überfällig<small>Tobii Pro Glasses 3 · Paul Richter</small></span></a></li></ul>
+    </div>
+
+
+  <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
+  <time class="hi-time" data-clock="time">15:03</time>
+  <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+<div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
+  <dl class="hi-dl">
+    <dt>Netz</dt><dd><span>UXLab-WLAN</span><span class="hi-k"><i class="fa-solid fa-check " aria-hidden="true"></i> dein Gerät ist im Lab-Netz</span></dd>
+    <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
+    <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
+    <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 15:03:38</dd>
+  </dl>
+</div>
+
+</div>
+
+      <a class="btn pri" href="nutzer-neu.html"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Nutzer anlegen</span></a>
+    </div>
+  
+    <div class="page">
+<div class="ph"><div><h1>Anleitung hochladen</h1><p class="sub">PDF, Bilder, Office-Dokumente oder Text · höchstens 25 MB</p></div>
+  <div class="acts"><a class="btn" href="zugaenge.html"><i class="fa-solid fa-arrow-left " aria-hidden="true"></i><span>Zugänge</span></a></div></div>
+<form method="post" enctype="multipart/form-data" class="form card pad narrow" novalidate>
+  
+  <div class="fld"><label class="lbl" for="u-file">Datei</label><input id="u-file" name="file" type="file" required accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.pptx,.txt,.md">
+    <span class="hint">Erlaubt: PDF, PNG, JPG, Word, Excel, PowerPoint (ohne Makros), Text (.txt, .md). Der Typ wird am Inhalt geprüft.</span></div>
+  <div class="fld"><label class="lbl" for="u-title">Titel <span class="sm2">optional, sonst Dateiname</span></label><input id="u-title" name="title" value="" maxlength="120" placeholder="z. B. Ausgabe und Hygiene …"></div>
+  <div class="fld"><label class="lbl" for="u-dev">Gehört zu Gerät <span class="sm2">optional</span></label><select id="u-dev" name="device_id"><option value="">— allgemein —</option><option value="8" >Empatica EmbracePlus · UXL-0520</option><option value="5" >iPad Pro 12,9″ · UXL-0310</option><option value="10" >Leap Motion 2 · UXL-0611</option><option value="9" >Lenovo Legion 7 · UXL-0702</option><option value="1" >Meta Quest 3 · Nr. 1 · UXL-0101</option><option value="2" >Meta Quest 3 · Nr. 2 · UXL-0102</option><option value="7" >Rode Wireless GO II · UXL-0405</option><option value="6" >Sony Alpha 7 IV · UXL-0402</option><option value="4" >Tobii Pro Glasses 3 · UXL-0216</option><option value="3" >Tobii Pro Spark · UXL-0215</option><option value="11" >xArm Lite 6 · UXL-0900</option></select></div>
+  <div class="fld"><label class="lbl" for="u-entry">Gehört zu Eintrag <span class="sm2">optional</span></label><select id="u-entry" name="entry_id"><option value="">— keiner —</option><option value="3" >Meta-Konto Quest-Pool</option><option value="6" >Router-Verwaltung</option><option value="1" >UXLab (intern)</option><option value="2" >UXLab-Gast</option><option value="4" selected>Windows-Login Messplatz</option><option value="5" >xArm Lite 6 · Steuerung</option></select></div>
+  <p class="note"><i class="fa-solid fa-eye-slash " aria-hidden="true"></i><span>Zuerst sieht die Anleitung nur, wer Zugänge verwaltet. Sichtbar wird sie durch Freigabe, für alle mit Ausleihe des Geräts oder für alle, die den Eintrag sehen.</span></p>
+  <div class="row"><button class="btn pri"><i class="fa-solid fa-file-arrow-up " aria-hidden="true"></i><span>Hochladen</span></button><a class="btn" href="zugaenge.html">Abbrechen</a></div>
+</form>
+</div>
+  </main>
+</div>
+</body>
+</html>

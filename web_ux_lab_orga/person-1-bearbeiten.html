@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Profil bearbeiten · UX Lab Orga</title>
+<link rel="stylesheet" href="static/fonts.css">
+<link rel="stylesheet" href="static/tokens.css">
+<link rel="stylesheet" href="static/css/fa.css">
+<link rel="stylesheet" href="static/app.css">
+<script src="static/app.js" defer></script>
+<link rel="stylesheet" href="demo.css">
+<script src="demo.js"></script>
+</head>
+<body>
+
+
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="app navA">
+
+  <aside class="side">
+    <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
+    <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it on" href="team.html" data-demo-area="team" aria-current="page"><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+    </div><div class="grp"><span>Projekte</span>
+      <a class="it " href="projekte.html" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+    </div><div class="grp"><span>Verwaltung</span>
+      <a class="it " href="nutzer.html" data-demo-area="rechte" ><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it " href="einstellungen.html" ><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
+    </div></nav>
+    <div class="me">
+      <a href="profil.html" ><span class="av " aria-hidden="true">D</span><span class="break"><b>Demo-Admin</b><small class="sm2">Admin</small></span></a>
+      <form method="post" action="#"><button class="btn ghost sm" aria-label="Abmelden" title="Abmelden"><i class="fa-solid fa-arrow-right-from-bracket " aria-hidden="true"></i></button></form>
+    </div>
+  </aside>
+
+  <main id="main" class="" tabindex="-1"><div class="demo-bar" role="note"><b>Demo</b><span>Alle Personen, Geräte und Daten sind erfunden · Speichern, Hochladen und Anmelden sind abgeschaltet</span><span class="demo-msg" role="status" aria-live="polite"></span></div>
+  
+    <div class="topbar">
+      <form class="search" role="search" action="#"><i class="fa-solid fa-magnifying-glass " aria-hidden="true"></i><label class="vh" for="q">Suchen</label><input id="q" name="q" type="search" placeholder="Personen suchen …" autocomplete="off"></form>
+      <span class="sp"></span>
+      
+
+
+
+
+
+
+
+
+<div class="hi">
+  
+
+  <button type="button" class="hi-team" popovertarget="hi-onpop">
+    <span class="hi-avs" aria-hidden="true"><span class="av " aria-hidden="true">D</span></span>
+    <span class="hi-on-t">1 online</span><span class="vh"> – wer gerade online ist</span></button>
+  <div class="hi-pop" id="hi-onpop" popover role="dialog" aria-labelledby="hi-onpop-h"><div class="hi-pop-h" id="hi-onpop-h">Gerade online</div>
+    <ul class="hi-list"><li><span class="av " aria-hidden="true">D</span><span>Demo-Admin (du)<small>Admin</small></span></li></ul>
+    <p class="hi-note">aktiv in den letzten 5 Minuten</p></div>
+  
+
+
+  <button type="button" class="hi-bell" popovertarget="hi-bellpop" aria-label="1 fällig"><i class="fa-solid fa-bell " aria-hidden="true"></i><span class="hi-badge" aria-hidden="true">1</span></button>
+  <div class="hi-pop" id="hi-bellpop" popover role="dialog" aria-labelledby="hi-bellpop-h"><div class="hi-pop-h" id="hi-bellpop-h">Fällig</div>
+    <ul class="hi-list"><li><a href="geraete-4.html"><i class="fa-solid fa-box hi-w" aria-hidden="true"></i><span>Rückgabe überfällig<small>Tobii Pro Glasses 3 · Paul Richter</small></span></a></li></ul>
+    </div>
+
+
+  <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
+  <time class="hi-time" data-clock="time">15:03</time>
+  <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+<div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
+  <dl class="hi-dl">
+    <dt>Netz</dt><dd><span>UXLab-WLAN</span><span class="hi-k"><i class="fa-solid fa-check " aria-hidden="true"></i> dein Gerät ist im Lab-Netz</span></dd>
+    <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
+    <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
+    <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 15:03:38</dd>
+  </dl>
+</div>
+
+</div>
+
+      <a class="btn pri" href="nutzer-neu.html"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Nutzer anlegen</span></a>
+    </div>
+  
+    <div class="page">
+<div class="ph"><div><h1>Profil bearbeiten</h1><p class="sub">Dr. Anna Berger · Lab-Leitung</p></div></div>
+<form method="post" class="form card pad">
+  
+  <div class="g2">
+    <div class="fld"><label class="lbl" for="name">Name</label><input id="name" name="name" value="Dr. Anna Berger" maxlength="80" autocomplete="name" required></div>
+    <div class="fld"><label class="lbl" for="title">Funktion</label><input id="title" name="title" value="Lab-Leitung" maxlength="80" autocomplete="off" placeholder="z. B. Studentin · Masterarbeit …"></div>
+  </div>
+  <div class="fld"><label class="lbl" for="topic">Arbeitsthema</label><input id="topic" name="topic" value="Betreuung aller Projekte" maxlength="160" autocomplete="off" placeholder="z. B. Sprachassistent für die Pflege …"></div>
+  <div class="g2">
+    <div class="fld"><label class="lbl" for="status_text">Status</label><input id="status_text" name="status_text" value="läuft" maxlength="60" autocomplete="off" placeholder="z. B. Datenerhebung …"></div>
+    <div class="fld"><label class="lbl" for="status_kind">Status-Markierung</label><select id="status_kind" name="status_kind"><option value="" selected>normal</option><option value="acc" >läuft aktiv</option><option value="warn" >braucht Aufmerksamkeit</option></select></div>
+    <div class="fld"><label class="lbl" for="phase">Phase</label><select id="phase" name="phase"><option value="">keine Phase (z. B. Lab-Dienst)</option><option >Planung</option><option >Umsetzung</option><option >Auswertung &amp; Schreiben</option><option >Wartet</option><option >Abgeschlossen</option></select></div>
+    <div class="fld"><label class="lbl" for="period">Zeitraum</label><input id="period" name="period" value="" maxlength="40" autocomplete="off" placeholder="z. B. 04/2026 – 12/2026 …"></div>
+    <div class="fld"><label class="lbl" for="supervisor_id">Betreuung</label><select id="supervisor_id" name="supervisor_id"><option value="">—</option><option value="3" >Clara Neumann</option><option value="2" >Jonas Weber</option><option value="4" >Lena Hoffmann</option><option value="7" >Mehmet Yilmaz</option><option value="6" >Paul Richter</option><option value="5" >Sophie Klein</option><option value="8" >Tim Schröder</option></select></div>
+  </div>
+  <label class="check"><input type="checkbox" name="in_team" value="1" checked>Im Team anzeigen</label>
+  <div class="row"><button class="btn pri"><i class="fa-solid fa-check " aria-hidden="true"></i><span>Profil speichern</span></button><a class="btn" href="person-1.html">Abbrechen</a></div>
+</form>
+</div>
+  </main>
+</div>
+</body>
+</html>

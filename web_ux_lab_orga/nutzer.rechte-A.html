@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Nutzer & Rechte · UX Lab Orga</title>
+<link rel="stylesheet" href="static/fonts.css">
+<link rel="stylesheet" href="static/tokens.css">
+<link rel="stylesheet" href="static/css/fa.css">
+<link rel="stylesheet" href="static/app.css">
+<script src="static/app.js" defer></script>
+<link rel="stylesheet" href="demo.css">
+<script src="demo.js"></script>
+</head>
+<body>
+
+
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="app navA">
+
+  <aside class="side">
+    <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
+    <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+    </div><div class="grp"><span>Projekte</span>
+      <a class="it " href="projekte.html" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+    </div><div class="grp"><span>Verwaltung</span>
+      <a class="it on" href="nutzer.html" data-demo-area="rechte" aria-current="page"><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it " href="einstellungen.html" ><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
+    </div></nav>
+    <div class="me">
+      <a href="profil.html" ><span class="av " aria-hidden="true">D</span><span class="break"><b>Demo-Admin</b><small class="sm2">Admin</small></span></a>
+      <form method="post" action="#"><button class="btn ghost sm" aria-label="Abmelden" title="Abmelden"><i class="fa-solid fa-arrow-right-from-bracket " aria-hidden="true"></i></button></form>
+    </div>
+  </aside>
+
+  <main id="main" class="" tabindex="-1"><div class="demo-bar" role="note"><b>Demo</b><span>Alle Personen, Geräte und Daten sind erfunden · Speichern, Hochladen und Anmelden sind abgeschaltet</span><span class="demo-msg" role="status" aria-live="polite"></span></div>
+  
+    <div class="topbar">
+      <form class="search" role="search" action="#"><i class="fa-solid fa-magnifying-glass " aria-hidden="true"></i><label class="vh" for="q">Suchen</label><input id="q" name="q" type="search" placeholder="Personen suchen …" autocomplete="off"></form>
+      <span class="sp"></span>
+      
+
+
+
+
+
+
+
+
+<div class="hi">
+  
+
+  <button type="button" class="hi-team" popovertarget="hi-onpop">
+    <span class="hi-avs" aria-hidden="true"><span class="av " aria-hidden="true">D</span></span>
+    <span class="hi-on-t">1 online</span><span class="vh"> – wer gerade online ist</span></button>
+  <div class="hi-pop" id="hi-onpop" popover role="dialog" aria-labelledby="hi-onpop-h"><div class="hi-pop-h" id="hi-onpop-h">Gerade online</div>
+    <ul class="hi-list"><li><span class="av " aria-hidden="true">D</span><span>Demo-Admin (du)<small>Admin</small></span></li></ul>
+    <p class="hi-note">aktiv in den letzten 5 Minuten</p></div>
+  
+
+
+  <button type="button" class="hi-bell" popovertarget="hi-bellpop" aria-label="1 fällig"><i class="fa-solid fa-bell " aria-hidden="true"></i><span class="hi-badge" aria-hidden="true">1</span></button>
+  <div class="hi-pop" id="hi-bellpop" popover role="dialog" aria-labelledby="hi-bellpop-h"><div class="hi-pop-h" id="hi-bellpop-h">Fällig</div>
+    <ul class="hi-list"><li><a href="geraete-4.html"><i class="fa-solid fa-box hi-w" aria-hidden="true"></i><span>Rückgabe überfällig<small>Tobii Pro Glasses 3 · Paul Richter</small></span></a></li></ul>
+    </div>
+
+
+  <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
+  <time class="hi-time" data-clock="time">15:03</time>
+  <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+<div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
+  <dl class="hi-dl">
+    <dt>Netz</dt><dd><span>UXLab-WLAN</span><span class="hi-k"><i class="fa-solid fa-check " aria-hidden="true"></i> dein Gerät ist im Lab-Netz</span></dd>
+    <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
+    <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
+    <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 15:03:37</dd>
+  </dl>
+</div>
+
+</div>
+
+      <a class="btn pri" href="nutzer-neu.html"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Nutzer anlegen</span></a>
+    </div>
+  
+    <div class="page">
+
+<div class="ph">
+  <div><h1>Nutzer &amp; Rechte</h1><p class="sub">Was jede Rolle sehen und tun darf</p></div>
+  <div class="acts">
+<form method="post" action="#" class="seg" aria-label="Ansicht Nutzer &amp; Rechte">
+  <input type="hidden" name="area" value="rechte"><input type="hidden" name="next" value="/nutzer">
+  <button name="variant" value="A" class="on" aria-pressed="true">Matrix</button><button name="variant" value="B" class="" aria-pressed="false">Nutzer</button><button name="variant" value="C" class="" aria-pressed="false">Schalter</button>
+</form>
+</div>
+</div>
+
+
+<form method="post" action="#" class="form">
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th scope="col">Bereich</th><th scope="col">Admin<small>1 Nutzer · fest</small></th><th scope="col">Lab-Leitung<small>1 Nutzer</small></th><th scope="col">Mitarbeiter:in<small>2 Nutzer</small></th><th scope="col">Student:in / HiWi<small>5 Nutzer</small></th><th scope="col">Gast<small>0 Nutzer</small></th></tr></thead>
+    <tbody><tr><th scope="row">Übersicht</th>
+      <td>
+        <span class="lvl full ">verwalten</span>
+      </td><td>
+        <label class="vh" for="r2_start">Übersicht – Lab-Leitung</label>
+          <select class="lvl  " id="r2_start" name="r2_start"><option value="0" >kein Zugriff</option><option value="3" selected>sehen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r3_start">Übersicht – Mitarbeiter:in</label>
+          <select class="lvl  " id="r3_start" name="r3_start"><option value="0" >kein Zugriff</option><option value="3" selected>sehen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r4_start">Übersicht – Student:in / HiWi</label>
+          <select class="lvl  " id="r4_start" name="r4_start"><option value="0" >kein Zugriff</option><option value="3" selected>sehen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r5_start">Übersicht – Gast</label>
+          <select class="lvl  " id="r5_start" name="r5_start"><option value="0" >kein Zugriff</option><option value="3" selected>sehen</option><option value="5" >verwalten</option></select>
+        
+      </td></tr><tr><th scope="row">Stundenplan</th>
+      <td>
+        <span class="lvl full ">verwalten</span>
+      </td><td>
+        <label class="vh" for="r2_plan">Stundenplan – Lab-Leitung</label>
+          <select class="lvl full " id="r2_plan" name="r2_plan"><option value="0" >kein Zugriff</option><option value="2" >eigene</option><option value="4" >bearbeiten</option><option value="5" selected>verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r3_plan">Stundenplan – Mitarbeiter:in</label>
+          <select class="lvl  " id="r3_plan" name="r3_plan"><option value="0" >kein Zugriff</option><option value="2" >eigene</option><option value="4" selected>bearbeiten</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r4_plan">Stundenplan – Student:in / HiWi</label>
+          <select class="lvl  " id="r4_plan" name="r4_plan"><option value="0" >kein Zugriff</option><option value="2" selected>eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r5_plan">Stundenplan – Gast</label>
+          <select class="lvl  none" id="r5_plan" name="r5_plan"><option value="0" selected>kein Zugriff</option><option value="2" >eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
+        
+      </td></tr><tr><th scope="row">Team &amp; Berichte</th>
+      <td>
+        <span class="lvl full ">verwalten</span>
+      </td><td>
+        <label class="vh" for="r2_team">Team &amp; Berichte – Lab-Leitung</label>
+          <select class="lvl full " id="r2_team" name="r2_team"><option value="0" >kein Zugriff</option><option value="2" >eigene</option><option value="3" >sehen</option><option value="5" selected>verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r3_team">Team &amp; Berichte – Mitarbeiter:in</label>
+          <select class="lvl  " id="r3_team" name="r3_team"><option value="0" >kein Zugriff</option><option value="2" >eigene</option><option value="3" selected>sehen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r4_team">Team &amp; Berichte – Student:in / HiWi</label>
+          <select class="lvl  " id="r4_team" name="r4_team"><option value="0" >kein Zugriff</option><option value="2" selected>eigene</option><option value="3" >sehen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r5_team">Team &amp; Berichte – Gast</label>
+          <select class="lvl  none" id="r5_team" name="r5_team"><option value="0" selected>kein Zugriff</option><option value="2" >eigene</option><option value="3" >sehen</option><option value="5" >verwalten</option></select>
+        
+      </td></tr><tr><th scope="row">Zugänge &amp; Anleitungen</th>
+      <td>
+        <span class="lvl full ">verwalten</span>
+      </td><td>
+        <label class="vh" for="r2_zugang">Zugänge &amp; Anleitungen – Lab-Leitung</label>
+          <select class="lvl full " id="r2_zugang" name="r2_zugang"><option value="0" >kein Zugriff</option><option value="3" >freigegebene</option><option value="5" selected>verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r3_zugang">Zugänge &amp; Anleitungen – Mitarbeiter:in</label>
+          <select class="lvl  " id="r3_zugang" name="r3_zugang"><option value="0" >kein Zugriff</option><option value="3" selected>freigegebene</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r4_zugang">Zugänge &amp; Anleitungen – Student:in / HiWi</label>
+          <select class="lvl  " id="r4_zugang" name="r4_zugang"><option value="0" >kein Zugriff</option><option value="3" selected>freigegebene</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r5_zugang">Zugänge &amp; Anleitungen – Gast</label>
+          <select class="lvl  none" id="r5_zugang" name="r5_zugang"><option value="0" selected>kein Zugriff</option><option value="3" >freigegebene</option><option value="5" >verwalten</option></select>
+        
+      </td></tr><tr><th scope="row">Geräte &amp; Ausleihe</th>
+      <td>
+        <span class="lvl full ">verwalten</span>
+      </td><td>
+        <label class="vh" for="r2_geraet">Geräte &amp; Ausleihe – Lab-Leitung</label>
+          <select class="lvl full " id="r2_geraet" name="r2_geraet"><option value="0" >kein Zugriff</option><option value="4" >ausleihen</option><option value="5" selected>verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r3_geraet">Geräte &amp; Ausleihe – Mitarbeiter:in</label>
+          <select class="lvl  " id="r3_geraet" name="r3_geraet"><option value="0" >kein Zugriff</option><option value="4" selected>ausleihen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r4_geraet">Geräte &amp; Ausleihe – Student:in / HiWi</label>
+          <select class="lvl  " id="r4_geraet" name="r4_geraet"><option value="0" >kein Zugriff</option><option value="4" selected>ausleihen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r5_geraet">Geräte &amp; Ausleihe – Gast</label>
+          <select class="lvl  none" id="r5_geraet" name="r5_geraet"><option value="0" selected>kein Zugriff</option><option value="4" >ausleihen</option><option value="5" >verwalten</option></select>
+        
+      </td></tr><tr><th scope="row">Projekte &amp; Mappen</th>
+      <td>
+        <span class="lvl full ">verwalten</span>
+      </td><td>
+        <label class="vh" for="r2_projekte">Projekte &amp; Mappen – Lab-Leitung</label>
+          <select class="lvl full " id="r2_projekte" name="r2_projekte"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="2" >eigene</option><option value="4" >bearbeiten</option><option value="5" selected>verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r3_projekte">Projekte &amp; Mappen – Mitarbeiter:in</label>
+          <select class="lvl  " id="r3_projekte" name="r3_projekte"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="2" >eigene</option><option value="4" selected>bearbeiten</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r4_projekte">Projekte &amp; Mappen – Student:in / HiWi</label>
+          <select class="lvl  " id="r4_projekte" name="r4_projekte"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="2" selected>eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r5_projekte">Projekte &amp; Mappen – Gast</label>
+          <select class="lvl  " id="r5_projekte" name="r5_projekte"><option value="0" >kein Zugriff</option><option value="1" selected>öffentliche</option><option value="2" >eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
+        
+      </td></tr><tr><th scope="row">Dateien</th>
+      <td>
+        <span class="lvl full ">verwalten</span>
+      </td><td>
+        <label class="vh" for="r2_dateien">Dateien – Lab-Leitung</label>
+          <select class="lvl full " id="r2_dateien" name="r2_dateien"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="4" >hochladen</option><option value="5" selected>verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r3_dateien">Dateien – Mitarbeiter:in</label>
+          <select class="lvl  " id="r3_dateien" name="r3_dateien"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="4" selected>hochladen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r4_dateien">Dateien – Student:in / HiWi</label>
+          <select class="lvl  " id="r4_dateien" name="r4_dateien"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="4" selected>hochladen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r5_dateien">Dateien – Gast</label>
+          <select class="lvl  " id="r5_dateien" name="r5_dateien"><option value="0" >kein Zugriff</option><option value="1" selected>öffentliche</option><option value="4" >hochladen</option><option value="5" >verwalten</option></select>
+        
+      </td></tr><tr><th scope="row">Nutzer &amp; Rechte</th>
+      <td>
+        <span class="lvl full ">verwalten</span>
+      </td><td>
+        <label class="vh" for="r2_nutzer">Nutzer &amp; Rechte – Lab-Leitung</label>
+          <select class="lvl  " id="r2_nutzer" name="r2_nutzer"><option value="0" >kein Zugriff</option><option value="4" selected>Nutzer anlegen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r3_nutzer">Nutzer &amp; Rechte – Mitarbeiter:in</label>
+          <select class="lvl  none" id="r3_nutzer" name="r3_nutzer"><option value="0" selected>kein Zugriff</option><option value="4" >Nutzer anlegen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r4_nutzer">Nutzer &amp; Rechte – Student:in / HiWi</label>
+          <select class="lvl  none" id="r4_nutzer" name="r4_nutzer"><option value="0" selected>kein Zugriff</option><option value="4" >Nutzer anlegen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r5_nutzer">Nutzer &amp; Rechte – Gast</label>
+          <select class="lvl  none" id="r5_nutzer" name="r5_nutzer"><option value="0" selected>kein Zugriff</option><option value="4" >Nutzer anlegen</option><option value="5" >verwalten</option></select>
+        
+      </td></tr></tbody>
+  </table></div>
+  <div class="row wrap"><p class="row"><i class="fa-solid fa-circle-info t-acc" aria-hidden="true"></i><span>„eigene“ = nur eigene Schichten, Berichte und Projekte · Admin ist fest und kann nicht eingeschränkt werden.</span></p>
+    <span class="sp"></span><button class="btn pri"><i class="fa-solid fa-check " aria-hidden="true"></i><span>Rechte speichern</span></button></div>
+</form>
+
+
+<form method="post" action="#" class="card pad row wrap">
+  <h2 class="h3">Rolle anlegen</h2>
+  <label class="vh" for="rn">Name der Rolle</label><input class="inp grow" id="rn" name="name" maxlength="40" placeholder="Name, z. B. Tutor:in …" autocomplete="off" required>
+  <label class="lbl" for="rc">Rechte übernehmen von</label><select class="inp grow" id="rc" name="copy"><option value="2">Lab-Leitung</option><option value="3">Mitarbeiter:in</option><option value="4">Student:in / HiWi</option><option value="5">Gast</option></select>
+  <button class="btn"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Rolle anlegen</span></button>
+</form>
+
+
+<section class="card pad" aria-labelledby="h-log"><h2 class="h3" id="h-log">Protokoll</h2>
+  <ul class="list"><li><span class="break"><b>Link erzeugt</b> · Demo-Admin<small class="sm2">Admin per Kommandozeile (Haupt-Admin)</small><small class="sm2">09.11.2026 · Server-Kommandozeile</small></span></li></ul>
+</section>
+</div>
+  </main>
+</div>
+</body>
+</html>

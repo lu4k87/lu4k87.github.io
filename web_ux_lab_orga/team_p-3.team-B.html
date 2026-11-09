@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Team · UX Lab Orga</title>
+<link rel="stylesheet" href="static/fonts.css">
+<link rel="stylesheet" href="static/tokens.css">
+<link rel="stylesheet" href="static/css/fa.css">
+<link rel="stylesheet" href="static/app.css">
+<script src="static/app.js" defer></script>
+<link rel="stylesheet" href="demo.css">
+<script src="demo.js"></script>
+</head>
+<body>
+
+
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="app navA">
+
+  <aside class="side">
+    <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
+    <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it on" href="team.html" data-demo-area="team" aria-current="page"><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+    </div><div class="grp"><span>Projekte</span>
+      <a class="it " href="projekte.html" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+    </div><div class="grp"><span>Verwaltung</span>
+      <a class="it " href="nutzer.html" data-demo-area="rechte" ><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it " href="einstellungen.html" ><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
+    </div></nav>
+    <div class="me">
+      <a href="profil.html" ><span class="av " aria-hidden="true">D</span><span class="break"><b>Demo-Admin</b><small class="sm2">Admin</small></span></a>
+      <form method="post" action="#"><button class="btn ghost sm" aria-label="Abmelden" title="Abmelden"><i class="fa-solid fa-arrow-right-from-bracket " aria-hidden="true"></i></button></form>
+    </div>
+  </aside>
+
+  <main id="main" class="" tabindex="-1"><div class="demo-bar" role="note"><b>Demo</b><span>Alle Personen, Geräte und Daten sind erfunden · Speichern, Hochladen und Anmelden sind abgeschaltet</span><span class="demo-msg" role="status" aria-live="polite"></span></div>
+  
+    <div class="topbar">
+      <form class="search" role="search" action="#"><i class="fa-solid fa-magnifying-glass " aria-hidden="true"></i><label class="vh" for="q">Suchen</label><input id="q" name="q" type="search" placeholder="Personen suchen …" autocomplete="off"></form>
+      <span class="sp"></span>
+      
+
+
+
+
+
+
+
+
+<div class="hi">
+  
+
+  <button type="button" class="hi-team" popovertarget="hi-onpop">
+    <span class="hi-avs" aria-hidden="true"><span class="av " aria-hidden="true">D</span></span>
+    <span class="hi-on-t">1 online</span><span class="vh"> – wer gerade online ist</span></button>
+  <div class="hi-pop" id="hi-onpop" popover role="dialog" aria-labelledby="hi-onpop-h"><div class="hi-pop-h" id="hi-onpop-h">Gerade online</div>
+    <ul class="hi-list"><li><span class="av " aria-hidden="true">D</span><span>Demo-Admin (du)<small>Admin</small></span></li></ul>
+    <p class="hi-note">aktiv in den letzten 5 Minuten</p></div>
+  
+
+
+  <button type="button" class="hi-bell" popovertarget="hi-bellpop" aria-label="1 fällig"><i class="fa-solid fa-bell " aria-hidden="true"></i><span class="hi-badge" aria-hidden="true">1</span></button>
+  <div class="hi-pop" id="hi-bellpop" popover role="dialog" aria-labelledby="hi-bellpop-h"><div class="hi-pop-h" id="hi-bellpop-h">Fällig</div>
+    <ul class="hi-list"><li><a href="geraete-4.html"><i class="fa-solid fa-box hi-w" aria-hidden="true"></i><span>Rückgabe überfällig<small>Tobii Pro Glasses 3 · Paul Richter</small></span></a></li></ul>
+    </div>
+
+
+  <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
+  <time class="hi-time" data-clock="time">15:03</time>
+  <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+<div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
+  <dl class="hi-dl">
+    <dt>Netz</dt><dd><span>UXLab-WLAN</span><span class="hi-k"><i class="fa-solid fa-check " aria-hidden="true"></i> dein Gerät ist im Lab-Netz</span></dd>
+    <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
+    <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
+    <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 15:03:38</dd>
+  </dl>
+</div>
+
+</div>
+
+      <a class="btn pri" href="nutzer-neu.html"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Nutzer anlegen</span></a>
+    </div>
+  
+    <div class="page">
+
+<div class="ph">
+  <div><h1>Team</h1><p class="sub">8 Personen</p></div>
+  <div class="acts">
+<form method="post" action="#" class="seg" aria-label="Ansicht Team">
+  <input type="hidden" name="area" value="team"><input type="hidden" name="next" value="/team?p=3">
+  <button name="variant" value="A" class="" aria-pressed="false">Liste</button><button name="variant" value="B" class="on" aria-pressed="true">Karten</button><button name="variant" value="C" class="" aria-pressed="false">Phasen</button>
+</form>
+<a class="btn pri" href="nutzer-neu.html"><i class="fa-solid fa-user-plus " aria-hidden="true"></i><span>Person anlegen</span></a></div>
+</div>
+
+<nav class="seg" aria-label="Nach Rolle filtern">
+  <a href="team.html" data-demo-area="team" class="on" aria-current="true">Alle <small>8</small></a>
+  <a href="team_rolle-leitung.html" data-demo-area="team" class="" >Lab-Leitung <small>1</small></a><a href="team_rolle-mitarbeiter.html" data-demo-area="team" class="" >Mitarbeiter:in <small>2</small></a><a href="team_rolle-student.html" data-demo-area="team" class="" >Student:in / HiWi <small>5</small></a>
+</nav>
+<div class="g4">
+  <a class="card pcard" href="person-1.html">
+    <div class="top"><span class="av lg" aria-hidden="true">AB</span><div class="break"><b>Dr. Anna Berger</b><small class="sm2">Lab-Leitung</small></div></div>
+    <p class="tp">Betreuung aller Projekte</p>
+    <div class="row"><span class="chip ">läuft</span></div>
+  </a>
+  <a class="card pcard" href="person-3.html">
+    <div class="top"><span class="av lg" aria-hidden="true">CN</span><div class="break"><b>Clara Neumann</b><small class="sm2">Doktorandin</small></div></div>
+    <p class="tp">Vertrauen in Roboterassistenz</p>
+    <div class="row"><span class="chip ">Studie in Planung</span><span class="chip plain">Planung</span></div>
+  </a>
+  <a class="card pcard" href="person-2.html">
+    <div class="top"><span class="av lg" aria-hidden="true">JW</span><div class="break"><b>Jonas Weber</b><small class="sm2">Wiss. Mitarbeiter</small></div></div>
+    <p class="tp">Eye-Tracking im Cockpit-HMI</p>
+    <div class="row"><span class="chip acc">Datenerhebung</span><span class="chip plain">Umsetzung</span></div>
+  </a>
+  <a class="card pcard" href="person-4.html">
+    <div class="top"><span class="av lg" aria-hidden="true">LH</span><div class="break"><b>Lena Hoffmann</b><small class="sm2">Studentin · Masterarbeit</small></div></div>
+    <p class="tp">Sprachassistent für die Pflege</p>
+    <div class="row"><span class="chip warn">Bericht fällig</span><span class="chip plain">Auswertung &amp; Schreiben</span></div>
+  </a>
+  <a class="card pcard" href="person-7.html">
+    <div class="top"><span class="av lg" aria-hidden="true">MY</span><div class="break"><b>Mehmet Yilmaz</b><small class="sm2">HiWi · Lab-Betreuung</small></div></div>
+    <p class="tp">Geräteausgabe, Lab-Dienst</p>
+    <div class="row"><span class="chip ">läuft</span></div>
+  </a>
+  <a class="card pcard" href="person-6.html">
+    <div class="top"><span class="av lg" aria-hidden="true">PR</span><div class="break"><b>Paul Richter</b><small class="sm2">Student · Projektarbeit</small></div></div>
+    <p class="tp">Barrierefreie Kiosk-UI</p>
+    <div class="row"><span class="chip ">wartet auf Feedback</span><span class="chip plain">Wartet</span></div>
+  </a>
+  <a class="card pcard" href="person-5.html">
+    <div class="top"><span class="av lg" aria-hidden="true">SK</span><div class="break"><b>Sophie Klein</b><small class="sm2">Studentin · Bachelorarbeit</small></div></div>
+    <p class="tp">VR-Montagetraining</p>
+    <div class="row"><span class="chip acc">Prototyp</span><span class="chip plain">Umsetzung</span></div>
+  </a>
+  <a class="card pcard" href="person-8.html">
+    <div class="top"><span class="av lg" aria-hidden="true">TS</span><div class="break"><b>Tim Schröder</b><small class="sm2">HiWi · Usability-Tests</small></div></div>
+    <p class="tp">Usability-Tests Lernplattform</p>
+    <div class="row"><span class="chip ">läuft</span><span class="chip plain">Umsetzung</span></div>
+  </a></div>
+
+</div>
+  </main>
+</div>
+</body>
+</html>

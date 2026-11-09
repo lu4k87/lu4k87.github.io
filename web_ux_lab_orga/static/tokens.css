@@ -1,0 +1,49 @@
+/* UX Lab Orga – alle Design-Tokens: Look C „Tiefe“ (User-Wahl 2026-11-09, Vorschau 2). Komponenten in app.css nutzen nur var().
+   Mint-Grün = Akzent, Orange (--accent-2) nur Logo und „heute“ (nie Warnung), Neon-Schein (--glow) nur im Dunkel-Modus.
+   Theme: <html data-theme="light|dark"> aus Profil › Darstellung; ohne Attribut („System“) folgt es prefers-color-scheme.
+   Quelle: design/look_v2/tokens.css (+ --hilite für .btn.pri, --field-line = Feldrahmen ≥ 3:1, WCAG 1.4.11) · Nachjustieren: design/mockup_v2/look.css ?look=c&theme=dark */
+@font-face{font-family:"Sora";src:url(fonts/sora-600.woff2) format("woff2");font-weight:500 600;font-display:swap}
+:root{color-scheme:light;
+  --font-ui:"Instrument Sans",system-ui,sans-serif; --font-mono:"JetBrains Mono",ui-monospace,monospace;
+  --font-display:"Sora",var(--font-ui);
+  --bg:oklch(95% .006 200); --panel:oklch(98.7% .003 200); --surface:#fff; --sunken:oklch(95.6% .005 200); --line:oklch(91.5% .006 200); --line-2:oklch(85% .009 200); --field-line:oklch(62% .012 210);
+  --ink:oklch(20% .015 220); --ink-2:oklch(36% .015 220);
+  --accent:oklch(50% .12 163); --accent-soft:oklch(95.5% .035 165); --accent-ink:oklch(37% .09 165); --accent-line:oklch(85% .07 165); --on-accent:#fff;
+  --accent-2:oklch(70% .17 50); --on-accent-2:oklch(20% .04 50);
+  --warn:oklch(49% .1 80); --warn-soft:oklch(96.5% .04 90); --warn-line:oklch(84% .08 88);
+  --bad:oklch(47% .16 28); --bad-soft:oklch(95.8% .025 25); --bad-line:oklch(83% .07 25);
+  --ok:oklch(45% .1 150); --ok-soft:oklch(95.8% .03 150);
+  --thead:oklch(98.4% .003 200); --drop:oklch(98.6% .003 200); --weekend:oklch(97.2% .004 200); --toast-bg:var(--ink);
+  --shadow-1:0 1px 2px oklch(25% .03 220 / .12); --shadow-2:0 1px 2px oklch(25% .03 220 / .05),0 6px 20px oklch(25% .03 220 / .06); --shadow-3:0 18px 44px oklch(25% .03 220 / .22);
+  --glow:0 4px 14px oklch(50% .12 163 / .22); --glow-text:none; --hilite:inset 0 1px 0 oklch(100% 0 0 / .18);
+  --focus:oklch(55% .13 163);
+  --r-sm:6px; --r:9px; --r-lg:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:oklch(14% .008 220); --panel:oklch(17.5% .01 220); --surface:oklch(21% .011 220); --sunken:oklch(24% .012 220); --line:oklch(100% 0 0 / .08); --line-2:oklch(100% 0 0 / .14); --field-line:oklch(54% .012 210);
+    --ink:oklch(95.5% .005 200); --ink-2:oklch(81% .01 200);
+    --accent:oklch(84% .16 160); --accent-soft:oklch(26.5% .04 165); --accent-ink:oklch(90% .1 160); --accent-line:oklch(39% .065 165); --on-accent:oklch(18% .04 165);
+    --accent-2:oklch(77% .16 55); --on-accent-2:oklch(20% .04 50);
+    --warn:oklch(86% .12 92); --warn-soft:oklch(28% .045 88); --warn-line:oklch(46% .07 88);
+    --bad:oklch(77% .13 25); --bad-soft:oklch(28% .05 25); --bad-line:oklch(45% .09 25);
+    --ok:oklch(79% .11 150); --ok-soft:oklch(27% .035 150);
+    --thead:oklch(19% .01 220); --drop:oklch(19% .01 220); --weekend:oklch(18.4% .01 220); --toast-bg:var(--ink);
+    --shadow-1:0 1px 2px oklch(0% 0 0 / .45); --shadow-2:inset 0 1px 0 oklch(100% 0 0 / .04),0 6px 20px oklch(0% 0 0 / .3); --shadow-3:0 18px 44px oklch(0% 0 0 / .55);
+    --glow:0 0 0 1px oklch(84% .16 160 / .35),0 0 18px oklch(84% .16 160 / .3); --glow-text:0 0 10px oklch(84% .16 160 / .55);
+    --focus:oklch(84% .16 160); --today-mix:26%;
+  }
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:oklch(14% .008 220); --panel:oklch(17.5% .01 220); --surface:oklch(21% .011 220); --sunken:oklch(24% .012 220); --line:oklch(100% 0 0 / .08); --line-2:oklch(100% 0 0 / .14); --field-line:oklch(54% .012 210);
+  --ink:oklch(95.5% .005 200); --ink-2:oklch(81% .01 200);
+  --accent:oklch(84% .16 160); --accent-soft:oklch(26.5% .04 165); --accent-ink:oklch(90% .1 160); --accent-line:oklch(39% .065 165); --on-accent:oklch(18% .04 165);
+  --accent-2:oklch(77% .16 55); --on-accent-2:oklch(20% .04 50);
+  --warn:oklch(86% .12 92); --warn-soft:oklch(28% .045 88); --warn-line:oklch(46% .07 88);
+  --bad:oklch(77% .13 25); --bad-soft:oklch(28% .05 25); --bad-line:oklch(45% .09 25);
+  --ok:oklch(79% .11 150); --ok-soft:oklch(27% .035 150);
+  --thead:oklch(19% .01 220); --drop:oklch(19% .01 220); --weekend:oklch(18.4% .01 220); --toast-bg:var(--ink);
+  --shadow-1:0 1px 2px oklch(0% 0 0 / .45); --shadow-2:inset 0 1px 0 oklch(100% 0 0 / .04),0 6px 20px oklch(0% 0 0 / .3); --shadow-3:0 18px 44px oklch(0% 0 0 / .55);
+  --glow:0 0 0 1px oklch(84% .16 160 / .35),0 0 18px oklch(84% .16 160 / .3); --glow-text:0 0 10px oklch(84% .16 160 / .55);
+  --focus:oklch(84% .16 160); --today-mix:26%;
+}
