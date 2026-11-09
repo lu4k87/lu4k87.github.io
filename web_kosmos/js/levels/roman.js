@@ -208,7 +208,7 @@ export function create(ctx) {
       placeHotspots();
     },
     orbitUpdate: (c, dt) => look.orbitUpdate(c, dt),
-    widget: () => '<table><thead><tr><th>Roman im Moment</th><th>Wert</th></tr></thead><tbody id="w-l2"><tr><td colspan="2">Bahn wird berechnet …</td></tr></tbody></table><p class="w-foot">Anreise und Bahn um L2 aus den JPL-Horizons-Bahndaten (ab 30.08.2026, künftige Orte als Vorhersage der Mission); Ankunft nach ≈ 100 Tagen erwartet; Erde und Mond an ihren echten Orten zum angezeigten Zeitpunkt.</p>',
+    widget: () => '<table><thead><tr><th>Roman im Moment</th><th>Wert</th></tr></thead><tbody id="w-l2"><tr><td colspan="2">Bahn wird berechnet …</td></tr></tbody></table><p class="w-foot">Anreise und Bahn um L2 aus den JPL-Horizons-Bahndaten (ab 30.08.2026, künftige Orte als Vorhersage der Mission); Ankunft nach ≈\u00a0100\u00a0Tagen erwartet; Erde und Mond an ihren echten Orten zum angezeigten Zeitpunkt.</p>',
     widgetTick(el, t) {
       ov.widgetTick(el, t, () => `<tr><td>seit dem Start</td><td class="num">${Math.max(0, Math.floor(ov.jd - LAUNCH))} Tage</td></tr>`);
     },

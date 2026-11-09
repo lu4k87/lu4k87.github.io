@@ -288,7 +288,8 @@ const resettable = (l) => ['toggle', 'range', 'seg', 'swatch'].includes(l.type) 
 const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id, l.label) : '');
 const isWide = (l, subs) => subs.length > 0 || l.type === 'swatch' || l.type === 'seg' || l.marks || (l.fmt && choicesOf(l).length > 2 && !isPick(l));
 // kurz = passt in eine halbe Spalte: Schalter, Knopf, Auswahlfeld, Zahlen-Regler; ohne Zeitmarken, Detailbild, langen Hinweis
-const isShort = (l) => !l.marks && !l.detail && (!l.hint || l.hint.length <= 90)
+// Stufen-Regler mit 3+ benannten Stufen braucht die volle Breite, sonst ragen die Namen („Niedrig“) über den Rand
+const isShort = (l) => !l.marks && !l.detail && (!l.hint || l.hint.length <= 90) && !(l.ordered && choicesOf(l).length > 2)
   && (l.type === 'toggle' || l.type === 'action' || isPick(l) || (l.type === 'range' && !isWide(l, [])));
 const shortItem = ({ l, subs }) => isShort(l) && (subs.length === 0 || (subs.length === 1 && isShort(subs[0])));
 // Paare von vorn: zwei kurze Nachbarn → beide halb; eine kurze Zeile allein bleibt voll (keine Lücke im Raster)

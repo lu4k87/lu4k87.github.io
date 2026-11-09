@@ -18,12 +18,12 @@ import TELESKOP from './figs/teleskop.js';
 import DUNKEL from './figs/dunkel.js';
 
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-// Fließtext im Blocksatz (kosmos.css „Fließtext“): geschützte Leerzeichen, damit Zahl + Einheit (384 km, ≈ 90 t),
+// Fließtext im Blocksatz (kosmos.css „Fließtext“): geschützte Leerzeichen, damit Zahl + Einheit (384 km, ≈ 90 t, 1 Tag/s),
 // Kürzel (z. B.) und Namen mit Nummer (Voyager 2) nie auseinanderbrechen und kein Gedankenstrich eine Zeile beginnt.
 // Wirkt auf fertiges HTML ohne Tags mit Leerzeichen (esc-Text, Hinweise im Zahnrad)
 const NB = '\u00a0';
 export const nbsp = (s) => String(s)
-  .replace(/(\d) (?=(?:\S{1,4}|Mio\.|Mrd\.|Jahren?|Tagen?|Stunden|Minuten)(?=[\s,.;:)!?]|$))/g, `$1${NB}`)
+  .replace(/(\d) (?=(?:\S{1,4}|[^\s/]{1,6}\/[^\s/]{1,3}|Mio\.|Mrd\.|Jahren?|Tagen?|Stunden|Minuten)(?=[\s,.;:)!?]|$))/g, `$1${NB}`)
   .replace(/([≈≙~±≤≥<>×−]|&lt;|&gt;) (?=\d)/g, `$1${NB}`)
   .replace(/(\b[A-Za-z]\.) (?=[A-Za-z]\.)/g, `$1${NB}`)
   .replace(/([A-ZÄÖÜ][\wäöüß]*) (?=\d+(?:[\s,.;:)]|$))/g, `$1${NB}`)

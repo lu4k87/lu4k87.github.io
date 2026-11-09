@@ -3,6 +3,8 @@
    Skalenstriche, Kosmos-Cyan nur für Aktives, Mono-Schrift für Zahlen, Satzschreibung statt Versalien-Zeilen.
    Aufbau als Grid (Kopf · Skala | Bühne | Tafel · Fuß): nichts liegt absolut übereinander. */
 
+/* Silbentrennung überall erst ab 3 Buchstaben je Teil: nie „Oberfläc-he“ oder 2 Buchstaben allein in der Zeile (User 09.11.2026) */
+html { hyphenate-limit-chars: 6 3 3; }
 :root {
   --ink: #eef2f8;
   --ink-soft: #d3dae6;
@@ -453,22 +455,26 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
   line-height: 1.45;
   color: var(--ink-soft);
 }
+/* Begleitwerte: so viele Spalten, wie ihre Werte ungekürzt fassen (User 09.11.2026: „51,8 ± 2,3 µas“ war abgeschnitten) –
+   passt ein Wert nicht, rückt seine Spalte in die nächste Reihe; Trennstrich links je Spalte, am Reihenanfang weggeschnitten */
 .ed-columns {
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
-  gap: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 14px;
+  clip-path: inset(0);
 }
 .ed-col {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   gap: 2px;
   position: relative;
-  min-width: 0;
+  min-width: min-content;
 }
-.ed-col:not(:last-child)::after {
+.ed-col + .ed-col::before {
   content: "";
   position: absolute;
-  right: -7px;
+  left: -7px;
   top: 2px;
   bottom: 2px;
   width: 1px;
@@ -503,10 +509,11 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 }
 @container (max-width: 320px) {
   .ed-columns {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 9px;
   }
-  .ed-col:not(:last-child)::after {
+  .ed-col { flex: none; }
+  .ed-col + .ed-col::before {
     display: none;
   }
 }
@@ -622,14 +629,13 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
   flex-direction: column;
   gap: 4px;
 }
+/* Kategorie nie kürzen (User 09.11.2026: „Reise · Nächste…“ am Handy): bricht ausgewogen in eine zweite Zeile */
 .explore .badge-cat {
-  font: 700 11px/1.1 var(--mono);
+  font: 700 11px/1.25 var(--mono);
   color: var(--ink-muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-wrap: balance;
 }
 .explore .is-dive .badge-cat {
   color: var(--accent);
@@ -657,7 +663,8 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .note summary { cursor: pointer; font: 600 13px var(--font); }
 .note p { margin-top: 8px; font-size: 13px; }
 .sources { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; counter-reset: src; }
-.sources li { font-size: 13px; line-height: 1.4; display: flex; flex-direction: column; }
+.sources li { font-size: 13px; line-height: 1.4; display: flex; flex-direction: column; text-wrap: pretty; }   /* pretty: nie „K“ oder „2“ allein in der letzten Zeile */
+.hc-notes li { text-wrap: pretty; }
 .sources span { color: var(--ink-soft); font-size: 12px; }
 
 /* ---------- Sechseck ---------- */
@@ -754,7 +761,7 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 .hc-tile b { font: 500 16px/1.15 var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .hc-tile b.is-long { font-size: 13.5px; }
 .hc-tile b i { font: 500 12px var(--mono); font-style: normal; color: var(--ink-soft); margin-left: 3px; }
-.hc-tile > span { font-size: 12px; line-height: 1.35; color: var(--ink-soft); hyphens: manual; overflow-wrap: break-word; text-wrap: balance; }   /* Label ≤ 3 Zeilen gleich lang, nie „(Okt. / 2026)“ (User 04.11.2026) */
+.hc-tile > span { font-size: 12px; line-height: 1.35; color: var(--ink-soft); hyphens: auto; overflow-wrap: break-word; text-wrap: balance; }   /* Label ≤ 3 Zeilen gleich lang, nie „(Okt. / 2026)“; Silben statt „geschwindigkei / t“ (User 09.11.2026) (User 04.11.2026) */
 .fn { font: 500 11px var(--mono); color: var(--accent); margin-left: 2px; line-height: 0; }
 .hc-ctl { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 10px; padding: 9px 12px 10px; border-radius: 8px; cursor: pointer;
   border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); background: var(--accent-soft); }
@@ -1089,15 +1096,18 @@ body.fatal-webgl .fatal-webgl, body.fatal-start .fatal-start { display: block; }
   .flight { font-size: 12px; }
   .bottombar { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 6px 10px 10px; }
   .nav-buttons { width: 100%; }
-  .nav-btn { flex: 1 1 0; min-width: 0; padding: 0 8px; }
+  /* Ziel nie abschneiden (User 09.11.2026: „Sonnensy…“): Name bricht an Silben in eine zweite Zeile, Knopf wächst mit */
+  .nav-buttons { height: auto; min-height: 52px; }
+  .nav-btn { flex: 1 1 0; min-width: 0; height: auto; min-height: 44px; padding: 4px 8px; }
   .nav-text { min-width: 0; }
   .nav-btn--next { min-width: 0; }
-  .nav-to { overflow: hidden; text-overflow: ellipsis; }
+  .nav-to { white-space: normal; hyphens: auto; overflow-wrap: break-word; text-wrap: balance; }
   .bottombar > :is(*, .nav-buttons, .tl, .measure) { grid-column: 1; grid-row: auto; justify-self: stretch; }
   .dock { width: 100%; }
   .dock .icon-btn { flex: 1 1 0; justify-content: flex-start; width: auto; height: 48px; padding: 0 12px; text-align: left; }
   .dock .ib-t { display: inline; }
   .measure { grid-template-columns: 1fr 1fr; }
+  .measure dt { white-space: normal; overflow-wrap: break-word; }   /* halbe Spalte: „Höhe des Webb-Bildausschnitts“ bricht um statt über den Rand */
   .measure div { min-height: 44px; padding: 5px 12px; }
   .caption { left: 0; right: 0; top: 16%; bottom: auto; padding: 0 16px; }
   body:is(.cfg-open, .st-open, .card-open) .caption { visibility: hidden; }   /* Panel links bzw. Info-Karte füllt die Bühne: Ankunftstitel weicht */
