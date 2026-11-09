@@ -383,59 +383,67 @@ button.hi-team:hover{background:var(--sunken)}
 .hi-dl .mono{overflow-wrap:normal}
 @media (max-width:480px){.hi-dl{grid-template-columns:minmax(0,1fr);gap:2px 0} .hi-dl dd{margin-bottom:8px}}
 
-/* Mini-Schema je Ansicht (m.viewpic): Einstellungen + Profil › Darstellung; nur Flächen + Linien aus Tokens */
-.vsch{--vw:128px;display:flex;flex:none;width:var(--vw);aspect-ratio:16/10;border:1px solid var(--line-2);border-radius:var(--r-sm);background:var(--bg);overflow:hidden}
+/* Mini-Schema je Ansicht (m.viewpic): Einstellungen + Profil › Darstellung; nur Flächen + Linien aus Tokens.
+   Maße in em, 1em = 1/10 der Bildbreite (cqw) → gleiches Bild bei 60 px (Handy) wie bei 330 px (Profil). */
+.vsch{--vw:128px;display:flex;flex:none;width:var(--vw);aspect-ratio:16/10;border:1px solid var(--line-2);border-radius:var(--r-sm);background:var(--bg);overflow:hidden;container-type:inline-size}
 .vsch.vcol{flex-direction:column}
 .vsch span{display:block;min-width:0}
-.vsch .vs{width:26%;flex:none;background:var(--surface);border-right:1px solid var(--line);padding:7% 5%;display:flex;flex-direction:column;gap:5px}
-.vsch .vr{width:13%;flex:none;background:var(--surface);border-right:1px solid var(--line);padding:7% 0;display:flex;flex-direction:column;align-items:center;gap:5px}
-.vsch .vm{flex:1;display:flex;flex-direction:column;gap:4px;padding:5%}
-.vsch .vb{height:15%;flex:none;display:flex;align-items:center;gap:4px;padding:0 5%;background:var(--surface);border-bottom:1px solid var(--line)}
-.vsch .vx{display:flex;gap:4px;align-items:center}
-.vsch .vy{display:flex;flex-direction:column;gap:3px}
+.vsch>span{font-size:10cqw}
+.vsch .vs{width:26%;flex:none;background:var(--surface);border-right:1px solid var(--line);padding:7% 5%;display:flex;flex-direction:column;gap:.5em}
+.vsch .vr{width:13%;flex:none;background:var(--surface);border-right:1px solid var(--line);padding:7% 0;display:flex;flex-direction:column;align-items:center;gap:.5em}
+.vsch .vm{flex:1;display:flex;flex-direction:column;gap:.4em;padding:5%}
+.vsch .vb{height:15%;flex:none;display:flex;align-items:center;gap:.4em;padding:0 5%;background:var(--surface);border-bottom:1px solid var(--line)}
+.vsch .vx{display:flex;gap:.4em;align-items:center}
+.vsch .vy{display:flex;flex-direction:column;gap:.3em}
 .vsch .f{flex:1}
 .vsch .vx.f{align-items:stretch}
-.vsch .vl{height:3px;border-radius:2px;background:var(--line-2);width:80%;flex:none}
-.vsch .vl.vbig{height:5px}
+.vsch .vl{height:.3em;border-radius:.2em;background:var(--line-2);width:80%;flex:none}
+.vsch .vl.vbig{height:.5em}
 .vsch .w2{width:16%}.vsch .w3{width:30%}.vsch .w4{width:40%}.vsch .w5{width:55%}.vsch .w7{width:70%}.vsch .w9{width:100%}
 .vsch .a{background:var(--accent)}
-.vsch .vc{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:3px;display:flex;flex-direction:column;gap:3px}
+.vsch .vc{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:.2em;padding:.3em;display:flex;flex-direction:column;gap:.3em}
 .vsch .vc .vx{width:100%}
-.vsch .vo{width:7px;height:7px;border-radius:50%;background:var(--line-2);flex:none}
-.vsch .vq{width:7px;height:7px;border-radius:1px;background:var(--line-2);flex:none}
+.vsch .vo{width:.7em;height:.7em;border-radius:50%;background:var(--line-2);flex:none}
+.vsch .vq{width:.7em;height:.7em;border-radius:.1em;background:var(--line-2);flex:none}
 .vsch .vq.a{background:var(--accent)}
-.vsch .vk{width:14px;height:6px;border-radius:3px;border:1px solid var(--line-2);flex:none}
-.vsch .vp{height:8px;border:1px solid var(--line-2);border-radius:4px;background:var(--surface);flex:none;width:60%}
-.vsch .vp.vbig{width:100%;height:11px;border-color:var(--accent)}
-.vsch .vw{width:12px;height:6px;border-radius:3px;background:var(--line-2);flex:none}
+.vsch .vk{width:1.4em;height:.6em;border-radius:.3em;border:1px solid var(--line-2);flex:none}
+.vsch .vp{height:.8em;border:1px solid var(--line-2);border-radius:.4em;background:var(--surface);flex:none;width:60%}
+.vsch .vp.vbig{width:100%;height:1.1em;border-color:var(--accent)}
+.vsch .vw{width:1.2em;height:.6em;border-radius:.3em;background:var(--line-2);flex:none}
 .vsch .vw.von{background:var(--accent)}
 .vsch .vsp{flex:1}
 .vsch .vhl{background:var(--accent-soft);border-color:var(--accent-line)}
 .vsch .vi{flex:0 0 44%}
-.vsch .vgr{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;flex:1}
-.vsch .vgr.vmx{grid-template-columns:repeat(6,1fr);gap:2px;flex:none}
-.vsch .vgr.vmx .vq{width:auto;height:6px}
+.vsch .vgr{display:grid;grid-template-columns:repeat(3,1fr);gap:.3em;flex:1}
+.vsch .vgr.vmx{grid-template-columns:repeat(6,1fr);gap:.2em;flex:none}
+.vsch .vgr.vmx .vq{width:auto;height:.6em}
 .vsch .vtile .vq{width:100%;height:auto;flex:1}
-.vsch .vln{border-bottom:1px solid var(--line);padding-bottom:3px}
-.vsch .vtr{flex:1;height:6px;background:var(--sunken);border-radius:3px;position:relative}
-.vsch .vg{position:absolute;top:0;bottom:0;border-radius:3px;background:var(--accent-soft);border:1px solid var(--accent-line)}
+.vsch .vln{border-bottom:1px solid var(--line);padding-bottom:.3em}
+.vsch .vtr{flex:1;height:.6em;background:var(--sunken);border-radius:.3em;position:relative}
+.vsch .vg{position:absolute;top:0;bottom:0;border-radius:.3em;background:var(--accent-soft);border:1px solid var(--accent-line)}
 .vsch .o1{left:5%}.vsch .o3{left:30%}.vsch .o5{left:50%}
 .vsch .vg.w3{width:30%}.vsch .vg.w4{width:40%}.vsch .vg.w5{width:45%}
-/* Einstellungen (Einst:C): eine Karte je Bereich, Spalten = Ansichten mit Bild, Zeilen = Rollen */
+/* Einstellungen (Einst:C): eine Karte je Bereich, Spalten = Ansichten mit Bild, Zeilen = Rollen.
+   Kopf oben bündig (Bilder + Namen auf einer Linie, „Standard“ darunter), ganze Zelle = Klickfläche (44 px). */
 .vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(460px,100%),1fr));gap:16px}
 .vcard>h2{padding:16px 20px 4px}
 .vct{min-width:0}
 .vct th,.vct td{padding:8px}
 .vct thead th:first-child,.vct tbody th{padding-left:20px}
-.vct thead th{text-align:center;white-space:normal}
-.vct thead th:first-child{text-align:left}
+.vct thead th{text-align:center;white-space:normal;vertical-align:top}
+.vct thead th:first-child{text-align:left;vertical-align:bottom}
 .vct thead th .vsch{--vw:100px;margin:0 auto 6px}
+.vct tbody tr{height:44px}
 .vct td{text-align:center}
-.vct td input{accent-color:var(--accent);width:18px;height:18px;margin:0}
+.vct td:has(.vhit){padding:0}
+.vct .vhit{display:flex;align-items:center;justify-content:center;min-height:44px;cursor:pointer}
+.vct .vhit:hover{background:var(--sunken)}
+.vct td input{accent-color:var(--accent);width:18px;height:18px;margin:0;cursor:pointer}
 .vct td.no{color:var(--ink-2);font-size:13.5px}
-/* Profil › Darstellung (Profil:A): Bildkachel, Bild oben, Wahl darunter */
+/* Profil › Darstellung (Profil:A): Bildkachel, Bild über die volle Breite, Wahl darunter;
+   eine Spalte (Tablet) → Bild links, Text rechts, damit das Bild nicht riesig wird */
 .choice.pic label{flex-direction:column;align-items:stretch}
-.choice.pic label .vsch{--vw:100%;max-width:220px}
+.choice.pic label .vsch{--vw:100%}
 .choice.pic .pr{display:flex;gap:10px;align-items:flex-start}
-@media (max-width:640px){.vct thead th .vsch{--vw:56px} .vct th,.vct td{padding:8px 3px;font-size:12.5px} .vct thead th:first-child,.vct tbody th{padding-left:12px} .vct tbody th{white-space:normal}
-  .choice.pic label .vsch{max-width:180px}}
+@media (max-width:1100px) and (min-width:641px){.choice.pic label{flex-direction:row;align-items:center;gap:16px} .choice.pic label .vsch{--vw:200px}}
+@media (max-width:640px){.vct thead th .vsch{--vw:52px} .vct th,.vct td{padding:8px 3px;font-size:13px} .vct thead th:first-child,.vct tbody th{padding-left:12px} .vct tbody th{white-space:normal}}
