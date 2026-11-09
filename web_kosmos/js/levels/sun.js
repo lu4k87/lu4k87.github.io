@@ -262,6 +262,7 @@ export function create(ctx) {
   const evU = strandUniforms();
   const ev = new THREE.Mesh(new THREE.BufferGeometry(), strandMat2(evU));
   evU.uSoft = { value: 0 };   // eigener Look der Ausbrüche (buildEvent), nicht der der Bögen
+  evU.uGain = { value: 1 };   // eigene Helligkeit: Leuchtkraft der Bögen × Stärke des Massenauswurfs (applyEject)
   let eruptReal = true;
   ev.frustumCulled = false;
   ev.visible = false;
@@ -309,7 +310,8 @@ export function create(ctx) {
   // ohne Tiefentest, weil die Tafel durch die Sonnenmitte geht – sie rechnet die Kugel selbst (Strahl je Pixel)
   const rimU = { uTime: coronaU.uTime, uSurf: lookU.uSurf, uExt: { value: LOOK_EXT }, uSize: { value: LOOK_EXT }, uGain: { value: 0.8 },
     uRim: { value: 2 }, uSpH: { value: SPICULE_H[2] }, uCor: { value: 1 }, uE: { value: 1 }, uEK: { value: -1 }, uEB: { value: 0 }, uEA: { value: 0 }, uEDir: { value: new THREE.Vector2(0, 1) },
-    uESp: { value: new THREE.Vector2() }, uSunInv: { value: new THREE.Matrix3() }, uAR: { value: Array.from({ length: 6 }, () => new THREE.Vector4()) }, uHaze: { value: 1 } };
+    uESp: { value: new THREE.Vector2() }, uSunInv: { value: new THREE.Matrix3() }, uAR: { value: Array.from({ length: 6 }, () => new THREE.Vector4()) }, uHaze: { value: 1 },
+    uEAmt: { value: 1 }, uEH: { value: 1 } };
   const rim = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: LOOK_ATMO_VERT, fragmentShader: LOOK_ATMO_FRAG, uniforms: rimU,
     defines: lookDefines(ctx.detail), blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true }));
   rim.frustumCulled = false;
@@ -328,6 +330,17 @@ export function create(ctx) {
   scene.add(sunFlare);
   let opticIdx = 0, ghostOn = true, ghostMotionOn = true;
   let burstRate = 1.0, sprayAmt = 1.0;
+  // Massenauswurf dezent (User 09.11.2026, „etwas dezenter“): Regler „Stärke“ und „Höhe des Auswurfs“, 1× = Grundwert
+  // EJECT_AMT/EJECT_H (vorher 1 – etwa 1,7× bzw. 1,35× zeigen den alten Look); wirkt auf Fäden, Blase und SDO-Auswurf
+  const EJECT_AMT = 0.6, EJECT_H = 0.75;
+  let ejectAmt = 1, ejectH = 1;
+  function applyEject() {
+    const e = EJECT_AMT * ejectAmt;
+    evU.uGain.value = strandU.uGain.value * e;
+    rimU.uEAmt.value = e;
+    cmeU.uGain.value = (chOf(chan).n ? 0.6 : 1.1) * e;
+    evU.uScale.value = rimU.uEH.value = EJECT_H * ejectH;
+  }
   const FLASH = [[1.6, 1.5, 1.4], [1.6, 1.35, 0.8], [1.6, 0.9, 0.55], [1.5, 1.2, 0.9]];
   const cmeState = { t: 1e3, dir: new THREE.Vector3(), from: new THREE.Vector3(), foot: new THREE.Vector3() };
   // Neue Ereignisse (Vorschau „Sonne optimieren“ 28.10.2026): Sonnenbeben nach dem Flare (Ereig:A, Ringe im Kruste-Shader,
@@ -358,6 +371,7 @@ export function create(ctx) {
     // globaler Farblook (Zahnrad Global) gewinnt: dann bleibt die Sonne neutral und main.js legt ihn darüber
     const gr = GRADES[globalGrade() ? 0 : gradeIdx][1];
     Object.assign(look, gr, { bloom: gr.bloom * gb });
+    applyEject();
   }
   const offGrade = onSettings((keys) => { if (keys.includes('grade')) applyGlow(); });
   const regionWorld = (r, out, h = 1) => out.copy(r.mid).multiplyScalar(h).applyAxisAngle(Y, omega(r.lat) * days * RAD).applyQuaternion(sunG.quaternion);
@@ -492,7 +506,7 @@ export function create(ctx) {
     sunU.uGran.value = !n && granOn ? 1 : 0;
     coronaU.uCorona.value = !n && coronaOn ? 1 : 0;
     coronaU.uChromo.value = n ? 0 : 2.0;
-    cmeU.uGain.value = n ? 0.6 : 1.1;
+    applyEject();
     flash.material.color.setRGB(...FLASH[n]);
     applyRegions();
   }
@@ -540,6 +554,10 @@ export function create(ctx) {
       hint: 'Realistisch: Flare als Arkade mit Regen, Filament als Plasma-Tuch, Abriss als Glut-Bogen mit Dunst (nach SDO-Filmen).' },
     { id: 'prom', type: 'toggle', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; applyRegions(); } },
     { id: 'flares', type: 'toggle', label: 'Flares mit Massenauswurf', value: true, set: (v) => { flaresOn = v; if (!v) { cme.visible = flash.visible = ev.visible = false; erupt.k = -1; } } },
+    { id: 'ejectAmt', type: 'range', label: 'Stärke', value: 1, min: 0.2, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { ejectAmt = v; applyEject(); },
+      active: () => flaresOn, only: 'Nur solange „Flares mit Massenauswurf“ an ist.' },
+    { id: 'ejectH', type: 'range', label: 'Höhe des Auswurfs', value: 1, min: 0.4, max: 1.6, step: 0.1, unit: '×', sub: true, set: (v) => { ejectH = v; applyEject(); },
+      active: () => flaresOn && (!lookOn || eruptIdx === 0), only: 'Nur bei der Art „Filament-Eruption“ (Glut und 304 Å), solange „Flares mit Massenauswurf“ an ist.' },
     { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; } },
     { id: 'flarePoisson', type: 'range', label: 'Platzen der Bögen', value: 1, min: 0.4, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { burstRate = v; strandU.uBurst.value = fieldU.uBurst.value = v; } },
     { id: 'flareSpray', type: 'range', label: 'Spray & Schockwelle', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { sprayAmt = v; strandU.uSpray.value = fieldU.uSpray.value = v; } },
@@ -755,8 +773,8 @@ export function create(ctx) {
         const k = cmeState.t / 9;
         if (k >= 1) cme.visible = false;
         else {
-          cme.position.copy(cmeState.from).addScaledVector(cmeState.dir, k * 5);
-          cmeU.uSize.value = 0.45 + 3.4 * k;
+          cme.position.copy(cmeState.from).addScaledVector(cmeState.dir, k * 5 * rimU.uEH.value);
+          cmeU.uSize.value = 0.45 + 3.4 * k * rimU.uEH.value;
           cmeU.uK.value = k;
           vS.copy(cmeState.dir).transformDirection(cam.matrixWorldInverse);
           const l = Math.hypot(vS.x, vS.y);

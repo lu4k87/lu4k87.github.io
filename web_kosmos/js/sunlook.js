@@ -539,7 +539,7 @@ void main() {
 // · 3 feiner Saum.
 export const LOOK_ATMO_FRAG = /* glsl */ `
 ${SNOISE}
-uniform float uTime, uExt, uGain, uSurf, uRim, uE, uEK, uEB, uSpH, uCor, uEA, uHaze;
+uniform float uTime, uExt, uGain, uSurf, uRim, uE, uEK, uEB, uSpH, uCor, uEA, uHaze, uEAmt, uEH;
 uniform vec2 uEDir, uESp;
 uniform mat3 uSunInv;
 uniform vec4 uAR[6];
@@ -594,7 +594,7 @@ vec3 cmeA(vec2 p, float t, float k) {
   float r = length(p), y = r - 1.0;
   if (y < 0.0) return vec3(0.0);
   float x = wrapA(atan(p.y, p.x) - atan(uEDir.y, uEDir.x)) * r;
-  float L = mix(0.15, 1.7, smoothstep(0.2, 0.95, k));
+  float L = mix(0.15, 1.7 * uEH, smoothstep(0.2, 0.95, k));   // uEH: Höhe des Auswurfs (Zahnrad)
   float fade = smoothstep(0.22, 0.4, k) * (1.0 - smoothstep(0.75, 1.0, k));
   float e = length(vec2(x / (0.8 * L), (y - 0.45 * L) / (0.85 * L)));
   float tex = 0.35 + 0.9 * max(fbm3(vec3(x * 4.0, y * 4.0 - t * 0.1, t * 0.05)), 0.0);
@@ -649,11 +649,11 @@ void main() {
     if (hz > 0.0) c += vec3(1.3, 0.48, 0.08) * hz * 0.5 * exp(-mu / 0.12);
     col += wd * 0.5 * c;
   }
-  if (uEK >= 0.0) {
+  if (uEK >= 0.0) {   // uEAmt: Stärke des Massenauswurfs (Zahnrad)
     vec2 p = vQ * uExt;
-    if (uE < 1.5) col += cmeA(p, t, uEK);
-    else if (uE < 2.5) col += flashB(p, uEK) * uEB;
-    else if (uEA > 0.0) col += cmeA(p, t, clamp((uEK - 0.45) / 0.55, 0.0, 1.0)) * uEA;   // Abriss: Blase hinter dem Oberteil
+    if (uE < 1.5) col += cmeA(p, t, uEK) * uEAmt;
+    else if (uE < 2.5) col += flashB(p, uEK) * uEB * uEAmt;
+    else if (uEA > 0.0) col += cmeA(p, t, clamp((uEK - 0.45) / 0.55, 0.0, 1.0)) * uEA * uEAmt;   // Abriss: Blase hinter dem Oberteil
   }
   gl_FragColor = vec4(col * uGain * (1.0 - smoothstep(0.85, 1.0, rq)), 1.0);
 }

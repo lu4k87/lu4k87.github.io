@@ -190,7 +190,7 @@ void main() {
     // Filament-Eruption: Aktivierung (Seil hebt sich langsam, hellt auf), dann stetige Beschleunigung ohne Anhalten; das Seil
     // bläht sich zur Ω-Form, weitet und verdrillt sich, die Beine bleiben verankert
     float a = max(k - 0.12, 0.0) / 0.88;
-    gH = gH * (1.0 + 0.8 * smoothstep(0.0, 0.15, k)) + 1.4 * pow(a, 2.2);
+    gH = gH * (1.0 + 0.8 * smoothstep(0.0, 0.15, k)) + 1.4 * uScale * pow(a, 2.2);   // uScale hier: Höhe des Auswurfs
     gBul = 0.32 * smoothstep(0.08, 0.6, k);
     gLean *= 1.0 + 2.0 * smoothstep(0.1, 0.9, k);
     gRope *= 1.0 + 2.5 * smoothstep(0.1, 0.9, k);
