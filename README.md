@@ -26,4 +26,4 @@
 | **AI Agency** | [`/web_ai_agency`](https://lu4k87.github.io/web_ai_agency) | Begehbares 3D-Agentenbüro zum AI Dev Workflow – jede Komponente des Setups anklickbar. | privat |
 | **Applied Research** | [`/web_applied_research`](https://lu4k87.github.io/web_applied_research) | KreiswertS – Plattform-Prototyp für den Austausch von Kunststoff-Resten in Kamp-Lintfort: Karte, Matching, drei Szenarien. | privat |
 | **Radial HUD** | [`/web_radial_mouse_hud`](https://lu4k87.github.io/web_radial_mouse_hud) | Rundes Menü am Mauszeiger für Linux – Klick auf die Vor-Seitentaste: Screenshot, neue Datei, Ordner, Apps, Ablage. | privat |
-| **ux_lab_orga** | in Arbeit | Neues Projekt – Beschreibung folgt. | privat |
+| **UX Lab Orga** | in Arbeit | Organisation des UX Lab – Stundenplan, Team-Arbeitsstand, Geräte-Ausleihe, Projektmappen, Upload, Rechte. | privat |
