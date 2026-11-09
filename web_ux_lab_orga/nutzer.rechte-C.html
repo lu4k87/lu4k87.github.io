@@ -47,6 +47,8 @@
 
 
 
+
+
 <div class="hi">
   
 
@@ -66,8 +68,15 @@
 
 
   <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
-  <time class="hi-time" data-clock="time">16:22</time>
+  <time class="hi-time" data-clock="time">16:46</time>
   <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+
+<form method="post" action="#" class="hi-theme"><input type="hidden" name="area" value="theme"><input type="hidden" name="next" value="/nutzer?">
+  <button name="variant" value="dark" class="to-dark" aria-label="Dunkles Farbschema" title="Dunkles Farbschema"><i class="fa-solid fa-moon " aria-hidden="true"></i></button>
+  <button name="variant" value="light" class="to-light" aria-label="Helles Farbschema" title="Helles Farbschema"><i class="fa-solid fa-sun " aria-hidden="true"></i></button>
+</form>
+
   
 <div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
   <dl class="hi-dl">
@@ -75,7 +84,7 @@
     <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
     <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
     <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
-    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 16:22:03</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 16:46:05</dd>
   </dl>
 </div>
 
@@ -246,7 +255,7 @@
         
       </div></div>
   </section>
-  <section class="card det"><h2 class="h3 stack">Gast<small class="sm2">0 Nutzer</small></h2>
+  <section class="card det"><h2 class="h3 stack">Praktikant:in<small class="sm2">0 Nutzer</small></h2>
     <div>
       <div class="tog"><span id="t5-1">Stundenplan bearbeiten</span>
         <form method="post" action="#"><input type="hidden" name="role" value="5"><input type="hidden" name="area" value="plan"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t5-1"></button></form>
@@ -257,7 +266,7 @@
         
       </div>
       <div class="tog"><span id="t5-3">Geräte ausleihen</span>
-        <form method="post" action="#"><input type="hidden" name="role" value="5"><input type="hidden" name="area" value="geraet"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t5-3"></button></form>
+        <form method="post" action="#"><input type="hidden" name="role" value="5"><input type="hidden" name="area" value="geraet"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="0"><button class="sw" role="switch" aria-checked="true" aria-labelledby="t5-3"></button></form>
         
       </div>
       <div class="tog"><span id="t5-4">Geräte verwalten</span>
@@ -265,7 +274,7 @@
         
       </div>
       <div class="tog"><span id="t5-5">Freigegebene Zugänge sehen</span>
-        <form method="post" action="#"><input type="hidden" name="role" value="5"><input type="hidden" name="area" value="zugang"><input type="hidden" name="threshold" value="3"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t5-5"></button></form>
+        <form method="post" action="#"><input type="hidden" name="role" value="5"><input type="hidden" name="area" value="zugang"><input type="hidden" name="threshold" value="3"><input type="hidden" name="on" value="0"><button class="sw" role="switch" aria-checked="true" aria-labelledby="t5-5"></button></form>
         
       </div>
       <div class="tog"><span id="t5-6">Zugänge verwalten</span>
@@ -277,11 +286,50 @@
         
       </div>
       <div class="tog"><span id="t5-8">Dateien hochladen</span>
-        <form method="post" action="#"><input type="hidden" name="role" value="5"><input type="hidden" name="area" value="dateien"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t5-8"></button></form>
+        <form method="post" action="#"><input type="hidden" name="role" value="5"><input type="hidden" name="area" value="dateien"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="0"><button class="sw" role="switch" aria-checked="true" aria-labelledby="t5-8"></button></form>
         
       </div>
       <div class="tog"><span id="t5-9">Nutzer verwalten</span>
         <form method="post" action="#"><input type="hidden" name="role" value="5"><input type="hidden" name="area" value="nutzer"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t5-9"></button></form>
+        
+      </div></div>
+  </section>
+  <section class="card det"><h2 class="h3 stack">Gast<small class="sm2">0 Nutzer</small></h2>
+    <div>
+      <div class="tog"><span id="t6-1">Stundenplan bearbeiten</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="plan"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-1"></button></form>
+        
+      </div>
+      <div class="tog"><span id="t6-2">Berichte anderer sehen</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="team"><input type="hidden" name="threshold" value="3"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-2"></button></form>
+        
+      </div>
+      <div class="tog"><span id="t6-3">Geräte ausleihen</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="geraet"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-3"></button></form>
+        
+      </div>
+      <div class="tog"><span id="t6-4">Geräte verwalten</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="geraet"><input type="hidden" name="threshold" value="5"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-4"></button></form>
+        
+      </div>
+      <div class="tog"><span id="t6-5">Freigegebene Zugänge sehen</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="zugang"><input type="hidden" name="threshold" value="3"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-5"></button></form>
+        
+      </div>
+      <div class="tog"><span id="t6-6">Zugänge verwalten</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="zugang"><input type="hidden" name="threshold" value="5"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-6"></button></form>
+        
+      </div>
+      <div class="tog"><span id="t6-7">Projekte anlegen</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="projekte"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-7"></button></form>
+        
+      </div>
+      <div class="tog"><span id="t6-8">Dateien hochladen</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="dateien"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-8"></button></form>
+        
+      </div>
+      <div class="tog"><span id="t6-9">Nutzer verwalten</span>
+        <form method="post" action="#"><input type="hidden" name="role" value="6"><input type="hidden" name="area" value="nutzer"><input type="hidden" name="threshold" value="4"><input type="hidden" name="on" value="1"><button class="sw" role="switch" aria-checked="false" aria-labelledby="t6-9"></button></form>
         
       </div></div>
   </section></div>
@@ -290,7 +338,7 @@
 <form method="post" action="#" class="card pad row wrap">
   <h2 class="h3">Rolle anlegen</h2>
   <label class="vh" for="rn">Name der Rolle</label><input class="inp grow" id="rn" name="name" maxlength="40" placeholder="Name, z. B. Tutor:in …" autocomplete="off" required>
-  <label class="lbl" for="rc">Rechte übernehmen von</label><select class="inp grow" id="rc" name="copy"><option value="2">Lab-Leitung</option><option value="3">Mitarbeiter:in</option><option value="4">Student:in / HiWi</option><option value="5">Gast</option></select>
+  <label class="lbl" for="rc">Rechte übernehmen von</label><select class="inp grow" id="rc" name="copy"><option value="2">Lab-Leitung</option><option value="3">Mitarbeiter:in</option><option value="4">Student:in / HiWi</option><option value="5">Praktikant:in</option><option value="6">Gast</option></select>
   <button class="btn"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Rolle anlegen</span></button>
 </form>
 

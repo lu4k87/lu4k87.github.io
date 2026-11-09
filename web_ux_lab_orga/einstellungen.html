@@ -47,6 +47,8 @@
 
 
 
+
+
 <div class="hi">
   
 
@@ -66,8 +68,15 @@
 
 
   <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
-  <time class="hi-time" data-clock="time">16:22</time>
+  <time class="hi-time" data-clock="time">16:46</time>
   <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+
+<form method="post" action="#" class="hi-theme"><input type="hidden" name="area" value="theme"><input type="hidden" name="next" value="/einstellungen?">
+  <button name="variant" value="dark" class="to-dark" aria-label="Dunkles Farbschema" title="Dunkles Farbschema"><i class="fa-solid fa-moon " aria-hidden="true"></i></button>
+  <button name="variant" value="light" class="to-light" aria-label="Helles Farbschema" title="Helles Farbschema"><i class="fa-solid fa-sun " aria-hidden="true"></i></button>
+</form>
+
   
 <div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
   <dl class="hi-dl">
@@ -75,7 +84,7 @@
     <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
     <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
     <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
-    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 16:22:03</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 16:46:05</dd>
   </dl>
 </div>
 
@@ -93,85 +102,59 @@
     <thead><tr><th scope="col">Rolle</th><th scope="col">Navigation</th><th scope="col">Kopf-Infos</th><th scope="col">Team</th><th scope="col">Geräte</th><th scope="col">Nutzer &amp; Rechte</th></tr></thead>
     <tbody><tr><th scope="row">Admin</th>
       <td><label class="vh" for="v1_nav">Navigation – Admin</label><select class="lvl" id="v1_nav" name="v1_nav">
-        <option value="">Standard (Seitenleiste)</option>
-        <option value="A" >Seitenleiste</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
+        <option value="" selected>Seitenleiste (Standard)</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
       </select></td><td><label class="vh" for="v1_kopf">Kopf-Infos – Admin</label><select class="lvl" id="v1_kopf" name="v1_kopf">
-        <option value="">Standard (Infozeile)</option>
-        <option value="A" >Infozeile</option><option value="B" >Info-Feld</option>
+        <option value="" selected>Infozeile (Standard)</option><option value="B" >Info-Feld</option>
       </select></td><td><label class="vh" for="v1_team">Team – Admin</label><select class="lvl" id="v1_team" name="v1_team">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Karten</option><option value="C" >Phasen</option>
+        <option value="" selected>Liste (Standard)</option><option value="B" >Karten</option><option value="C" >Phasen</option>
       </select></td><td><label class="vh" for="v1_geraet">Geräte – Admin</label><select class="lvl" id="v1_geraet" name="v1_geraet">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
+        <option value="" selected>Liste (Standard)</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
       </select></td><td><label class="vh" for="v1_rechte">Nutzer &amp; Rechte – Admin</label><select class="lvl" id="v1_rechte" name="v1_rechte">
-        <option value="">Standard (Matrix)</option>
-        <option value="A" >Matrix</option><option value="B" >Nutzer</option><option value="C" >Schalter</option>
+        <option value="" selected>Matrix (Standard)</option><option value="B" >Nutzer</option><option value="C" >Schalter</option>
       </select></td></tr><tr><th scope="row">Lab-Leitung</th>
       <td><label class="vh" for="v2_nav">Navigation – Lab-Leitung</label><select class="lvl" id="v2_nav" name="v2_nav">
-        <option value="">Standard (Seitenleiste)</option>
-        <option value="A" >Seitenleiste</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
+        <option value="" selected>Seitenleiste (Standard)</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
       </select></td><td><label class="vh" for="v2_kopf">Kopf-Infos – Lab-Leitung</label><select class="lvl" id="v2_kopf" name="v2_kopf">
-        <option value="">Standard (Infozeile)</option>
-        <option value="A" >Infozeile</option><option value="B" >Info-Feld</option>
+        <option value="" selected>Infozeile (Standard)</option><option value="B" >Info-Feld</option>
       </select></td><td><label class="vh" for="v2_team">Team – Lab-Leitung</label><select class="lvl" id="v2_team" name="v2_team">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Karten</option><option value="C" >Phasen</option>
+        <option value="" selected>Liste (Standard)</option><option value="B" >Karten</option><option value="C" >Phasen</option>
       </select></td><td><label class="vh" for="v2_geraet">Geräte – Lab-Leitung</label><select class="lvl" id="v2_geraet" name="v2_geraet">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
+        <option value="" selected>Liste (Standard)</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
       </select></td><td><label class="vh" for="v2_rechte">Nutzer &amp; Rechte – Lab-Leitung</label><select class="lvl" id="v2_rechte" name="v2_rechte">
-        <option value="">Standard (Matrix)</option>
-        <option value="A" >Matrix</option><option value="B" >Nutzer</option><option value="C" >Schalter</option>
+        <option value="" selected>Matrix (Standard)</option><option value="B" >Nutzer</option><option value="C" >Schalter</option>
       </select></td></tr><tr><th scope="row">Mitarbeiter:in</th>
       <td><label class="vh" for="v3_nav">Navigation – Mitarbeiter:in</label><select class="lvl" id="v3_nav" name="v3_nav">
-        <option value="">Standard (Seitenleiste)</option>
-        <option value="A" >Seitenleiste</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
+        <option value="" selected>Seitenleiste (Standard)</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
       </select></td><td><label class="vh" for="v3_kopf">Kopf-Infos – Mitarbeiter:in</label><select class="lvl" id="v3_kopf" name="v3_kopf">
-        <option value="">Standard (Infozeile)</option>
-        <option value="A" >Infozeile</option><option value="B" >Info-Feld</option>
+        <option value="" selected>Infozeile (Standard)</option><option value="B" >Info-Feld</option>
       </select></td><td><label class="vh" for="v3_team">Team – Mitarbeiter:in</label><select class="lvl" id="v3_team" name="v3_team">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Karten</option><option value="C" >Phasen</option>
+        <option value="" selected>Liste (Standard)</option><option value="B" >Karten</option><option value="C" >Phasen</option>
       </select></td><td><label class="vh" for="v3_geraet">Geräte – Mitarbeiter:in</label><select class="lvl" id="v3_geraet" name="v3_geraet">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
-      </select></td><td><label class="vh" for="v3_rechte">Nutzer &amp; Rechte – Mitarbeiter:in</label><select class="lvl" id="v3_rechte" name="v3_rechte">
-        <option value="">Standard (Matrix)</option>
-        <option value="A" >Matrix</option><option value="B" >Nutzer</option><option value="C" >Schalter</option>
-      </select></td></tr><tr><th scope="row">Student:in / HiWi</th>
+        <option value="" selected>Liste (Standard)</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
+      </select></td><td>kein Zugriff</td></tr><tr><th scope="row">Student:in / HiWi</th>
       <td><label class="vh" for="v4_nav">Navigation – Student:in / HiWi</label><select class="lvl" id="v4_nav" name="v4_nav">
-        <option value="">Standard (Seitenleiste)</option>
-        <option value="A" >Seitenleiste</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
+        <option value="" selected>Seitenleiste (Standard)</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
       </select></td><td><label class="vh" for="v4_kopf">Kopf-Infos – Student:in / HiWi</label><select class="lvl" id="v4_kopf" name="v4_kopf">
-        <option value="">Standard (Infozeile)</option>
-        <option value="A" >Infozeile</option><option value="B" >Info-Feld</option>
+        <option value="" selected>Infozeile (Standard)</option><option value="B" >Info-Feld</option>
       </select></td><td><label class="vh" for="v4_team">Team – Student:in / HiWi</label><select class="lvl" id="v4_team" name="v4_team">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Karten</option><option value="C" >Phasen</option>
+        <option value="" selected>Liste (Standard)</option><option value="B" >Karten</option><option value="C" >Phasen</option>
       </select></td><td><label class="vh" for="v4_geraet">Geräte – Student:in / HiWi</label><select class="lvl" id="v4_geraet" name="v4_geraet">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
-      </select></td><td><label class="vh" for="v4_rechte">Nutzer &amp; Rechte – Student:in / HiWi</label><select class="lvl" id="v4_rechte" name="v4_rechte">
-        <option value="">Standard (Matrix)</option>
-        <option value="A" >Matrix</option><option value="B" >Nutzer</option><option value="C" >Schalter</option>
-      </select></td></tr><tr><th scope="row">Gast</th>
-      <td><label class="vh" for="v5_nav">Navigation – Gast</label><select class="lvl" id="v5_nav" name="v5_nav">
-        <option value="">Standard (Seitenleiste)</option>
-        <option value="A" >Seitenleiste</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
-      </select></td><td><label class="vh" for="v5_kopf">Kopf-Infos – Gast</label><select class="lvl" id="v5_kopf" name="v5_kopf">
-        <option value="">Standard (Infozeile)</option>
-        <option value="A" >Infozeile</option><option value="B" >Info-Feld</option>
-      </select></td><td><label class="vh" for="v5_team">Team – Gast</label><select class="lvl" id="v5_team" name="v5_team">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Karten</option><option value="C" >Phasen</option>
-      </select></td><td><label class="vh" for="v5_geraet">Geräte – Gast</label><select class="lvl" id="v5_geraet" name="v5_geraet">
-        <option value="">Standard (Liste)</option>
-        <option value="A" >Liste</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
-      </select></td><td><label class="vh" for="v5_rechte">Nutzer &amp; Rechte – Gast</label><select class="lvl" id="v5_rechte" name="v5_rechte">
-        <option value="">Standard (Matrix)</option>
-        <option value="A" >Matrix</option><option value="B" >Nutzer</option><option value="C" >Schalter</option>
-      </select></td></tr></tbody>
+        <option value="" selected>Liste (Standard)</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
+      </select></td><td>kein Zugriff</td></tr><tr><th scope="row">Praktikant:in</th>
+      <td><label class="vh" for="v5_nav">Navigation – Praktikant:in</label><select class="lvl" id="v5_nav" name="v5_nav">
+        <option value="" selected>Seitenleiste (Standard)</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
+      </select></td><td><label class="vh" for="v5_kopf">Kopf-Infos – Praktikant:in</label><select class="lvl" id="v5_kopf" name="v5_kopf">
+        <option value="" selected>Infozeile (Standard)</option><option value="B" >Info-Feld</option>
+      </select></td><td><label class="vh" for="v5_team">Team – Praktikant:in</label><select class="lvl" id="v5_team" name="v5_team">
+        <option value="" selected>Liste (Standard)</option><option value="B" >Karten</option><option value="C" >Phasen</option>
+      </select></td><td><label class="vh" for="v5_geraet">Geräte – Praktikant:in</label><select class="lvl" id="v5_geraet" name="v5_geraet">
+        <option value="" selected>Liste (Standard)</option><option value="B" >Kacheln</option><option value="C" >Belegung</option>
+      </select></td><td>kein Zugriff</td></tr><tr><th scope="row">Gast</th>
+      <td><label class="vh" for="v6_nav">Navigation – Gast</label><select class="lvl" id="v6_nav" name="v6_nav">
+        <option value="" selected>Seitenleiste (Standard)</option><option value="B" >Reiter oben</option><option value="C" >Leiste + Suche</option>
+      </select></td><td><label class="vh" for="v6_kopf">Kopf-Infos – Gast</label><select class="lvl" id="v6_kopf" name="v6_kopf">
+        <option value="" selected>Infozeile (Standard)</option><option value="B" >Info-Feld</option>
+      </select></td><td>kein Zugriff</td><td>kein Zugriff</td><td>kein Zugriff</td></tr></tbody>
   </table></div>
   <div class="row"><button class="btn pri"><i class="fa-solid fa-check " aria-hidden="true"></i><span>Standards speichern</span></button></div>
 </form>

@@ -47,6 +47,8 @@
 
 
 
+
+
 <div class="hi">
   
 
@@ -66,8 +68,15 @@
 
 
   <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
-  <time class="hi-time" data-clock="time">16:22</time>
+  <time class="hi-time" data-clock="time">16:46</time>
   <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+
+<form method="post" action="#" class="hi-theme"><input type="hidden" name="area" value="theme"><input type="hidden" name="next" value="/nutzer/neu?">
+  <button name="variant" value="dark" class="to-dark" aria-label="Dunkles Farbschema" title="Dunkles Farbschema"><i class="fa-solid fa-moon " aria-hidden="true"></i></button>
+  <button name="variant" value="light" class="to-light" aria-label="Helles Farbschema" title="Helles Farbschema"><i class="fa-solid fa-sun " aria-hidden="true"></i></button>
+</form>
+
   
 <div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
   <dl class="hi-dl">
@@ -75,7 +84,7 @@
     <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
     <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
     <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
-    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 16:22:03</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 16:46:05</dd>
   </dl>
 </div>
 
@@ -97,7 +106,7 @@
   <div class="fld"><label class="lbl" for="f-title">Funktion <span class="sm2">optional, z. B. „Studentin · Masterarbeit“</span></label><input id="f-title" name="title" value="" autocomplete="off" maxlength="80"></div>
   <div class="fld"><label class="lbl" for="f-matrikel">Matrikelnummer <span class="sm2">optional, für Student:innen / HiWis · 4–10 Ziffern</span></label><input id="f-matrikel" name="matrikel" value="" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="20"></div>
   <div class="fld"><label class="lbl" for="f-role">Rolle</label><select id="f-role" name="role_id" required>
-    <option value="1" >Admin</option><option value="2" >Lab-Leitung</option><option value="3" >Mitarbeiter:in</option><option value="4" selected>Student:in / HiWi</option><option value="5" >Gast</option>
+    <option value="1" >Admin</option><option value="2" >Lab-Leitung</option><option value="3" >Mitarbeiter:in</option><option value="4" selected>Student:in / HiWi</option><option value="5" >Praktikant:in</option><option value="6" >Gast</option>
   </select></div>
   <div class="fld"><label class="lbl" for="f-until">Zugang bis <span class="sm2">optional, leer = unbefristet</span></label><input id="f-until" name="access_until" type="date" value=""></div>
   <div class="row"><button class="btn pri"><i class="fa-solid fa-user-plus " aria-hidden="true"></i><span>Anlegen und Einladung erzeugen</span></button></div>

@@ -328,7 +328,12 @@ legend{margin-bottom:6px}
 .hi-du,.hi-app{display:inline-flex;gap:6px}
 .hi-net.warn{border-color:var(--warn-line);background:var(--warn-soft);color:var(--warn)}
 .hi-net.warn>i,.hi-net.warn .mono{color:var(--warn)}
-.hi-net:hover,.hi-bell:hover{border-color:var(--field-line)}
+.hi-net:hover,.hi-bell:hover,.hi-theme button:hover{border-color:var(--field-line)}
+.hi-theme{display:contents}
+.hi-theme button{flex:none;width:38px;height:36px;place-items:center;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink-2);font:inherit;cursor:pointer}
+.hi-theme .to-dark{display:grid} .hi-theme .to-light{display:none}
+:root[data-theme="dark"] .hi-theme .to-dark{display:none} :root[data-theme="dark"] .hi-theme .to-light{display:grid}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hi-theme .to-dark{display:none} :root:not([data-theme="light"]) .hi-theme .to-light{display:grid}}
 .hi-team{display:inline-flex;align-items:center;gap:10px;padding:4px 6px;border:0;border-radius:var(--r);background:transparent;color:var(--ink);font-size:14px}
 button.hi-team:hover{background:var(--sunken)}
 .hi-avs{display:flex}

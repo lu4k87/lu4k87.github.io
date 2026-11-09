@@ -47,6 +47,8 @@
 
 
 
+
+
 <div class="hi">
   
 
@@ -66,8 +68,15 @@
 
 
   <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
-  <time class="hi-time" data-clock="time">16:22</time>
+  <time class="hi-time" data-clock="time">16:46</time>
   <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+
+<form method="post" action="#" class="hi-theme"><input type="hidden" name="area" value="theme"><input type="hidden" name="next" value="/nutzer?">
+  <button name="variant" value="dark" class="to-dark" aria-label="Dunkles Farbschema" title="Dunkles Farbschema"><i class="fa-solid fa-moon " aria-hidden="true"></i></button>
+  <button name="variant" value="light" class="to-light" aria-label="Helles Farbschema" title="Helles Farbschema"><i class="fa-solid fa-sun " aria-hidden="true"></i></button>
+</form>
+
   
 <div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
   <dl class="hi-dl">
@@ -75,7 +84,7 @@
     <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
     <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
     <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
-    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 16:22:03</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 16:46:05</dd>
   </dl>
 </div>
 
@@ -100,7 +109,7 @@
 
 <form method="post" action="#" class="form">
   <div class="tblwrap"><table class="tbl">
-    <thead><tr><th scope="col">Bereich</th><th scope="col">Admin<small>1 Nutzer · fest</small></th><th scope="col">Lab-Leitung<small>1 Nutzer</small></th><th scope="col">Mitarbeiter:in<small>2 Nutzer</small></th><th scope="col">Student:in / HiWi<small>5 Nutzer</small></th><th scope="col">Gast<small>0 Nutzer</small></th></tr></thead>
+    <thead><tr><th scope="col">Bereich</th><th scope="col">Admin<small>1 Nutzer · fest</small></th><th scope="col">Lab-Leitung<small>1 Nutzer</small></th><th scope="col">Mitarbeiter:in<small>2 Nutzer</small></th><th scope="col">Student:in / HiWi<small>5 Nutzer</small></th><th scope="col">Praktikant:in<small>0 Nutzer</small></th><th scope="col">Gast<small>0 Nutzer</small></th></tr></thead>
     <tbody><tr><th scope="row">Übersicht</th>
       <td>
         <span class="lvl full ">sehen</span>
@@ -117,8 +126,12 @@
           <select class="lvl full " id="r4_start" name="r4_start"><option value="0" >kein Zugriff</option><option value="3" selected>sehen</option></select>
         
       </td><td>
-        <label class="vh" for="r5_start">Übersicht – Gast</label>
+        <label class="vh" for="r5_start">Übersicht – Praktikant:in</label>
           <select class="lvl full " id="r5_start" name="r5_start"><option value="0" >kein Zugriff</option><option value="3" selected>sehen</option></select>
+        
+      </td><td>
+        <label class="vh" for="r6_start">Übersicht – Gast</label>
+          <select class="lvl full " id="r6_start" name="r6_start"><option value="0" >kein Zugriff</option><option value="3" selected>sehen</option></select>
         
       </td></tr><tr><th scope="row">Stundenplan</th>
       <td>
@@ -136,8 +149,12 @@
           <select class="lvl  " id="r4_plan" name="r4_plan"><option value="0" >kein Zugriff</option><option value="2" selected>eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
         
       </td><td>
-        <label class="vh" for="r5_plan">Stundenplan – Gast</label>
-          <select class="lvl  none" id="r5_plan" name="r5_plan"><option value="0" selected>kein Zugriff</option><option value="2" >eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
+        <label class="vh" for="r5_plan">Stundenplan – Praktikant:in</label>
+          <select class="lvl  " id="r5_plan" name="r5_plan"><option value="0" >kein Zugriff</option><option value="2" selected>eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r6_plan">Stundenplan – Gast</label>
+          <select class="lvl  none" id="r6_plan" name="r6_plan"><option value="0" selected>kein Zugriff</option><option value="2" >eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
         
       </td></tr><tr><th scope="row">Team &amp; Berichte</th>
       <td>
@@ -155,8 +172,12 @@
           <select class="lvl  " id="r4_team" name="r4_team"><option value="0" >kein Zugriff</option><option value="2" selected>eigene</option><option value="3" >sehen</option><option value="5" >verwalten</option></select>
         
       </td><td>
-        <label class="vh" for="r5_team">Team &amp; Berichte – Gast</label>
-          <select class="lvl  none" id="r5_team" name="r5_team"><option value="0" selected>kein Zugriff</option><option value="2" >eigene</option><option value="3" >sehen</option><option value="5" >verwalten</option></select>
+        <label class="vh" for="r5_team">Team &amp; Berichte – Praktikant:in</label>
+          <select class="lvl  " id="r5_team" name="r5_team"><option value="0" >kein Zugriff</option><option value="2" selected>eigene</option><option value="3" >sehen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r6_team">Team &amp; Berichte – Gast</label>
+          <select class="lvl  none" id="r6_team" name="r6_team"><option value="0" selected>kein Zugriff</option><option value="2" >eigene</option><option value="3" >sehen</option><option value="5" >verwalten</option></select>
         
       </td></tr><tr><th scope="row">Zugänge &amp; Anleitungen</th>
       <td>
@@ -174,8 +195,12 @@
           <select class="lvl  " id="r4_zugang" name="r4_zugang"><option value="0" >kein Zugriff</option><option value="3" selected>freigegebene</option><option value="5" >verwalten</option></select>
         
       </td><td>
-        <label class="vh" for="r5_zugang">Zugänge &amp; Anleitungen – Gast</label>
-          <select class="lvl  none" id="r5_zugang" name="r5_zugang"><option value="0" selected>kein Zugriff</option><option value="3" >freigegebene</option><option value="5" >verwalten</option></select>
+        <label class="vh" for="r5_zugang">Zugänge &amp; Anleitungen – Praktikant:in</label>
+          <select class="lvl  " id="r5_zugang" name="r5_zugang"><option value="0" >kein Zugriff</option><option value="3" selected>freigegebene</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r6_zugang">Zugänge &amp; Anleitungen – Gast</label>
+          <select class="lvl  none" id="r6_zugang" name="r6_zugang"><option value="0" selected>kein Zugriff</option><option value="3" >freigegebene</option><option value="5" >verwalten</option></select>
         
       </td></tr><tr><th scope="row">Geräte &amp; Ausleihe</th>
       <td>
@@ -193,8 +218,12 @@
           <select class="lvl  " id="r4_geraet" name="r4_geraet"><option value="0" >kein Zugriff</option><option value="4" selected>ausleihen</option><option value="5" >verwalten</option></select>
         
       </td><td>
-        <label class="vh" for="r5_geraet">Geräte &amp; Ausleihe – Gast</label>
-          <select class="lvl  none" id="r5_geraet" name="r5_geraet"><option value="0" selected>kein Zugriff</option><option value="4" >ausleihen</option><option value="5" >verwalten</option></select>
+        <label class="vh" for="r5_geraet">Geräte &amp; Ausleihe – Praktikant:in</label>
+          <select class="lvl  " id="r5_geraet" name="r5_geraet"><option value="0" >kein Zugriff</option><option value="4" selected>ausleihen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r6_geraet">Geräte &amp; Ausleihe – Gast</label>
+          <select class="lvl  none" id="r6_geraet" name="r6_geraet"><option value="0" selected>kein Zugriff</option><option value="4" >ausleihen</option><option value="5" >verwalten</option></select>
         
       </td></tr><tr><th scope="row">Projekte &amp; Mappen</th>
       <td>
@@ -212,8 +241,12 @@
           <select class="lvl  " id="r4_projekte" name="r4_projekte"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="2" selected>eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
         
       </td><td>
-        <label class="vh" for="r5_projekte">Projekte &amp; Mappen – Gast</label>
-          <select class="lvl  " id="r5_projekte" name="r5_projekte"><option value="0" >kein Zugriff</option><option value="1" selected>öffentliche</option><option value="2" >eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
+        <label class="vh" for="r5_projekte">Projekte &amp; Mappen – Praktikant:in</label>
+          <select class="lvl  " id="r5_projekte" name="r5_projekte"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="2" selected>eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r6_projekte">Projekte &amp; Mappen – Gast</label>
+          <select class="lvl  " id="r6_projekte" name="r6_projekte"><option value="0" >kein Zugriff</option><option value="1" selected>öffentliche</option><option value="2" >eigene</option><option value="4" >bearbeiten</option><option value="5" >verwalten</option></select>
         
       </td></tr><tr><th scope="row">Dateien</th>
       <td>
@@ -231,8 +264,12 @@
           <select class="lvl  " id="r4_dateien" name="r4_dateien"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="4" selected>hochladen</option><option value="5" >verwalten</option></select>
         
       </td><td>
-        <label class="vh" for="r5_dateien">Dateien – Gast</label>
-          <select class="lvl  " id="r5_dateien" name="r5_dateien"><option value="0" >kein Zugriff</option><option value="1" selected>öffentliche</option><option value="4" >hochladen</option><option value="5" >verwalten</option></select>
+        <label class="vh" for="r5_dateien">Dateien – Praktikant:in</label>
+          <select class="lvl  " id="r5_dateien" name="r5_dateien"><option value="0" >kein Zugriff</option><option value="1" >öffentliche</option><option value="4" selected>hochladen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r6_dateien">Dateien – Gast</label>
+          <select class="lvl  " id="r6_dateien" name="r6_dateien"><option value="0" >kein Zugriff</option><option value="1" selected>öffentliche</option><option value="4" >hochladen</option><option value="5" >verwalten</option></select>
         
       </td></tr><tr><th scope="row">Nutzer &amp; Rechte</th>
       <td>
@@ -250,8 +287,12 @@
           <select class="lvl  none" id="r4_nutzer" name="r4_nutzer"><option value="0" selected>kein Zugriff</option><option value="4" >Nutzer anlegen</option><option value="5" >verwalten</option></select>
         
       </td><td>
-        <label class="vh" for="r5_nutzer">Nutzer &amp; Rechte – Gast</label>
+        <label class="vh" for="r5_nutzer">Nutzer &amp; Rechte – Praktikant:in</label>
           <select class="lvl  none" id="r5_nutzer" name="r5_nutzer"><option value="0" selected>kein Zugriff</option><option value="4" >Nutzer anlegen</option><option value="5" >verwalten</option></select>
+        
+      </td><td>
+        <label class="vh" for="r6_nutzer">Nutzer &amp; Rechte – Gast</label>
+          <select class="lvl  none" id="r6_nutzer" name="r6_nutzer"><option value="0" selected>kein Zugriff</option><option value="4" >Nutzer anlegen</option><option value="5" >verwalten</option></select>
         
       </td></tr></tbody>
   </table></div>
@@ -263,7 +304,7 @@
 <form method="post" action="#" class="card pad row wrap">
   <h2 class="h3">Rolle anlegen</h2>
   <label class="vh" for="rn">Name der Rolle</label><input class="inp grow" id="rn" name="name" maxlength="40" placeholder="Name, z. B. Tutor:in …" autocomplete="off" required>
-  <label class="lbl" for="rc">Rechte übernehmen von</label><select class="inp grow" id="rc" name="copy"><option value="2">Lab-Leitung</option><option value="3">Mitarbeiter:in</option><option value="4">Student:in / HiWi</option><option value="5">Gast</option></select>
+  <label class="lbl" for="rc">Rechte übernehmen von</label><select class="inp grow" id="rc" name="copy"><option value="2">Lab-Leitung</option><option value="3">Mitarbeiter:in</option><option value="4">Student:in / HiWi</option><option value="5">Praktikant:in</option><option value="6">Gast</option></select>
   <button class="btn"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Rolle anlegen</span></button>
 </form>
 
