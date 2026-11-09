@@ -5,7 +5,7 @@
 
 export const TABS = {
   'Linsenreflex & Optik': 'Optik', 'Rand und Korona': 'Korona', 'Farbe und Glut': 'Glut',
-  'Magnet­bögen': 'Bögen', 'Bewegung der Bögen': 'Bögen',
+  'Magnet­bögen': 'Bögen', 'Bewegung der Bögen': 'Bögen', 'Beben und Komet': 'Ausbrüche',
   'Hintergrundstrahlung': 'Kugel', 'Hülle der Kugel': 'Kugel', 'Schnittkante': 'Kugel', 'Zeitschichten': 'Schichten',
   'Planeten und Kleinkörper': 'Planeten', 'Gezeitenströme (Modell)': 'Gezeiten', 'Strömung (Laniakea)': 'Strömung',
   'Netz der Galaxien': 'Netz', 'Dunkle Materie': 'Materie', 'Netz der Materie': 'Netz', 'Sterne und Galaxien': 'Sterne',

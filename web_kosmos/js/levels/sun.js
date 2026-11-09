@@ -18,7 +18,7 @@ import { SUN_FRAG, BILLBOARD_VERT, BILLBOARD_AIM_VERT, CORONA_FRAG, LOOP_VERT, L
 import { registerLayers, refreshLayers } from '../layers.js';
 import { GRADES, globalGrade, onSettings, settings } from '../settings.js';
 import { LOOK_SURF_FRAG, LOOK_ATMO_VERT, LOOK_ATMO_FRAG, LOOK_EXT, ERUPT_T, LIGHTS, lookDefines } from '../sunlook.js';
-import { STRAND_VERT, STRAND_FRAG, strandUniforms, strandGeometry, arcadeLoops, prominenceLoops, flareArcade, eruptLoop, loopField } from '../sunstrands.js';
+import { STRAND_VERT, STRAND_FRAG, strandUniforms, strandGeometry, arcadeLoops, prominenceLoops, flareArcade, eruptLoop, loopField, styleLoops } from '../sunstrands.js';
 import { createFlare } from '../flare.js';
 import { createComet } from '../suncomet.js';
 
@@ -33,7 +33,7 @@ const latOf = (v) => Math.asin(THREE.MathUtils.clamp(v.y / v.length(), -1, 1));
 const CH = [
   { v: 'glut', n: 0, look: 0, name: 'Glut', on: [], shows: 'keine einzelne Schicht, ein künstlerisches Bild',
     disc: 'radial-gradient(circle, #5a1a04 0%, #2a0a02 46%, #b8400c 80%, #ffb24a 94%, #3a0e02 100%)',
-    cap: '<b>Glut · künstlerisch</b> – kein Messbild: Die dunkle Kruste mit glühenden Adern zeigt, wie Magnetfelder das Plasma dort bündeln, wo die Sonne aktiv ist. Kruste, Rand, Ausbruch und Bögen stellst du im Zahnrad ein.' },
+    cap: '<b>Glut · künstlerisch</b> – kein Messbild: Die dunkle Kruste mit hellem Netzwerk (Vorbild: SDO in 304 Å) zeigt, wie Magnetfelder das Plasma dort bündeln, wo die Sonne aktiv ist. Kruste, Rand, Ausbruch und Bögen stellst du im Zahnrad ein.' },
   { v: 'wl', n: 0, name: 'Weißlicht', on: [0], shows: 'die Photosphäre',
     disc: 'radial-gradient(circle, #fff4d8 0%, #f6c66e 55%, #c8701e 92%, #7a3a0c 100%)',
     cap: '<b>Weißlicht · Photosphäre · 5.772 K</b> – die sichtbare Oberfläche: brodelnde Granulation, dunkle Flecken, zum Rand hin dunkler. Darum die Korona, wie sonst nur bei einer totalen Finsternis.' },
@@ -66,7 +66,20 @@ const GLOWS = ['Rotglut', 'Strahlenkranz', 'Weißglut'];
 // Ablösen beim Abriss (uTear in sunstrands.js) und Stärke der Auswurf-Blase dahinter (uEA in sunlook.js)
 const TEARS = ['klassisch', 'Plasmoid', 'Peitsche', 'Zerfasern', 'Mischung', 'Spray-Schockwelle'];
 const TEAR_BUBBLE = [0, 1, 0.35, 0, 0.8, 1.2];
-const TEXS = ['Adern', 'Zellnetz', 'Plasmafell', 'SDO-Komposit', 'Magma-Brodeln', 'Konvektion fein', 'Lavaplatten', 'Plasma-Relief'];   // Kruste im Look „Glut“ (uTex in sunlook.js)
+// Kruste im Look „Glut“ (uTex in sunlook.js); 8–10 nach SDO- und Kino-Vorlagen ohne eigene Flecken (Vorschau 09.11.2026
+// „Sonne realistisch“ Kruste:A/B/C, Standard 8)
+const TEXS = ['Adern', 'Zellnetz', 'Plasmafell', 'SDO-Komposit', 'Magma-Brodeln', 'Konvektion fein', 'Lavaplatten', 'Plasma-Relief', 'SDO-Teppich', 'Kino-Gas', 'Magnetfasern'];
+const TEX_DEF = 8, TEX_REAL = 8;   // ab TEX_REAL: Flecken aus, aktive Regionen als helle Plage
+// Look der Bögen (uSoft in sunstrands.js, Faktoren für styleLoops; Vorschau 09.11.2026 Bögen:A/B, Werte aus dem Prototyp):
+// Lichterketten (bisher) · Faserbündel aus vielen schwachen, weichen Fäden · Leuchtendes Gas = Fäden mit Dunst + Hülle je Bogen
+const LOOP_LOOKS = ['Lichterketten', 'Faserbündel', 'Leuchtendes Gas'];
+const LOOP_O = [{ soft: 0 }, { soft: 1, mul: 6, wMul: 0.45, iMul: 0.3, ropeMul: 1.6 }, { soft: 2, mul: 2, wMul: 0.8, iMul: 0.5, ropeMul: 1.3 }];
+// Look der Ausbrüche „realistisch“ je Art (ERUPTS-Index; Vorschau 09.11.2026 Flare:B Plasma-Tuch, A Arkade mit Regen, C Glut-Bogen
+// mit Dunst): uSoft, Zahl der Arkaden-Bögen n, Faktoren o für styleLoops
+const ERUPT_LOOKS = ['bisher', 'realistisch'];
+const ERUPT_REAL = [{ soft: 1, o: { mul: 7, wMul: 0.35, iMul: 0.55, ropeMul: 2.8, flat: 1, twist: 2.4 } },
+  { soft: 2, n: 64, o: { mul: 3, wMul: 0.5, iMul: 0.75, ropeMul: 3 } },
+  { soft: 2, o: { mul: 3, wMul: 0.5, iMul: 0.45, ropeMul: 1.6, flat: 0.3, hMul: 0.55 } }];
 // Stil des Abrisses (uRip in sunstrands.js): Knopf „Flare auslösen“ nimmt ripMain (Standard: verglüht + verweht), andere
 // Ausbrüche und platzende Bögen wählen zufällig unter den eingeschalteten Stilen (Vorschau 26.10.2026 Abriss:A + C)
 const RIPS = ['Abschnüren', 'Riss verglüht', 'Riss verweht', 'Verglüht + verweht'];
@@ -161,7 +174,7 @@ export function create(ctx) {
   // Look „Sonne neu“ (Glut, 304 Å): eigenes Material auf derselben Kugel, gleiche Daten (Regionen, Löcher, Filamente, Rotation)
   const sunMat = sun.material;
   const lookU = { uTime: sunU.uTime, uDays: sunU.uDays, uSpot: sunU.uSpot, uHole: sunU.uHole, uFil: sunU.uFil, uFilT: sunU.uFilT, uAct: { value: 0.75 },
-    uSurf: { value: 0 }, uGain: { value: 0.8 }, uFlK: { value: -1 }, uFlS: { value: new THREE.Vector3(0, 0, 1) }, uGlow: { value: 1 }, uHot: { value: 0 }, uTex: { value: 5 },
+    uSurf: { value: 0 }, uGain: { value: 0.8 }, uFlK: { value: -1 }, uFlS: { value: new THREE.Vector3(0, 0, 1) }, uGlow: { value: 1 }, uHot: { value: 0 }, uTex: { value: TEX_DEF },
     uRelief: { value: 1.0 }, uVisc: { value: 1.0 }, uNest: { value: 1 }, uLL: { value: 1 }, uQk: { value: new THREE.Vector4(0, 0, 1, -1) },
     uLA: { value: Array.from({ length: LIGHTS }, () => new THREE.Vector4(0, 0, 0, 0)) }, uLB: { value: Array.from({ length: LIGHTS }, () => new THREE.Vector4(0, 0, 0, 0)) } };   // w = 0: Platz frei
   const lookMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: LOOK_SURF_FRAG, uniforms: lookU, defines: lookDefines(ctx.detail) });
@@ -190,13 +203,29 @@ export function create(ctx) {
   // hohe Bögen nicht unter der Heimkamera (sie stünden sonst als unscharfes Band im Bild); rotY = Drehung des Meshes
   const clearOfHome = (rotY = 0) => (L) => L.h < 0.12 || L.a.clone().add(L.b).normalize().applyAxisAngle(Y, rotY).angleTo(dC) > 28 * RAD;
   let meshSeed = 101;
+  // Fäden je Mesh mit eigenem Zufall (seed gemerkt): restrand baut dieselben Fäden nach einem Look-Wechsel neu
   const strandMesh = (loopsList, mat = strandMat) => {
-    const m = new THREE.Mesh(strandGeometry(loopsList, mulberry32(meshSeed++)), mat);
+    const seed = meshSeed++, m = new THREE.Mesh(strandGeometry(loopsList, mulberry32(seed)), mat);
+    m.userData.seed = seed;
     m.frustumCulled = false;
     sunG.add(m);
     return m;
   };
-  regions.forEach((r, k) => { r.look = strandMesh(arcadeLoops(r.a, r.b, k === 0 ? 24 : 14, rs, { size: 0.8, threads: thr }).filter(clearOfHome())); });
+  const restrand = (m, list, segs) => { m.geometry.dispose(); m.geometry = strandGeometry(list, mulberry32(m.userData.seed), segs); };
+  // Look der Bögen (Zahnrad „Look der Bögen“, „Niedrige Arkaden wie SDO“): Faktoren auf die Grundlisten; Leuchtendes Gas legt
+  // um jeden Bogen eine breite, schwache Hülle auf der Achse; niedrige Arkaden = Höhe 0,55× und dichte Fächer je Region (Nester)
+  let loopLook = 1, lowArc = true;
+  const env = (list) => (loopLook === 2 ? list.flatMap((L) => [L, { ...L, threads: 1, width: L.rope * 1.3 + 0.003, rope: 0, I: L.I * 0.2 }]) : list);
+  const arcO = () => ({ ...LOOP_O[loopLook], hMul: lowArc ? 0.55 : 1 });
+  const arcList = (base) => env(styleLoops(base, arcO()).filter(clearOfHome()));
+  regions.forEach((r, k) => {
+    r.base = arcadeLoops(r.a, r.b, k === 0 ? 24 : 14, rs, { size: 0.8, threads: thr });
+    r.look = strandMesh(arcList(r.base));
+  });
+  regions.forEach((r, k) => {
+    r.nestBase = arcadeLoops(r.a, r.b, 34, mulberry32(977 + k), { size: 0.38, threads: thr });
+    r.nest = strandMesh(env(styleLoops(r.nestBase, LOOP_O[loopLook])));
+  });
   // Rand „Bogen-Arkaden“: weitere Arkaden in den Aktivitätsgürteln, zwei davon am oberen Rand der Heimpose
   const arcSites = [capPt(aL + 1.5 * RAD, 0.6), capPt(aL + 0.5 * RAD, -0.55)];
   for (let k = 0; k < 7; k++) {
@@ -204,11 +233,12 @@ export function create(ctx) {
     arcSites.push(new THREE.Vector3(-Math.cos(lon) * Math.cos(lat), Math.sin(lat), Math.sin(lon) * Math.cos(lat)));
   }
   const arcLit = [];   // Fußpunkte je Arkade für das Licht auf der Kruste (lookU.uLA/uLB)
-  const arcX = strandMesh(arcSites.flatMap((c) => {
+  const arcBase = arcSites.flatMap((c) => {
     const e = new THREE.Vector3().crossVectors(Y, c).normalize().applyAxisAngle(c, (rs() - 0.5) * 0.6), sep = (2.5 + rs() * 3) * RAD;
     arcLit.push({ a: c.clone().addScaledVector(e, sep).normalize(), b: c.clone().addScaledVector(e, -sep).normalize(), h: sep * 0.85, lat: latOf(c) });
     return arcadeLoops(c.clone().addScaledVector(e, sep).normalize(), c.clone().addScaledVector(e, -sep).normalize(), 10, rs, { size: 0.85, I: 0.8, threads: thr });
-  }).filter(clearOfHome()));
+  });
+  const arcX = strandMesh(arcList(arcBase));
 
   // ---------- Protuberanzen (304 Å hell, Weißlicht Hα-rosa wie im Sonnensystem) ----------
   const loopG = loopsGeometry(10 + Math.round(6 * ctx.detail), rand);
@@ -225,12 +255,14 @@ export function create(ctx) {
   const PROM_RATE = omega(15 * RAD);
   // Protuberanzen und Ausbruch mit eigenem Material (Zahnrad „Dichte“ dünnt nur die Bögen aus); Zeit, Pixel, Farbe gemeinsam
   const strandMat2 = (u) => { Object.assign(u, { uTime: strandU.uTime, uPx: strandU.uPx, uPal: strandU.uPal, uGain: strandU.uGain, uFoot: strandU.uFoot, uMove: strandU.uMove,
-    uLifeR: strandU.uLifeR, uRain: strandU.uRain });
+    uLifeR: strandU.uLifeR, uRain: strandU.uRain, uSoft: strandU.uSoft });
     return new THREE.ShaderMaterial({ vertexShader: STRAND_VERT, fragmentShader: STRAND_FRAG, uniforms: u, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }); };
   const promLook = strandMesh(prominenceLoops(promMeta, rs, 5 + 2 * thr).filter(clearOfHome(promOff)), strandMat2(strandUniforms()));
   // Ausbruch im Look: Fadenbündel, bei jedem Auslösen neu gebaut (Fußpunkte mitdrehend wie erupt.g, Breite evLat)
   const evU = strandUniforms();
   const ev = new THREE.Mesh(new THREE.BufferGeometry(), strandMat2(evU));
+  evU.uSoft = { value: 0 };   // eigener Look der Ausbrüche (buildEvent), nicht der der Bögen
+  let eruptReal = true;
   ev.frustumCulled = false;
   ev.visible = false;
   sunG.add(ev);
@@ -243,12 +275,25 @@ export function create(ctx) {
   field.frustumCulled = false;
   sunG.add(field);
   let fieldKind = 0;
+  // Faserbündel/Gas: halb so viele Fäden je Bogen wie in den Arkaden, dafür heller (Prototyp fieldO)
+  const fieldO = () => { const o = LOOP_O[loopLook]; return loopLook ? { ...o, mul: Math.ceil(o.mul / 2), iMul: o.iMul * 1.6 } : {}; };
+  function buildField() {
+    field.geometry.dispose();
+    field.geometry = fieldKind ? strandGeometry(env(styleLoops(loopField(fieldKind, mulberry32(211 + fieldKind), thr), fieldO()).filter(clearOfHome())), mulberry32(311 + fieldKind), 48) : new THREE.BufferGeometry();
+  }
   function setField(k) {
     if (k === fieldKind) return;
     fieldKind = k;
-    field.geometry.dispose();
-    field.geometry = k ? strandGeometry(loopField(k, mulberry32(211 + k), thr).filter(clearOfHome()), mulberry32(311 + k), 48) : new THREE.BufferGeometry();
+    buildField();
   }
+  // Look der Bögen gewechselt: alle ruhigen Bögen aus ihren Grundlisten neu bauen (gleiche Lage, gleiche Fäden je Mesh)
+  function buildLoops() {
+    strandU.uSoft.value = LOOP_O[loopLook].soft;
+    regions.forEach((r) => { restrand(r.look, arcList(r.base)); restrand(r.nest, env(styleLoops(r.nestBase, LOOP_O[loopLook]))); });
+    restrand(arcX, arcList(arcBase));
+    buildField();
+  }
+  strandU.uSoft.value = LOOP_O[loopLook].soft;
 
   // ---------- Korona + Chromosphäre als Bildtafel; Streamer über den aktiven Regionen ----------
   const CORONA_EXT = 6;
@@ -371,15 +416,17 @@ export function create(ctx) {
     const S = type === 1 ? erupt.g : toG(best, new THREE.Vector3());
     evLat = latOf(S);
     let list;
+    const R = eruptReal ? ERUPT_REAL[type] : null;
     if (type === 1) {
-      list = flareArcade(Math.round(10 + 3 * thr), rs);
+      list = styleLoops(flareArcade(R?.n ?? Math.round(10 + 3 * thr), rs), R?.o);
       const e1 = new THREE.Vector3().crossVectors(Y, S).normalize();
       evU.uFS.value.copy(S); evU.uFE1.value.copy(e1); evU.uFE2.value.crossVectors(S, e1);
     } else {
       tanW.copy(best).normalize().cross(tmp.copy(best).sub(cam.position)).normalize();
       qEv.setFromAxisAngle(Y, -omega(evLat) * days * RAD).multiply(qInv);
-      list = eruptLoop(type === 0 ? 1 : 3, S, tanW.applyQuaternion(qEv), rs, type === 0 ? 8 + 3 * thr : 8 + 3 * thr);
+      list = styleLoops(eruptLoop(type === 0 ? 1 : 3, S, tanW.applyQuaternion(qEv), rs, 8 + 3 * thr), R?.o);
     }
+    evU.uSoft.value = R ? R.soft : 0;
     ev.geometry.dispose();
     ev.geometry = strandGeometry(list, mulberry32(meshSeed++), 160);
     evU.uMode.value = [1, 2, 3][type];
@@ -415,6 +462,7 @@ export function create(ctx) {
       const on = k < nAct;
       r.mesh.visible = showLoops && on;
       r.look.visible = lookOn && on && cloopsOn;
+      r.nest.visible = r.look.visible && lowArc;
       for (const i of [2 * k, 2 * k + 1]) spots[i].w = on ? (spotsOn ? spotW[i] : -spotW[i]) : 0;
       if (streamers[k]) streamers[k].on = on ? 1 : 0.25;
     });
@@ -462,37 +510,42 @@ export function create(ctx) {
       status: () => (rotOn ? `Sonnenrotation · ${fmtDays(days)} vergangen` : `Sonnenrotation angehalten · ${fmtDays(days)}`) },
     { id: 'grade', type: 'range', group: 'Farbe und Glut', label: 'Farblook', buttons: true, value: gradeIdx, min: 0, max: GRADES.length - 1, step: 1, fmt: (i) => GRADES[Math.round(i)][0], set: (v) => { gradeIdx = Math.round(v); applyGlow(); },
       active: () => !globalGrade(), only: 'Ruht, solange Global → Look → Farblook nicht auf „Station“ steht.' },
-    { id: 'glow', type: 'range', label: 'Glut bei starker Aktivität', value: glowMode, min: 0, max: GLOWS.length - 1, step: 1, fmt: (i) => GLOWS[Math.round(i)], set: (v) => { glowMode = Math.round(v); applyGlow(); },
+    { id: 'glow', type: 'range', label: 'Glut bei starker Aktivität', buttons: true, value: glowMode, min: 0, max: GLOWS.length - 1, step: 1, fmt: (i) => GLOWS[Math.round(i)], set: (v) => { glowMode = Math.round(v); applyGlow(); },
       active: () => lookOn && actIdx >= 4, only: 'Nur bei Glut und 304 Å ab Aktivität „Maximum“ (Infotafel), am stärksten bei „extrem“.' },
-    { id: 'tex', type: 'range', group: 'Oberfläche', label: 'Kruste', value: 5, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); },
+    { id: 'tex', type: 'range', group: 'Oberfläche', label: 'Kruste', buttons: true, value: TEX_DEF, min: 0, max: TEXS.length - 1, step: 1, fmt: (i) => TEXS[Math.round(i)], set: (v) => { lookU.uTex.value = Math.round(v); },
       active: () => chan === 'glut', only: 'Nur bei Glut (Wellenlänge unter Ansicht).' },
     { id: 'magmaRelief', type: 'range', label: 'Magma-Relief (3D-Wölbung)', value: 1.0, min: 0, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { lookU.uRelief.value = v; },
-      active: () => chan === 'glut' && lookU.uTex.value >= 4, only: MAGMA_ONLY },
+      active: () => chan === 'glut' && lookU.uTex.value >= 4 && lookU.uTex.value < TEX_REAL, only: MAGMA_ONLY },
     { id: 'magmaVisc', type: 'range', label: 'Viskosität der Schmelze', value: 1.0, min: 0.4, max: 2.2, step: 0.1, unit: '×', sub: true, set: (v) => { lookU.uVisc.value = v; },
-      active: () => chan === 'glut' && lookU.uTex.value >= 4, only: MAGMA_ONLY },
+      active: () => chan === 'glut' && lookU.uTex.value >= 4 && lookU.uTex.value < TEX_REAL, only: MAGMA_ONLY },
     { id: 'gran', type: 'toggle', label: 'Granulation', value: true, set: (v) => { granOn = v; sunU.uGran.value = v && chan === 'wl' ? 1 : 0; },
       active: () => chan === 'wl', only: 'Nur bei Weißlicht (Wellenlänge unter Ansicht).' },
     { id: 'spots', type: 'toggle', label: 'Sonnenflecken', value: true, set: (v) => { spotsOn = v; applyRegions(); },
-      active: () => chan === 'wl' || chan === 'glut', only: 'Nur bei Weißlicht und Glut (Wellenlänge unter Ansicht).' },
+      active: () => chan === 'wl' || (chan === 'glut' && lookU.uTex.value < TEX_REAL),
+      only: 'Nur bei Weißlicht und Glut mit den Krusten bis „Plasma-Relief“; SDO-Teppich, Kino-Gas und Magnetfasern zeigen aktive Regionen als helle Plage wie in 304 Å.' },
     { id: 'nest', type: 'range', label: 'Aktive Regionen aus der Ferne', value: 1, min: 0, max: 2, step: 0.1, unit: '×', set: (v) => { lookU.uNest.value = v; },
       active: () => lookOn && nAct > 0, only: 'Nur bei Glut und 304 Å mit aktiven Regionen (Aktivität ab „niedrig“); wirkt ab ≈ 2 Sonnenradien Abstand.' },
-    { id: 'rim', type: 'range', group: 'Rand und Korona', label: 'Rand', value: rimIdx, min: 0, max: RIMS.length - 1, step: 1, fmt: (i) => RIMS[Math.round(i)], set: (v) => { rimIdx = Math.round(v); rimU.uRim.value = rimIdx; rimU.uSpH.value = SPICULE_H[rimIdx]; applyRegions(); },
+    { id: 'rim', type: 'range', group: 'Rand und Korona', label: 'Rand', buttons: true, value: rimIdx, min: 0, max: RIMS.length - 1, step: 1, fmt: (i) => RIMS[Math.round(i)], set: (v) => { rimIdx = Math.round(v); rimU.uRim.value = rimIdx; rimU.uSpH.value = SPICULE_H[rimIdx]; applyRegions(); },
       active: () => lookOn, only: LOOK_ONLY },
     { id: 'corona', type: 'toggle', label: 'Korona und Streamer', value: true, set: (v) => { coronaOn = v; coronaU.uCorona.value = v && chan === 'wl' ? 1 : 0; rimU.uCor.value = v ? 1 : 0; },
       active: () => chan !== '171' && chan !== '193', only: 'Nicht bei 171 Å und 193 Å: dort zeigt das Kanalbild die Korona selbst.' },
+    { id: 'holes', type: 'toggle', label: 'Koronale Löcher', value: true, set: (v) => { holesOn = v; applyRegions(); },
+      active: () => chan !== 'wl' && (chan !== 'glut' || [3, 8, 10].includes(lookU.uTex.value)),
+      only: 'Nicht bei Weißlicht; bei Glut nur mit den Krusten „SDO-Komposit“, „SDO-Teppich“ und „Magnetfasern“.' },
     { id: 'haze', type: 'toggle', label: 'Hitzeflimmern und Dunst (künstlerisch)', value: true, set: (v) => { fx.haze = v; applyFx(); }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'hazeAmt', type: 'range', label: 'Stärke', value: 1, min: 0.2, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { fx.hazeAmt = v; applyFx(); },
       active: () => lookOn && fx.haze, only: 'Nur bei Glut und 304 Å, solange „Hitzeflimmern und Dunst“ an ist.' },
-    { id: 'holes', type: 'toggle', label: 'Koronale Löcher', value: true, set: (v) => { holesOn = v; applyRegions(); },
-      active: () => chan !== 'wl' && (chan !== 'glut' || lookU.uTex.value === 3), only: 'Nicht bei Weißlicht; bei Glut nur mit der Kruste „SDO-Komposit“.' },
-    { id: 'prom', type: 'toggle', group: 'Ausbrüche', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; applyRegions(); } },
+    { id: 'eruptLook', type: 'range', group: 'Ausbrüche', label: 'Look der Ausbrüche', buttons: true, value: 1, min: 0, max: ERUPT_LOOKS.length - 1, step: 1, fmt: (i) => ERUPT_LOOKS[Math.round(i)],
+      set: (v) => { eruptReal = Math.round(v) === 1; }, active: () => lookOn, only: LOOK_ONLY,
+      hint: 'Realistisch: Flare als Arkade mit Regen, Filament als Plasma-Tuch, Abriss als Glut-Bogen mit Dunst (nach SDO-Filmen).' },
+    { id: 'prom', type: 'toggle', label: 'Protuberanzen und Filamente', value: true, set: (v) => { promOn = v; applyRegions(); } },
     { id: 'flares', type: 'toggle', label: 'Flares mit Massenauswurf', value: true, set: (v) => { flaresOn = v; if (!v) { cme.visible = flash.visible = ev.visible = false; erupt.k = -1; } } },
     { id: 'flareRate', type: 'range', label: 'Häufigkeit', value: 1, min: 0.3, max: 3, step: 0.1, unit: '×', sub: true, set: (v) => { flareRate = v; } },
     { id: 'flarePoisson', type: 'range', label: 'Platzen der Bögen', value: 1, min: 0.4, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { burstRate = v; strandU.uBurst.value = fieldU.uBurst.value = v; } },
     { id: 'flareSpray', type: 'range', label: 'Spray & Schockwelle', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { sprayAmt = v; strandU.uSpray.value = fieldU.uSpray.value = v; } },
     { id: 'erupt', type: 'range', label: 'Art des Ausbruchs', value: eruptIdx, min: 0, max: ERUPTS.length - 1, step: 1, fmt: (i) => ERUPTS[Math.round(i)], sub: true, set: (v) => { eruptIdx = Math.round(v); },
       active: () => lookOn, only: 'Nur bei Glut und 304 Å; sonst ein Flare mit Massenauswurf.' },
-    { id: 'tear', type: 'range', label: 'Ablösen beim Abriss', value: tearIdx, min: 0, max: TEARS.length - 1, step: 1, fmt: (i) => TEARS[Math.round(i)], sub: true, set: (v) => { tearIdx = Math.round(v); },
+    { id: 'tear', type: 'range', label: 'Ablösen beim Abriss', buttons: true, value: tearIdx, min: 0, max: TEARS.length - 1, step: 1, fmt: (i) => TEARS[Math.round(i)], sub: true, set: (v) => { tearIdx = Math.round(v); },
       active: () => lookOn && eruptIdx === 2, only: 'Nur bei der Art „Protuberanz reißt ab“ (Glut und 304 Å).' },
     { id: 'rip', type: 'range', label: 'Abriss per Knopf', value: ripMain, min: 0, max: RIPS.length - 1, step: 1, fmt: (i) => RIPS[Math.round(i)], sub: true, set: (v) => { ripMain = Math.round(v); applyRip(); },
       active: () => lookOn && eruptIdx === 2, only: 'Nur bei der Art „Protuberanz reißt ab“ (Glut und 304 Å).' },
@@ -500,19 +553,27 @@ export function create(ctx) {
     ...RIPS.map((name, i) => ({ id: `rip${i}`, type: 'toggle', label: `Im Zufall: ${name}`, value: true, sub: true, set: (v) => { ripOn[i] = v; applyRip(); },
       active: () => lookOn && ripRand, only: 'Nur wenn „Andere Ausbrüche: Stil zufällig“ an ist.' })),
     { id: 'flareNow', type: 'action', show: true, active: () => flaresOn, only: 'Wirkt nur mit eingeschalteten Ausbrüchen.', label: 'Nächster Ausbruch', button: 'Jetzt auslösen', sub: true, run: () => { if (flaresOn) triggerFlare(camera, true); } },
+    { id: 'quake', type: 'toggle', group: 'Beben und Komet', label: 'Sonnenbeben nach dem Flare', value: true, set: (v) => { quakeOn = v; },
+      active: () => lookOn && flaresOn, only: 'Nur bei Glut und 304 Å, solange „Flares mit Massenauswurf“ an ist.' },
+    { id: 'comet', type: 'toggle', label: 'Sonnenstreifer-Komet (selten)', value: true, set: (v) => { cometOn = v; if (!v) comet.stop(); } },
+    { id: 'cometNow', type: 'action', show: true, label: 'Nächster Komet', button: 'Komet jetzt', sub: true, run: () => { comet.start(camera); } },
     { id: 'lensOptic', type: 'range', group: 'Linsenreflex & Optik', label: 'Optik-Stil', value: opticIdx, min: 0, max: OPTICS.length - 1, step: 1, fmt: (i) => OPTICS[Math.round(i)], set: (v) => { opticIdx = Math.round(v); sunFlare.userData.setOptic(opticIdx === 0 ? 'master' : 'classic'); } },
     { id: 'lensGhost', type: 'toggle', label: 'Magenta-Sensor-Ghost', value: true, sub: true, set: (v) => { ghostOn = v; sunFlare.userData.setGhost(ghostOn, ghostMotionOn); } },
     { id: 'ghostMotion', type: 'toggle', label: 'Ghost-Parallaxe auf optischer Achse', value: true, sub: true, set: (v) => { ghostMotionOn = v; sunFlare.userData.setGhost(ghostOn, ghostMotionOn); } },
-    { id: 'cloops', type: 'toggle', group: 'Magnet\u00ADbögen', label: 'Magnetbögen und Koronaschleifen', value: true, set: (v) => { cloopsOn = v; applyRegions(); },
+    { id: 'loopLook', type: 'range', group: 'Magnet\u00ADbögen', label: 'Look der Bögen', buttons: true, value: 1, min: 0, max: LOOP_LOOKS.length - 1, step: 1, fmt: (i) => LOOP_LOOKS[Math.round(i)],
+      set: (v) => { const k = Math.round(v); if (k !== loopLook) { loopLook = k; buildLoops(); } }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'cloops', type: 'toggle', label: 'Magnetbögen und Koronaschleifen', value: true, set: (v) => { cloopsOn = v; applyRegions(); },
       active: () => chan !== 'wl', only: 'Nicht bei Weißlicht: die Bögen leuchten erst im UV.' },
     { id: 'cloopDens', type: 'range', label: 'Dichte der Schleifen', value: 1, min: 0.2, max: 1, step: 0.1, fmt: (v) => `${Math.round(v * 100)} %`, sub: true, set: (v) => { cloopU.uDens.value = strandU.uDens.value = v; },
       active: () => chan !== 'wl', only: 'Nicht bei Weißlicht.' },
+    { id: 'loopGain', type: 'range', label: 'Leuchtkraft der Bögen', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { loopGain = v; applyGlow(); }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'loopSize', type: 'range', label: 'Höhe der Bögen', value: 1, min: 0.5, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { strandU.uScale.value = fieldU.uScale.value = v; }, active: () => lookOn, only: LOOK_ONLY },
+    { id: 'lowArc', type: 'toggle', label: 'Niedrige Arkaden wie SDO', value: true, sub: true, set: (v) => { if (v !== lowArc) { lowArc = v; buildLoops(); applyRegions(); } },
+      active: () => lookOn, only: LOOK_ONLY },
     { id: 'field', type: 'range', label: 'Bögen über die ganze Sonne', value: 2, min: 0, max: FIELDS.length - 1, step: 1, fmt: (i) => FIELDS[Math.round(i)], sub: true, set: (v) => { setField(Math.round(v)); applyRegions(); },
       active: () => lookOn, only: LOOK_ONLY },
     { id: 'fieldAmt', type: 'range', label: 'Menge über die ganze Sonne', value: 1, min: 0.1, max: 1, step: 0.1, fmt: (v) => `${Math.round(v * 100)} %`, sub: true, set: (v) => { fieldU.uDens.value = v; },
       active: () => lookOn && fieldKind > 0, only: 'Nur bei Glut und 304 Å, solange „Bögen über die ganze Sonne“ nicht aus ist.' },
-    { id: 'loopSize', type: 'range', label: 'Höhe der Bögen', value: 1, min: 0.5, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { strandU.uScale.value = fieldU.uScale.value = v; }, active: () => lookOn, only: LOOK_ONLY },
-    { id: 'loopGain', type: 'range', label: 'Leuchtkraft der Bögen', value: 1, min: 0.3, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { loopGain = v; applyGlow(); }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'loopLight', type: 'toggle', label: 'Bögen werfen Licht auf die Kruste', value: true, set: (v) => { fx.light = v; applyFx(); }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'loopLightAmt', type: 'range', label: 'Stärke des Lichts', value: 1, min: 0.2, max: 2.5, step: 0.1, unit: '×', sub: true, set: (v) => { fx.lightAmt = v; applyFx(); },
       active: () => lookOn && fx.light, only: 'Nur bei Glut und 304 Å, solange „Bögen werfen Licht“ an ist.' },
@@ -524,10 +585,6 @@ export function create(ctx) {
     { id: 'rain', type: 'toggle', label: 'Koronaler Regen', value: true, set: (v) => { fx.rain = v; applyFx(); }, active: () => lookOn, only: LOOK_ONLY },
     { id: 'rainAmt', type: 'range', label: 'Menge', value: 1, min: 0.2, max: 2, step: 0.1, unit: '×', sub: true, set: (v) => { fx.rainAmt = v; applyFx(); },
       active: () => lookOn && fx.rain, only: 'Nur bei Glut und 304 Å, solange „Koronaler Regen“ an ist.' },
-    { id: 'quake', type: 'toggle', group: 'Ereignisse', label: 'Sonnenbeben nach dem Flare', value: true, set: (v) => { quakeOn = v; },
-      active: () => lookOn && flaresOn, only: 'Nur bei Glut und 304 Å, solange „Flares mit Massenauswurf“ an ist.' },
-    { id: 'comet', type: 'toggle', label: 'Sonnenstreifer-Komet (selten)', value: true, set: (v) => { cometOn = v; if (!v) comet.stop(); } },
-    { id: 'cometNow', type: 'action', show: true, label: 'Nächster Komet', button: 'Komet jetzt', sub: true, run: () => { comet.start(camera); } },
   ]);
 
   // Stile für platzende Bögen: eingeschaltete im Zufall, sonst nur der Stil des Knopfs
@@ -668,7 +725,7 @@ export function create(ctx) {
       sunU.uTime.value = ta; sunU.uDays.value = days;
       coronaU.uTime.value = ta; loopU.uTime.value = ta; cloopU.uTime.value = ta; cmeU.uTime.value = ta;
       loops.rotation.y = promLook.rotation.y = promOff + PROM_RATE * days * RAD;
-      regions.forEach((r) => { r.mesh.rotation.y = r.look.rotation.y = omega(r.lat) * days * RAD; });
+      regions.forEach((r) => { r.mesh.rotation.y = r.look.rotation.y = r.nest.rotation.y = omega(r.lat) * days * RAD; });
       arcX.rotation.y = field.rotation.y = PROM_RATE * days * RAD;
       strandU.uTime.value = ta;
       strandU.uPx.value = 2 * Math.tan(cam.fov * RAD / 2) / Math.max(ctx.renderer.domElement.height, 1);

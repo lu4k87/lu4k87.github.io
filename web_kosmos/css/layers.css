@@ -234,6 +234,7 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .lay-param-ico { width: 16px; height: 16px; color: var(--accent); flex: none; vertical-align: -2px; }
 
 #station .lay-panel > .b-item {
+  align-items: stretch;   /* .cfg-pane .b-item setzt start → Zeilen schrumpften auf ihren Text, Schieber und Schalter standen mittendrin */
   background: var(--glass-tile);
   border: 1px solid var(--line);
   box-shadow: var(--glass-tile-edge);
@@ -250,12 +251,18 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
   border-color: rgba(var(--accent-rgb), 0.35);
   background: linear-gradient(150deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 65%);
 }
-#station .lay-panel > .b-item.b-wide,
-#station .lay-panel > .b-item:has(.b-subs),
-#station .lay-panel > .b-item:has(.zg-rail),
-#station .lay-panel > .b-item:has(.swatch) {
-  grid-column: 1 / -1;
-}
+/* Raster (User 09.11.2026 „kein verschwendeter Freiraum“): layers.js pairs setzt .b-half auf kurze Nachbarn – auch unter einer
+   Hauptzeile (.b-subs als 2-Spalten-Raster); alles andere über die volle Breite, ≤ 440 px einspaltig */
+#station .lay-panel > .b-item:not(.b-half) { grid-column: 1 / -1; }
+#station .b-subs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; row-gap: 10px; align-items: start; }
+#station .b-subs > .b-item { margin-top: 0; padding-top: 0; }
+#station .b-subs > .b-item:not(.b-half) { grid-column: 1 / -1; }
+/* Auswahlfeld in halber Spalte: Feld unter dem Namen über die volle Breite, sonst kappt es den Wert („Filament-…“) */
+#station .b-half .b-pick:has(.b-select) { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+#station .b-half .b-pick .b-select { flex: 1 1 auto; width: 100%; }
+/* Knopf-Raster ab 6 Stufen (Kruste, Ablösen): drei Spalten, jeder Knopf mit eigenem Rahmen, lange Namen brechen um */
+.seg.b-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; border: 0; overflow: visible; }
+.seg.b-grid button, .seg.b-grid button:first-child { min-width: 0; border: 1px solid var(--line-strong); border-radius: 5px; white-space: normal; text-align: center; line-height: 1.25; }
 
 #station .b-item .b-stack > .b-top {
   display: flex;
@@ -297,6 +304,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 }
 @container st (max-width: 440px) {
   #station .lay-panel { grid-template-columns: minmax(0, 1fr); }
+  #station .b-subs { grid-template-columns: minmax(0, 1fr); }
+  .seg.b-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 /* schmal (Handy): Bühne mit weniger Rand */
 @media (max-width: 760px) {

@@ -245,6 +245,128 @@ vec3 surfMagma(vec3 q, float t, float mu, float ar, float fine) {
   col *= 0.58 + 0.42 * sqrt(mu);
   return col + vec3(1.7, 0.45, 0.05) * pow(1.0 - mu, 3.5) * 0.5;
 }
+// ---------- Vorschau 09.11.2026 „Sonne realistisch“: Krusten 8–10 nach SDO- und Kino-Vorlagen ----------
+// Helligkeit als eine Zahl (wie ein Emissionsmaß), Farbe erst am Ende über eine Farbskala → kein Relief, keine
+// Glanzlichter, keine Konturlinien: Plasma leuchtet selbst. 8 SDO-Teppich (304 Å: zerfranstes Netzwerk aus Körnern,
+// Wolken, Sprenkel, Filamente dunkel) · 9 Kino-Gas (hell, verwirbeltes Gas wie im ESA-Bild) · 10 Magnetfasern
+// (Fibrillen folgen dem Feld, Fächer um die aktiven Regionen wie in der SDO-Nahaufnahme).
+vec3 lut304(float x) {
+  x = max(x, 0.0);
+  vec3 c = mix(vec3(0.0), vec3(0.11, 0.016, 0.002), smoothstep(0.0, 0.2, x));
+  c = mix(c, vec3(0.5, 0.09, 0.01), smoothstep(0.12, 0.6, x));
+  c = mix(c, vec3(1.45, 0.45, 0.06), smoothstep(0.5, 1.2, x));
+  c = mix(c, vec3(2.9, 1.6, 0.45), smoothstep(1.1, 2.1, x));
+  return mix(c, vec3(4.4, 3.8, 2.8), smoothstep(2.0, 3.4, x));
+}
+vec3 lutKino(float x) {
+  x = max(x, 0.0);
+  vec3 c = mix(vec3(0.22, 0.045, 0.005), vec3(0.95, 0.3, 0.04), smoothstep(0.2, 0.9, x));
+  c = mix(c, vec3(2.0, 0.95, 0.22), smoothstep(0.8, 1.6, x));
+  c = mix(c, vec3(3.3, 2.3, 0.95), smoothstep(1.5, 2.5, x));
+  return mix(c, vec3(4.6, 4.1, 3.2), smoothstep(2.4, 3.6, x));
+}
+// Feldrichtung (tangential, ohne Vorzeichen): großräumige Wirbel aus Rauschen, um die Flecken radiale Fächer wie die
+// Fibrillen-Rosetten in 304 Å; Achse = Hauptrichtung des Strukturtensors (3 Schritte Potenzmethode, stetig ohne Kippen).
+// w = Gewicht der Flecken 0 … 1
+vec3 fieldDir(vec3 q, float t, out float w) {
+  vec3 v = vec3(fbm3(q * 2.4 + vec3(0.0, 0.0, t * 0.004)), fbm3(q * 2.4 + 5.7), fbm3(q * 2.4 + 11.3));
+  vec3 d = normalize(cross(q, v) + 1e-4 * cross(q, vec3(0.3, 1.0, 0.2)));
+  w = 0.0;
+  for (int i = 0; i < SPOTS; i++) {
+    vec4 s = uSpot[i];
+    if (s.w <= 0.0) continue;
+    vec3 r = q - s.xyz;
+    w += exp(-dot(r, r) / 0.012);
+  }
+  w = min(w, 1.0);
+  vec3 a = d;
+  for (int it = 0; it < 3; it++) {
+    vec3 tv = d * dot(d, a) * (1.0 - w) * 0.7;
+    for (int i = 0; i < SPOTS; i++) {
+      vec4 s = uSpot[i];
+      if (s.w <= 0.0) continue;
+      vec3 r = q - s.xyz; r -= q * dot(r, q);
+      float k = exp(-dot(r, r) / 0.012);
+      vec3 rn = r / max(length(r), 1e-4);
+      tv += rn * dot(rn, a) * k;
+    }
+    a = normalize(tv + 1e-5 * d);
+  }
+  return a;
+}
+// Rauschen entlang der Feldrichtung verwischt (5 Proben, symmetrisch → Vorzeichen von d egal): Fasern ≈ 5 : 1
+float streak(vec3 q, vec3 d, float k, float t) {
+  float s = 0.0;
+  for (int i = -2; i <= 2; i++) s += snoise(q * k + d * (float(i) * 1.3) + vec3(t * 0.03, 0.0, 0.0)) * (1.0 - 0.15 * abs(float(i)));
+  return s * 0.42;
+}
+// Netzwerk der Supergranulen als weiche, zerfranste Lichtbänder: Zellränder verwischt, durch Körner unterbrochen
+float netField(vec3 q, float t, out float blob) {
+  vec3 w = q + 0.05 * vec3(fbm3(q * 11.0 + t * 0.01), fbm3(q * 11.0 + 3.1), fbm3(q * 11.0 - t * 0.01));
+  w += 0.012 * vec3(snoise(q * 45.0 + 1.3), snoise(q * 45.0 + 7.9), snoise(q * 45.0 - 4.2));
+  vec2 c = cells2(w * 21.0, t * 0.2);
+  blob = smoothstep(0.3, 0.95, 0.5 + 0.65 * fbmL(q * 80.0 + vec3(0.0, t * 0.02, 0.0)));
+  return exp(-(c.y - c.x) / 0.16) * (0.25 + 0.75 * smoothstep(-0.2, 0.6, snoise(w * 30.0 + 2.0)));
+}
+float plageOf(vec3 q, float ar) {
+  float lat = asin(clamp(q.y, -1.0, 1.0)), belt = exp(-pow((abs(lat) - 0.3) / 0.2, 2.0));
+  return max(smoothstep(0.12, 0.6, fbm3(q * 2.2 + 1.7)) * (0.35 + 0.65 * belt) * (0.4 + 0.8 * uAct), 0.9 * min(ar, 1.3));
+}
+float darkLanes(vec3 q) {
+  float thin = pow(ridge(snoise(q * vec3(2.6, 6.5, 2.6) + 9.0)), 28.0) * smoothstep(0.0, 0.4, fbm3(q * 1.4 + 4.0));
+  return (1.0 - 0.8 * max(filMask(q), 0.6 * thin)) * (1.0 - 0.55 * holeMask(q));
+}
+vec3 surfRug(vec3 q, float t, float mu, float ar, float fine) {
+  float blob, w;
+  float net = netField(q, t, blob);
+  float cloud = 0.5 + 0.5 * fbmL(q * 13.0 + vec3(t * 0.006, 0.0, 0.0));
+  vec3 d = fieldDir(q, t, w);
+  float st = smoothstep(-0.5, 0.6, streak(q, d, 55.0, t));
+  float grain = 0.5 + 0.5 * snoise(q * 210.0 + t * 0.05);
+  float plage = plageOf(q, ar);
+  float x = 0.14 + 0.38 * cloud * cloud;
+  x += net * (0.12 + 1.25 * blob) * (0.6 + 0.6 * cloud);
+  x *= 0.75 + 0.5 * st;
+  x += 0.18 * grain * grain * fine * (0.5 + net);
+  x += plage * (0.55 + 1.3 * net * (0.4 + blob)) * (0.8 + 0.4 * st);
+  x += 1.6 * pow(min(ar, 1.4), 2.0) * (0.6 + 0.4 * blob);
+  x *= darkLanes(q) * (0.8 + 0.3 * uGlow) * (1.0 + 0.5 * uHot);
+  x = x * (0.78 + 0.22 * mu) + 0.45 * pow(1.0 - mu, 4.0);   // Randaufhellung wie in 304 Å
+  return lut304(x);
+}
+vec3 surfGas(vec3 q, float t, float mu, float ar, float fine) {
+  vec3 p = q * 3.2;
+  vec3 o1 = vec3(fbm3(p + vec3(0.0, 0.0, t * 0.01)), fbm3(p + vec3(5.2, 1.3, 2.8)), fbm3(p + vec3(1.7, 9.2, -t * 0.01)));
+  vec3 o2 = vec3(fbm3(p * 2.0 + 3.0 * o1 + vec3(8.3, 2.8, 0.0)), fbm3(p * 2.0 + 3.0 * o1 + vec3(3.1, 7.4, 5.0)), fbm3(p * 2.0 + 3.0 * o1 + vec3(1.2, 4.4, 9.1)));
+  float f = 0.5 + 0.5 * fbmL(p * 3.0 + 2.5 * o2 + vec3(0.0, t * 0.015, 0.0));
+  float fil = pow(ridge(snoise(p * 7.0 + 3.0 * o2 + t * 0.02)), 5.0) + 0.6 * pow(ridge(snoise(p * 16.0 + 4.0 * o2 - t * 0.03)), 7.0);
+  vec2 g = cells2(q * 60.0 + 2.0 * o2, t * 0.5);
+  float gran = mix(0.5, 1.0 - smoothstep(0.0, 0.9, g.x), 0.2 + 0.8 * fine);
+  float act = max(smoothstep(0.0, 0.5, fbm3(q * 1.3 + 3.0)) * (0.5 + 0.7 * uAct), 0.9 * min(ar, 1.0));
+  float x = 0.42 + 0.75 * f * f + 0.2 * gran;
+  x += fil * (0.25 + 0.6 * act);
+  x += act * 0.3 + 1.4 * pow(min(ar, 1.4), 2.0) * (0.6 + 0.6 * fil);
+  x *= (1.0 - 0.35 * filMask(q)) * (0.85 + 0.25 * uGlow) * (1.0 + 0.4 * uHot);
+  x = x * (0.62 + 0.38 * sqrt(mu)) + 0.9 * pow(1.0 - mu, 3.0);   // heller Saum wie im ESA-Bild
+  return lutKino(x);
+}
+vec3 surfFibre(vec3 q, float t, float mu, float ar, float fine) {
+  float blob, w;
+  vec3 d = fieldDir(q, t, w);
+  float fb = pow(ridge(streak(q, d, 38.0, t) * 1.6), 5.0) + 0.7 * pow(ridge(streak(q + 3.3, d, 95.0, t * 1.3) * 1.6), 6.0) * (0.4 + 0.6 * fine);
+  float dk = pow(ridge(streak(q + 7.1, d, 60.0, -t) * 1.6), 7.0);
+  float net = netField(q, t, blob);
+  float cloud = 0.5 + 0.5 * fbmL(q * 11.0 + 2.0);
+  float plage = plageOf(q, ar);
+  float x = 0.12 + 0.3 * cloud * cloud + 0.2 * net * blob;
+  x += fb * (0.28 + 0.3 * net + 1.7 * plage + 1.5 * w);
+  x *= 1.0 - 0.3 * dk * (1.0 - plage);
+  x += 0.35 * net * blob * (1.0 - plage);
+  x += plage * 0.5 + 1.7 * pow(min(ar, 1.4), 2.0) * (0.5 + 0.6 * fb);
+  x *= darkLanes(q) * (0.8 + 0.3 * uGlow) * (1.0 + 0.5 * uHot);
+  x = x * (0.78 + 0.22 * mu) + 0.45 * pow(1.0 - mu, 4.0);
+  return lut304(x);
+}
 // Flecken in der Glutkruste: Umbra fast schwarz mit glimmenden Punkten, Penumbra aus radialen Glutfasern, in denen Knoten
 // nach außen laufen (Evershed-Strömung); Größe wie in SUN_FRAG (Umbra uSpot.w, Penumbra 2,4-fach). rgb = Leuchten, a = Abdunkeln.
 vec4 spotsA(vec3 g, float t, float fine) {
@@ -354,8 +476,9 @@ void main() {
   }
   vec3 col = uSurf > 0.5 ? surfB(g, uTime, mu, ar, fine) : uTex < 0.5 ? surfA(g, uTime, mu, ar, fine) : uTex < 1.5 ? surfNet(g, uTime, mu, ar, fine)
     : uTex < 2.5 ? surfFur(g, uTime, mu, ar, fine) : uTex < 3.5 ? surfSDO(g, uTime, mu, ar, fine) : uTex < 4.5 ? surfMagma(g, uTime, mu, ar, fine)
-    : uTex < 5.5 ? magmaA(g, uTime, mu, ar, fine) : uTex < 6.5 ? magmaB(g, uTime, mu, ar, fine) : magmaC(g, uTime, mu, ar, fine);
-  if (uSurf < 0.5) { vec4 sp = spotsA(g, uTime, fine); col = col * (1.0 - sp.a) + sp.rgb; }
+    : uTex < 5.5 ? magmaA(g, uTime, mu, ar, fine) : uTex < 6.5 ? magmaB(g, uTime, mu, ar, fine) : uTex < 7.5 ? magmaC(g, uTime, mu, ar, fine)
+    : uTex < 8.5 ? surfRug(g, uTime, mu, ar, fine) : uTex < 9.5 ? surfGas(g, uTime, mu, ar, fine) : surfFibre(g, uTime, mu, ar, fine);
+  if (uSurf < 0.5 && uTex < 7.5) { vec4 sp = spotsA(g, uTime, fine); col = col * (1.0 - sp.a) + sp.rgb; }
   // Moos: helle, körnige Fußpunkte der Bögen über den aktiven Regionen – dort wurzeln die Fäden (sunstrands.js)
   float mossF = 1.0 - smoothstep(0.002, 0.008, length(fwidth(vO)));
   float moss = 0.5 + 0.5 * (0.6 * snoise(g * 140.0 + vec3(0.0, 0.0, uTime * 0.04)) + 0.4 * snoise(g * 330.0 - vec3(0.0, uTime * 0.05, 0.0)));

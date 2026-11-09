@@ -16,7 +16,11 @@
 //   in tabs.js = ein Reiter, der volle Name steht dann als Zwischenüberschrift im Inhalt),
 //   active() + only: Ebene wirkt gerade nicht (z. B. anderer Kanal) → Zeile abgedunkelt, bleibt bedienbar, darunter only als Grund.
 //   Auswahl ('seg' oder Regler mit benannten Stufen) erscheint als Schalter (2 Werte), Auswahlfeld oder mit ordered: true als
-//   Rast-Regler (geordnete Stufen wie Detailstufe); buttons: true behält die Knopfreihe (Farb-Wahl wie Farblook).
+//   Rast-Regler (geordnete Stufen wie Detailstufe); buttons: true behält die Knopfreihe (Farb-Wahl wie Farblook), ab 6 Stufen
+//   als Knopf-Raster (Look-Wahl wie Kruste der Sonne, User 09.11.2026: Knöpfe statt Regler, wo man wählt statt dosiert).
+//   Raster (User 09.11.2026 „kein verschwendeter Freiraum“): kurze Zeilen (Schalter, Zahlen-Regler, Auswahlfeld, Knopf; Karte
+//   mit einer kurzen Unter-Zeile) stehen zu zweit nebeneinander, wenn die Nachbarin auch kurz ist (pairs), auch unter einer
+//   Hauptzeile; alles andere über die volle Breite – Reihenfolge der Ebenen so wählen, dass kurze Zeilen paarweise folgen.
 // Werte, die an allen Stationen gemeinsam gelten, stehen nicht hier, sondern in den Einstellungen (settings.js). Werte je Station in localStorage `kosmos.layers.v1` (nicht der Abspielzustand); URL `?lay=aurora:0,kp:7,clock.play:1` für
 // Screenshots. Aktive Station aus `#station=…` (main.js setzt den Hash per replaceState → ohne Ereignis, daher Takt 300 ms).
 
@@ -210,7 +214,7 @@ function persist(l) {
 // Bento: je group eine Karte, ▶-Ebene als Karte „Animation“ oben, sub-Ebenen als eingerückter Block unter ihrer Hauptzeile.
 // Regler mit wenigen benannten Stufen (fmt ohne Ziffern, ≤ 5 Stufen) sind eine Auswahl wie 'seg': Schalter, Rast-Regler oder
 // Auswahlfeld (pickHtml), mit buttons: true eine Knopfreihe; Zahlen-Regler zweizeilig.
-const isChoice = (l) => l.type === 'range' && l.fmt && (l.step ?? 1) === 1 && l.max - l.min <= 4 && !/\d/.test(String(l.fmt(l.min)));
+const isChoice = (l) => l.type === 'range' && l.fmt && (l.step ?? 1) === 1 && l.max - l.min <= (l.buttons ? 15 : 4) && !/\d/.test(String(l.fmt(l.min)));
 const ticks = (l) => ((l.step ?? 1) >= 1 && l.max - l.min <= 12 ? ` style="--n:${l.max - l.min}"` : '');
 const steps = (l) => Array.from({ length: l.max - l.min + 1 }, (_, i) => l.min + i);
 const isPick = (l) => !l.buttons && (l.type === 'seg' || isChoice(l));
@@ -243,7 +247,7 @@ const rowHtml = (l) => {
   let row;
   if (l.type === 'toggle') row = `<label class="b-row cfg-toggle lay"><span class="cfg-label">${lab}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
   else if (isPick(l)) row = pickHtml(l.id, l.label, choicesOf(l), { ordered: l.ordered, lid: `lay-${l.id}`, cls: ' lay', ico });
-  else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
+  else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="seg b-seg${l.max - l.min > 4 ? ' b-grid' : ''}" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
   else if (l.type === 'seg') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}">${esc(n)}</button>`).join('')}</div></div>`;
   else if (l.type === 'swatch') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="swatch" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n, bg]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}"><i class="sw-disc" style="background:${bg}" aria-hidden="true"></i><b>${esc(n)}</b></button>`).join('')}</div></div>`;
   else if (l.type === 'range') row = `<label class="b-row b-stack lay"><span class="b-top"><span class="cfg-label">${lab}</span><output data-lout="${l.id}"></output></span>${range(l)}</label>`;
@@ -283,7 +287,20 @@ const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
 const resettable = (l) => ['toggle', 'range', 'seg', 'swatch'].includes(l.type) && !shows.includes(l);
 const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id, l.label) : '');
 const isWide = (l, subs) => subs.length > 0 || l.type === 'swatch' || l.type === 'seg' || l.marks || (l.fmt && choicesOf(l).length > 2 && !isPick(l));
-const block = ({ l, subs }) => `<div class="b-item${isWide(l, subs) ? ' b-wide' : ''}">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="b-item">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
+// kurz = passt in eine halbe Spalte: Schalter, Knopf, Auswahlfeld, Zahlen-Regler; ohne Zeitmarken, Detailbild, langen Hinweis
+const isShort = (l) => !l.marks && !l.detail && (!l.hint || l.hint.length <= 90)
+  && (l.type === 'toggle' || l.type === 'action' || isPick(l) || (l.type === 'range' && !isWide(l, [])));
+const shortItem = ({ l, subs }) => isShort(l) && (subs.length === 0 || (subs.length === 1 && isShort(subs[0])));
+// Paare von vorn: zwei kurze Nachbarn → beide halb; eine kurze Zeile allein bleibt voll (keine Lücke im Raster)
+function pairs(list, short) {
+  const half = new Set();
+  for (let i = 0; i + 1 < list.length; i++) if (short(list[i]) && short(list[i + 1])) { half.add(list[i]); half.add(list[i + 1]); i++; }
+  return half;
+}
+const block = (it, half = false) => {
+  const { l, subs } = it, sh = pairs(subs, isShort), cls = (x, xs, h) => `b-item${h ? ' b-half' : isWide(x, xs) ? ' b-wide' : ''}`;
+  return `<div class="${cls(l, subs, half)}">${rowDev(l)}${subs.length ? `<div class="b-subs"${l.type === 'toggle' ? ` data-subs="${l.id}"` : ''}>${subs.map((x) => `<div class="${cls(x, [], sh.has(x))}">${rowDev(x)}</div>`).join('')}</div>` : ''}</div>`;
+};
 
 // Block „Zeigen“: ▶-Ebene (Kopf, Achse, Tempo), dann Zeit-Regler und Knöpfe ohne Marke auf der Achse
 const axisOf = (p, evs) => !!(p && p.now && evs.some((e) => e.at));
@@ -308,7 +325,8 @@ const itemsOf = (g) => g.items.flatMap(({ l, subs }) => [l, ...subs]);
 // Gemeinsame Gruppe: Überschrift immer, darunter ihre Geltung (scope)
 const tabBody = (g) => g.segs.map((s) => {
   const scope = s.items[0] && s.items[0].l.scope;
-  return `${g.segs.length > 1 || s.title !== g.title || scope ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${scope ? `<p class="cfg-note lay-hint">${prose(scope)}</p>` : ''}${s.items.map(block).join('')}`;
+  const half = pairs(s.items, shortItem);
+  return `${g.segs.length > 1 || s.title !== g.title || scope ? `<h5 class="b-subh">${esc(s.title)}</h5>` : ''}${scope ? `<p class="cfg-note lay-hint">${prose(scope)}</p>` : ''}${s.items.map((it) => block(it, half.has(it))).join('')}`;
 }).join('');
 // Leiste unter dem Kopf (Menü:C): quadratische Kacheln im selben Raster wie Allgemeine Einstellungen (cfg-jump/cfg-tile, User 29.10.2026),
 // je Gruppe Icon, Kurzname und Zahl; „Ereignisse“ (Block „Zeigen“) als erster Eintrag mit

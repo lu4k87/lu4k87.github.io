@@ -17,6 +17,8 @@
 // sunlook.js) · 3 Protuberanz schnürt sich ab (uTear Art des Ablösens); uK = Fortschritt des Ausbruchs 0 … 1, uPx = Pixelgröße
 // bei Abstand 1, uDens = Anteil der ruhigen Bögen (nach Bogen-seed, Zahnrad „Dichte“), uBurst Anteil der ruhigen Bögen, die
 // je Zyklus platzen (× 38 %), uSpray Hub ihrer Plasmoide, uRain Menge des koronalen Regens in großen ruhigen Bögen.
+// uSoft (Vorschau 09.11.2026 „Sonne realistisch“): 0 Lichterketten (Röhre mit Perlen) · 1 Faserbündel (weicher Gauß-Faden,
+// Licht wogt lang, Regen als Schlieren) · 2 dazu breiter Dunst um jeden Faden; styleLoops formt eine Liste dafür um.
 
 import * as THREE from 'three';
 import { NOISE } from './glsl.js';
@@ -24,7 +26,7 @@ import { NOISE } from './glsl.js';
 export const strandUniforms = () => ({
   uTime: { value: 0 }, uPx: { value: 0.001 }, uGain: { value: 1 }, uPal: { value: 0 }, uMode: { value: 0 }, uK: { value: 0 }, uDens: { value: 1 },
   uFoot: { value: 1 }, uMove: { value: new THREE.Vector3(1, 1, 1) }, uDisk: { value: 0.35 }, uLifeR: { value: 1 }, uScale: { value: 1 }, uTear: { value: 4 },
-  uBurst: { value: 1 }, uSpray: { value: 1 }, uRip: { value: 3 }, uRipMix: { value: new THREE.Vector4(1, 1, 1, 1) }, uRain: { value: 1 },
+  uBurst: { value: 1 }, uSpray: { value: 1 }, uRip: { value: 3 }, uRipMix: { value: new THREE.Vector4(1, 1, 1, 1) }, uRain: { value: 1 }, uSoft: { value: 0 },
   uFS: { value: new THREE.Vector3(0, 0, 1) }, uFE1: { value: new THREE.Vector3(1, 0, 0) }, uFE2: { value: new THREE.Vector3(0, 1, 0) },
 });
 
@@ -37,7 +39,7 @@ export const strandUniforms = () => ({
 export const STRAND_VERT = /* glsl */ `
 attribute vec3 aA, aB;
 attribute vec4 aE, aL, aT, aS, aF;
-uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear, uBurst, uSpray, uRip;
+uniform float uTime, uPx, uMode, uK, uDens, uFoot, uLifeR, uScale, uTear, uBurst, uSpray, uRip, uSoft;
 uniform vec4 uRipMix;
 uniform vec3 uMove, uFS, uFE1, uFE2;
 varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen, vLH;
@@ -343,7 +345,7 @@ void main() {
   // Band = 1,7 × Röhrenradius (Röhre + Leuchthof); Röhre mindestens ≈ 0,7 Pixel, sonst dunkler statt dünner. Nah vor der
   // Kamera (< 0,18 R☉) blenden die Fäden aus, damit kein unscharfes Band durchs Bild zieht.
   float px = uPx * max(-pv.z, 1e-4), cw = max(w, px * 0.7);
-  pv.xyz += sd * side * cw * 1.7;
+  pv.xyz += sd * side * cw * (uSoft > 1.5 ? 4.5 : 1.7);   // Dunst (uSoft 2): Band breiter für den Leuchthof
   vS = rv > 0.5 && u <= 0.0 ? sl : s; vX = side; vSeed = aT.z; vFlow = aS.w; vHot = hot; vCut = max(W, cut); vW = wp.xyz; vRes = w / px; vU = u; vCyc = cyc; vLH = gH;
   vI = I * life * (1.0 + 3.0 * hot) * w / cw * smoothstep(0.05, 0.18, -pv.z) * (u > 0.0 && (uFoot < 0.5 || (uFoot > 1.5 && uFoot < 2.5)) ? 0.0 : 1.0);
   gl_Position = projectionMatrix * pv;
@@ -359,7 +361,7 @@ void main() {
 // Flare-Schleife (weißglühend, kühlt ab); vCyc = Phase im Zyklus „Werden und Vergehen“ (am Ende regnet Plasma ab).
 export const STRAND_FRAG = /* glsl */ `
 ${NOISE}
-uniform float uTime, uGain, uPal, uMode, uK, uFoot, uDisk, uRain;
+uniform float uTime, uGain, uPal, uMode, uK, uFoot, uDisk, uRain, uSoft;
 uniform vec3 uMove;
 varying float vS, vX, vH, vI, vFlow, vSeed, vCut, vHot, vRes, vU, vCyc, vSh, vLen, vLH;
 varying vec3 vW;
@@ -373,6 +375,43 @@ vec3 ramp(float x) {
 void main() {
   if (vI <= 0.0) discard;
   float x = vX, t = uTime, sp = 0.7 + 1.6 * uMove.x;
+  if (uSoft > 0.5) {
+    // Vorschau 09.11.2026 „Sonne realistisch“: weicher Faden ohne Röhrenkante (Gauß-Querschnitt), Licht wogt lang statt
+    // als Perlenkette, Regen als kurze Schlieren; Bündel aus vielen schwachen Fäden (Geometrie). uSoft 2 = dazu breiter
+    // Dunst um jeden Faden (Leuchthof wie in den SDO-Filmen)
+    float xr = x * (uSoft > 1.5 ? 4.5 : 1.7), core = exp(-xr * xr * 2.4);
+    float halo = (uSoft > 1.5 ? 0.22 * exp(-x * x * 3.0) + 0.1 * exp(-xr * xr * 0.35) : 0.1 * exp(-x * x * 2.2)) * (1.0 - x * x);
+    float base = smoothstep(-0.0015, 0.0012, vH);
+    if (vU > 0.0) {
+      float Ir = vI * (core + halo) * pow(max(1.0 - vU, 0.0), 1.6) * 0.9;
+      gl_FragColor = vec4(ramp(Ir * 0.8) * Ir * uGain, 1.0);
+      return;
+    }
+    float df = min(vS, 1.0 - vS);
+    float wav = 0.55 + 0.45 * smoothstep(-0.5, 0.7, gnoise(vec3(vS * 2.2 - t * vFlow * 0.18 * sp, vSeed * 37.0, vSeed * 11.0)));
+    float fn = 0.75 + 0.25 * gnoise(vec3(vS * 30.0 + vSeed * 5.0, vSeed * 91.0, t * 0.05));
+    float leg = 1.0 + 0.8 * pow(abs(2.0 * vS - 1.0), 4.0);
+    float I = vI * (core + halo) * wav * fn * leg * base;
+    float tau = sqrt(max(1.0 - 2.0 * df, 0.0)), lg = step(0.5, vS);
+    float ru = tau * 5.0 - t * 0.22 * (0.7 + 0.6 * fract(vSeed * 7.3)) + vSeed * 13.0 + lg * 0.37, fr = fract(ru);
+    float streakR = smoothstep(0.2, 0.62, fr) * (1.0 - smoothstep(0.62, 0.7, fr)) * smoothstep(0.0, 0.07, df) * smoothstep(0.05, 0.25, tau);
+    float hit = fract(sin(floor(ru) * 12.9898 + vSeed * 78.233 + lg * 17.0) * 43758.5453);
+    if (uMode < 0.5) {
+      I *= 0.55 + 0.45 * smoothstep(0.1, 0.9, 0.5 + 0.5 * sin(t * (0.14 + 0.36 * fract(vSeed * 3.7)) * (1.0 + uMove.x) + vSeed * 40.0));
+      if (uRain > 0.0 && vLH > 0.03) I += vI * core * streakR * step(1.0 - 0.3 * min(uRain, 2.0), hit) * smoothstep(0.03, 0.09, vLH) * 1.1 * base;
+      vec3 rd = normalize(vW - cameraPosition);
+      float tb = -dot(cameraPosition, rd), b2 = dot(cameraPosition, cameraPosition) - tb * tb;
+      if (tb > 0.0 && b2 < 1.0) I *= uDisk;
+    } else if (uMode > 1.5 && uMode < 2.5) {
+      // Flare-Arkade: nach dem Höhepunkt kühlen die Bögen, Plasma regnet als Schlieren die Beine hinab (SDO 19.07.2012)
+      I += vI * core * streakR * step(0.45, hit) * smoothstep(0.3, 0.55, uK) * 1.6 * base;
+    } else if (uMode > 2.5) {
+      I += vI * core * streakR * step(0.5, hit) * smoothstep(0.6, 0.72, uK) * (1.0 - vCut) * 1.3 * base;
+    }
+    I *= mix(1.0, vSh, smoothstep(0.0, 1.0, vCut * vLen) * smoothstep(0.0, 1.0, (1.0 - vCut) * vLen));
+    gl_FragColor = vec4(ramp(I) * I * uGain, 1.0);
+    return;
+  }
   float xr = x * 1.7, tube = sqrt(max(1.0 - xr * xr, 0.0));
   float prof = tube + 0.2 * exp(-xr * xr * 1.3) * (1.0 - x * x);
   if (vU > 0.0) {
@@ -552,3 +591,9 @@ export function eruptLoop(mode, foot, tan, rand, threads) {
     h: mode === 1 ? 0.045 : 0.34, lean: mode === 1 ? 0.2 : 0.1, rope: mode === 1 ? 0.011 : 0.028, width: mode === 1 ? 0.0028 : 0.0034, threads,
     I: mode === 1 ? 1.6 : 1.3, twist: mode === 1 ? 1.8 : 0.7, flow: 0.5, flat: mode === 1 ? 0.25 : 0.65, delay: 0, seed: rand() }];
 }
+
+// Look einer Bogen-Liste (Vorschau 09.11.2026 „Sonne realistisch“): Faktoren auf die fertigen Bögen statt beim Erzeugen, damit
+// levels/sun.js die Geometrie beim Wechsel aus derselben Grundliste neu baut (gleiche Lage, gleicher Zufall).
+// o = { hMul (Höhe), ropeMul (Bündel), wMul (Faden), mul (Fäden je Bogen), iMul (Helligkeit), twist, flat (ersetzen) }
+export const styleLoops = (list, o = {}) => list.map((L) => ({ ...L, h: L.h * (o.hMul ?? 1), rope: L.rope * (o.ropeMul ?? 1), width: L.width * (o.wMul ?? 1),
+  threads: L.threads * (o.mul ?? 1), I: L.I * (o.iMul ?? 1), twist: o.twist ?? L.twist, flat: o.flat ?? L.flat }));
