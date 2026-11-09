@@ -119,7 +119,10 @@ h1,h2,h3{text-wrap:balance}
 .side a.on i,.rail a.on i{color:var(--accent);text-shadow:var(--glow-text)}
 .side .me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 4px 0}
 .side .me a{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;min-width:0;flex:1}
-.side .me b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Name max. 2 Zeilen mit Auslassung (voller Name im title), Abmelden-Knopf schrumpft nie */
+.side .me a>span{min-width:0}
+.side .me b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+.side .me form{flex:none}
 .topbar{min-height:60px;flex:none;display:flex;align-items:center;gap:10px;padding:10px 28px;border-bottom:1px solid var(--line)}
 .navB{flex-direction:column}
 .navB>.top{min-height:62px;flex:none;display:flex;align-items:center;gap:24px;padding:10px 32px;flex-wrap:wrap;width:100%;max-width:1240px;margin:0 auto}
@@ -197,7 +200,7 @@ select.lvl{height:30px;width:auto;min-width:150px;padding:0 8px}
   .side nav{margin:0;flex-direction:row;gap:4px;overflow-x:auto;flex:1 1 100%;order:3}
   .side .grp{display:flex;gap:2px}
   .side .grp>span{display:none}
-  .side .me{margin:0 0 0 auto;border:0;padding:0}
+  .side .me{margin:0 0 0 auto;border:0;padding:0;min-width:0;max-width:100%}
   .rail{width:auto;height:auto;position:static;flex-direction:row;overflow-x:auto;padding:8px 4px}
   .rail .sep{width:1px;height:28px;margin:0 4px}
   .rail .avlink{margin:0 0 0 auto}
