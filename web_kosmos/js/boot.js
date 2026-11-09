@@ -53,7 +53,7 @@ export function createBoot(root = document.getElementById('boot')) {
     const n = Math.floor(shown * 100);
     bar.style.setProperty('--p', shown.toFixed(4));
     bar.setAttribute('aria-valuenow', String(n));
-    pct.textContent = `${n} %`;
+    pct.textContent = `${n}\u00a0%`;   // geschützt: „58“ und „%“ nie in zwei Zeilen
     if (shown < target) raf = requestAnimationFrame(tick);
     else { raf = 0; then = 0; if (finish && shown >= 1) finish(); }
   }
@@ -68,6 +68,8 @@ export function createBoot(root = document.getElementById('boot')) {
 
   return {
     set(p, label) {
+      // Umbruch nur zwischen den Teilen „Station · Schritt“, nie mitten in „Säulen der Schöpfung“ oder „Bilder 12/12“
+      if (label) label = label.split(' · ').map((s) => s.replace(/ /g, '\u00a0')).join(' · ');
       target = Math.max(target, Math.min(1, p));
       if (nebula) nebula.setP(target);
       if (label && label !== (nextLabel !== null ? nextLabel : what.textContent)) showLabel(label);
