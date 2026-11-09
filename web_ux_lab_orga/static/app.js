@@ -1,4 +1,5 @@
 // UX Lab Orga – kleine Helfer ohne Abhängigkeiten: Strg+K → Suche · Link kopieren · Phasen-Tafel ziehen.
+const EN = document.documentElement.lang === 'en';  // Sprache wie der Server (app/i18n.py)
 document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
     const q = document.getElementById('q');
@@ -11,7 +12,7 @@ document.querySelectorAll('[data-copy]').forEach((btn) => btn.addEventListener('
   const out = document.getElementById(btn.dataset.copy + '-st');
   try {
     await navigator.clipboard.writeText(el.textContent.trim());
-    out.textContent = 'Link kopiert.';
+    out.textContent = EN ? 'Link copied.' : 'Link kopiert.';
   } catch {
     // ohne HTTPS gibt es keine Zwischenablage-API → Link markieren
     const range = document.createRange();
@@ -19,7 +20,7 @@ document.querySelectorAll('[data-copy]').forEach((btn) => btn.addEventListener('
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
-    out.textContent = 'Link markiert – mit Strg+C kopieren.';
+    out.textContent = EN ? 'Link selected – copy with Ctrl+C.' : 'Link markiert – mit Strg+C kopieren.';
   }
 }));
 
@@ -46,11 +47,16 @@ if (phaseForm) {
 
 // Kopf-Infos (templates/_kopf.html): Uhr im Minutentakt · Fenster am Knopf ausrichten · Reiter Zeit/Netz (Kopf:B).
 (() => {
-  const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-  const WDL = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-  const MS = ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.'];
-  const ML = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober',
-    'November', 'Dezember'];
+  // gleiche Namen wie app/i18n.py (EN aus Pythons calendar): DE „Mo, 9. Nov.“ · EN „Mon, 9 Nov“
+  const WD = EN ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  const WDL = EN ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    : ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+  const MS = EN ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    : ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.'];
+  const ML = EN ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
+    'November', 'December'] : ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September',
+    'Oktober', 'November', 'Dezember'];
+  const day = (d, names) => (EN ? `${d.getDate()} ${names[d.getMonth()]}` : `${d.getDate()}. ${names[d.getMonth()]}`);
   const two = (n) => String(n).padStart(2, '0');
   const isoWeek = (d) => {
     const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -59,8 +65,8 @@ if (phaseForm) {
   };
   const fmt = {
     time: (d) => `${two(d.getHours())}:${two(d.getMinutes())}`,
-    date: (d) => `${WD[d.getDay()]}, ${d.getDate()}. ${MS[d.getMonth()]}`,
-    long: (d) => `${WDL[d.getDay()]}, ${d.getDate()}. ${ML[d.getMonth()]}`,
+    date: (d) => `${WD[d.getDay()]}, ${day(d, MS)}`,
+    long: (d) => `${WDL[d.getDay()]}, ${day(d, ML)}`,
     kw: (d) => String(isoWeek(d)),
   };
   const clocks = document.querySelectorAll('[data-clock]');

@@ -46,6 +46,10 @@
       const btn = e.submitter;
       const area = form.querySelector('input[name=area]')?.value;
       if (area && btn?.name === 'variant') {
+        if (area === 'lang') {  // ponytail: Demo nur auf Deutsch exportiert, keine zweite Sprachfassung
+          say('Sprache wechseln geht nur in der echten App.');
+          return;
+        }
         if (area === 'theme') {
           store.set('demo-theme', btn.value);
           applyTheme(btn.value);

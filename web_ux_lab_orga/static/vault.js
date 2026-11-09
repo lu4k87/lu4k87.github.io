@@ -1,6 +1,8 @@
 // Zugänge: Passwort anzeigen/kopieren ohne Seitenwechsel. Ohne JS senden die Formulare normal (Seite zeigt den Wert).
 (() => {
   const HIDE_SECONDS = 30;
+  const EN = document.documentElement.lang === 'en';  // Sprache wie der Server (app/i18n.py)
+  const FAIL = EN ? 'That did not work – please reload the page.' : 'Das hat nicht geklappt – bitte die Seite neu laden.';
   const say = (box, text) => { const st = box.querySelector('.st'); if (st) st.textContent = text; };
   const showBtn = (box) => box.querySelector('button[value=anzeigen] span');
 
@@ -8,7 +10,7 @@
     clearTimeout(box.hideTimer);
     box.querySelector('.val')?.remove();
     box.classList.remove('shown');
-    if (showBtn(box)) showBtn(box).textContent = 'Anzeigen';
+    if (showBtn(box)) showBtn(box).textContent = EN ? 'Show' : 'Anzeigen';
     say(box, '');
   }
 
@@ -21,8 +23,8 @@
     }
     val.textContent = text;  // nie innerHTML
     box.classList.add('shown');
-    if (showBtn(box)) showBtn(box).textContent = 'Verdecken';
-    say(box, `Sichtbar für ${HIDE_SECONDS} Sekunden · steht im Protokoll.`);
+    if (showBtn(box)) showBtn(box).textContent = EN ? 'Hide' : 'Verdecken';
+    say(box, EN ? `Visible for ${HIDE_SECONDS} seconds · logged.` : `Sichtbar für ${HIDE_SECONDS} Sekunden · steht im Protokoll.`);
     clearTimeout(box.hideTimer);
     box.hideTimer = setTimeout(() => hide(box), HIDE_SECONDS * 1000);
     return val;
@@ -31,7 +33,7 @@
   async function copy(box, text) {
     try {
       await navigator.clipboard.writeText(text);
-      say(box, 'Kopiert.');
+      say(box, EN ? 'Copied.' : 'Kopiert.');
     } catch {
       // ohne HTTPS gibt es keine Zwischenablage-API → Wert zeigen und markieren
       const val = box.querySelector('.val') || show(box, text);
@@ -40,7 +42,7 @@
       const sel = window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
-      say(box, 'Markiert – mit Strg+C kopieren.');
+      say(box, EN ? 'Selected – copy with Ctrl+C.' : 'Markiert – mit Strg+C kopieren.');
     }
   }
 
@@ -57,11 +59,11 @@
       res = await fetch(form.getAttribute('action'), { method: 'POST', body, headers: { 'X-Requested-With': 'fetch' }, credentials: 'same-origin' });
       data = await res.json();
     } catch {
-      say(form, 'Das hat nicht geklappt – bitte die Seite neu laden.');
+      say(form, FAIL);
       return;
     }
     if (res.status === 403 && data.reauth) { window.location.assign(data.reauth); return; }
-    if (!res.ok || typeof data.value !== 'string') { say(form, 'Das hat nicht geklappt – bitte die Seite neu laden.'); return; }
+    if (!res.ok || typeof data.value !== 'string') { say(form, FAIL); return; }
     if (action === 'kopieren') copy(form, data.value); else show(form, data.value);
   }));
 

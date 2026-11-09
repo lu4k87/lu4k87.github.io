@@ -334,6 +334,11 @@ legend{margin-bottom:6px}
 .hi-theme .to-dark{display:grid} .hi-theme .to-light{display:none}
 :root[data-theme="dark"] .hi-theme .to-dark{display:none} :root[data-theme="dark"] .hi-theme .to-light{display:grid}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hi-theme .to-dark{display:none} :root:not([data-theme="light"]) .hi-theme .to-light{display:grid}}
+/* Sprache DE | EN (Vorschau 2026-11-09, Lang:B): Segment rechts neben Hell/Dunkel, aktuelle Sprache hinterlegt */
+.hi-lang{flex:none;display:inline-flex;gap:2px;height:36px;padding:3px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface)}
+.hi-lang button{min-width:34px;padding:0 8px;border:0;border-radius:calc(var(--r) - 3px);background:transparent;color:var(--ink-2);font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.02em;cursor:pointer}
+.hi-lang button:hover{color:var(--ink)}
+.hi-lang button[aria-pressed="true"]{background:var(--sunken);color:var(--ink)}
 .hi-team{display:inline-flex;align-items:center;gap:10px;padding:4px 6px;border:0;border-radius:var(--r);background:transparent;color:var(--ink);font-size:14px}
 button.hi-team:hover{background:var(--sunken)}
 .hi-avs{display:flex}

@@ -68,13 +68,16 @@
 
 
   <span class="hi-date"><span data-clock="date">Mo, 9. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
-  <time class="hi-time" data-clock="time">17:13</time>
+  <time class="hi-time" data-clock="time">17:57</time>
   <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
   
 
 <form method="post" action="#" class="hi-theme"><input type="hidden" name="area" value="theme"><input type="hidden" name="next" value="/person/3/bearbeiten?">
   <button name="variant" value="dark" class="to-dark" aria-label="Dunkles Farbschema" title="Dunkles Farbschema"><i class="fa-solid fa-moon " aria-hidden="true"></i></button>
   <button name="variant" value="light" class="to-light" aria-label="Helles Farbschema" title="Helles Farbschema"><i class="fa-solid fa-sun " aria-hidden="true"></i></button>
+</form>
+
+<form method="post" action="#" class="hi-lang" role="group" aria-label="Sprache"><input type="hidden" name="area" value="lang"><input type="hidden" name="next" value="/person/3/bearbeiten?"><button name="variant" value="de" lang="de" aria-pressed="true" title="Deutsch"><span aria-hidden="true">DE</span><span class="vh">Deutsch</span></button><button name="variant" value="en" lang="en" aria-pressed="false" title="English"><span aria-hidden="true">EN</span><span class="vh">English</span></button>
 </form>
 
   
@@ -84,7 +87,7 @@
     <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
     <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
     <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
-    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 17:13:07</dd>
+    <dt>Server-Zeit</dt><dd class="mono">09.11.2026 · 17:57:46</dd>
   </dl>
 </div>
 
@@ -106,7 +109,7 @@
   <div class="g2">
     <div class="fld"><label class="lbl" for="status_text">Status</label><input id="status_text" name="status_text" value="Studie in Planung" maxlength="60" autocomplete="off" placeholder="z. B. Datenerhebung …"></div>
     <div class="fld"><label class="lbl" for="status_kind">Status-Markierung</label><select id="status_kind" name="status_kind"><option value="" selected>normal</option><option value="acc" >läuft aktiv</option><option value="warn" >braucht Aufmerksamkeit</option></select></div>
-    <div class="fld"><label class="lbl" for="phase">Phase</label><select id="phase" name="phase"><option value="">keine Phase (z. B. Lab-Dienst)</option><option selected>Planung</option><option >Umsetzung</option><option >Auswertung &amp; Schreiben</option><option >Wartet</option><option >Abgeschlossen</option></select></div>
+    <div class="fld"><label class="lbl" for="phase">Phase</label><select id="phase" name="phase"><option value="">keine Phase (z. B. Lab-Dienst)</option><option value="Planung" selected>Planung</option><option value="Umsetzung" >Umsetzung</option><option value="Auswertung &amp; Schreiben" >Auswertung &amp; Schreiben</option><option value="Wartet" >Wartet</option><option value="Abgeschlossen" >Abgeschlossen</option></select></div>
     <div class="fld"><label class="lbl" for="period">Zeitraum</label><input id="period" name="period" value="seit 03/2025" maxlength="40" autocomplete="off" placeholder="z. B. 04/2026 – 12/2026 …"></div>
     <div class="fld"><label class="lbl" for="supervisor_id">Betreuung</label><select id="supervisor_id" name="supervisor_id"><option value="">—</option><option value="1" selected>Dr. Anna Berger</option><option value="2" >Jonas Weber</option><option value="4" >Lena Hoffmann</option><option value="7" >Mehmet Yilmaz</option><option value="6" >Paul Richter</option><option value="5" >Sophie Klein</option><option value="8" >Tim Schröder</option></select></div>
   </div>
