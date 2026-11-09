@@ -18,6 +18,10 @@
 //   Auswahl ('seg' oder Regler mit benannten Stufen) erscheint als Schalter (2 Werte), Auswahlfeld oder mit ordered: true als
 //   Rast-Regler (geordnete Stufen wie Detailstufe); buttons: true behält die Knopfreihe (Farb-Wahl wie Farblook), ab 6 Stufen
 //   als Knopf-Raster (Look-Wahl wie Kruste der Sonne, User 09.11.2026: Knöpfe statt Regler, wo man wählt statt dosiert).
+//   Vorschaubilder (Vorschau 09.11.2026 „Vorschaubilder für die Einstellungen der Sonne“ Bild:A+B+C, Standbilder aus
+//   tools/layer_thumbs.py, nie live gerendert): thumbs = Bild je Stufe einer Knopf-Wahl (buttons: true) → ab 6 Stufen Bild-Kacheln,
+//   sonst Mini-Bild im Knopf; darüber Großbild der gewählten Stufe, Zeigen oder Fokus auf eine Stufe teilt es in „Jetzt“ |
+//   „Beim Zeigen“, erst der Klick übernimmt (Touch: Tippen übernimmt sofort). thumb = Bild statt Linien-Icon vor dem Namen.
 //   Raster (User 09.11.2026 „kein verschwendeter Freiraum“): kurze Zeilen (Schalter, Zahlen-Regler, Auswahlfeld, Knopf; Karte
 //   mit einer kurzen Unter-Zeile) stehen zu zweit nebeneinander, wenn die Nachbarin auch kurz ist (pairs), auch unter einer
 //   Hauptzeile; alles andere über die volle Breite – Reihenfolge der Ebenen so wählen, dass kurze Zeilen paarweise folgen.
@@ -239,7 +243,15 @@ const paramIconKey = (l) => {
   if (/netz|koordinat/i.test(t)) return 'net';
   return l.type === 'toggle' ? 'tune' : 'layers';
 };
-const paramIcon = (l) => icon(paramIconKey(l), 'lay-param-ico');
+// Standbild (alt leer: der Name steht daneben als Text)
+const pic = (src, cls) => `<img class="${cls}" src="${esc(src)}" alt="" loading="lazy" decoding="async">`;
+const paramIcon = (l) => (l.thumb ? pic(l.thumb, 'lay-thumb') : icon(paramIconKey(l), 'lay-param-ico'));
+// Bild je Stufe nur, wenn zu jeder Stufe eins da ist – sonst bleibt die Knopf-Wahl ohne Bilder
+const picsOf = (l) => (l.thumbs && l.thumbs.length === l.max - l.min + 1 ? l.thumbs : null);
+const heroHtml = (l) => {
+  const v = Math.round(l.value), fig = (k, peek) => `<figure class="lay-fig"${peek ? ' data-peek hidden' : ''}><img class="lay-hero-img"${peek ? '' : ` src="${esc(l.thumbs[v - l.min])}"`} alt="" decoding="async"><figcaption><span data-hero-k>${k}</span> · <b data-hero-n>${peek ? '' : esc(l.fmt(v))}</b></figcaption></figure>`;
+  return `<div class="lay-hero" data-hero="${l.id}" aria-hidden="true">${fig('Gewählt')}${fig('Beim Zeigen', true)}</div>`;
+};
 
 const rowHtml = (l) => {
   const ico = paramIcon(l);
@@ -247,7 +259,11 @@ const rowHtml = (l) => {
   let row;
   if (l.type === 'toggle') row = `<label class="b-row cfg-toggle lay"><span class="cfg-label">${lab}</span><input type="checkbox" data-lay="${l.id}"><span class="switch" aria-hidden="true"></span></label>`;
   else if (isPick(l)) row = pickHtml(l.id, l.label, choicesOf(l), { ordered: l.ordered, lid: `lay-${l.id}`, cls: ' lay', ico });
-  else if (isChoice(l)) row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="seg b-seg${l.max - l.min > 4 ? ' b-grid' : ''}" role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${esc(l.fmt(v))}</button>`).join('')}</div></div>`;
+  else if (isChoice(l)) {
+    const th = picsOf(l), tiles = th && l.max - l.min > 4, cls = tiles ? ' lay-tiles' : th ? ' lay-minis' : l.max - l.min > 4 ? ' b-grid' : '';
+    const name = (v) => (th ? `${pic(th[v - l.min], tiles ? 'lay-tile-img' : 'lay-mini')}<span>${esc(l.fmt(v))}</span>` : esc(l.fmt(v)));
+    row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span>${th ? heroHtml(l) : ''}<div class="seg b-seg${cls}"${th && !tiles ? ` style="--cols:${(l.max - l.min) % 2 ? 2 : 3}"` : ''} role="radiogroup" aria-labelledby="lay-${l.id}">${steps(l).map((v) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${v}">${name(v)}</button>`).join('')}</div></div>`;
+  }
   else if (l.type === 'seg') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="seg b-seg" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}">${esc(n)}</button>`).join('')}</div></div>`;
   else if (l.type === 'swatch') row = `<div class="b-row b-stack lay"><span class="cfg-label" id="lay-${l.id}">${lab}</span><div class="swatch" role="radiogroup" aria-labelledby="lay-${l.id}">${l.options.map(([v, n, bg]) => `<button type="button" role="radio" data-lay-seg="${l.id}" data-val="${esc(v)}"><i class="sw-disc" style="background:${bg}" aria-hidden="true"></i><b>${esc(n)}</b></button>`).join('')}</div></div>`;
   else if (l.type === 'range') row = `<label class="b-row b-stack lay"><span class="b-top"><span class="cfg-label">${lab}</span><output data-lout="${l.id}"></output></span>${range(l)}</label>`;
@@ -286,7 +302,7 @@ const count = (g) => g.items.reduce((n, it) => n + 1 + it.subs.length, 0);
 // Zeit-Regler im Block „Zeigen“ laufen mit der Station mit – kein ↺, zählen nicht als geändert
 const resettable = (l) => ['toggle', 'range', 'seg', 'swatch'].includes(l.type) && !shows.includes(l);
 const rowDev = (l) => rowHtml(l) + (resettable(l) ? devLine(l.id, l.label) : '');
-const isWide = (l, subs) => subs.length > 0 || l.type === 'swatch' || l.type === 'seg' || l.marks || (l.fmt && choicesOf(l).length > 2 && !isPick(l));
+const isWide = (l, subs) => subs.length > 0 || !!picsOf(l) || l.type === 'swatch' || l.type === 'seg' || l.marks || (l.fmt && choicesOf(l).length > 2 && !isPick(l));
 // kurz = passt in eine halbe Spalte: Schalter, Knopf, Auswahlfeld, Zahlen-Regler; ohne Zeitmarken, Detailbild, langen Hinweis
 // Stufen-Regler mit 3+ benannten Stufen braucht die volle Breite, sonst ragen die Namen („Niedrig“) über den Rand
 const isShort = (l) => !l.marks && !l.detail && (!l.hint || l.hint.length <= 90) && !(l.ordered && choicesOf(l).length > 2)
@@ -501,6 +517,31 @@ function syncYears(root) {
   });
 }
 
+// Großbild über einer Bild-Wahl: gewählte Stufe; zeigt die Maus oder der Fokus auf eine andere (data-peek am Großbild), steht sie
+// rechts daneben als „Beim Zeigen“ und links „Jetzt“
+const setFig = (f, src, name, k) => {
+  const img = f.querySelector('img'), b = f.querySelector('[data-hero-n]'), s = f.querySelector('[data-hero-k]');
+  if (img.getAttribute('src') !== src) img.src = src;
+  if (b.textContent !== name) b.textContent = name;
+  if (k && s.textContent !== k) s.textContent = k;
+};
+function showHero(h) {
+  const l = find(h.dataset.hero), th = l && picsOf(l);
+  if (!th) return;
+  const cur = Math.round(l.value), pv = h.dataset.peek === undefined || +h.dataset.peek === cur ? null : +h.dataset.peek;
+  const [a, b] = h.querySelectorAll('.lay-fig');
+  setFig(a, th[cur - l.min], l.fmt(cur), pv === null ? 'Gewählt' : 'Jetzt');
+  if (pv !== null) setFig(b, th[pv - l.min], l.fmt(pv));
+  b.hidden = pv === null;
+  h.classList.toggle('is-cmp', pv !== null);
+}
+function peek(e, on) {
+  const b = e.target.closest && e.target.closest('[data-lay-seg]'), h = b && gearEl.querySelector(`[data-hero="${b.dataset.laySeg}"]`);
+  if (!h || (!on && b.contains(e.relatedTarget))) return;
+  if (on) h.dataset.peek = b.dataset.val; else delete h.dataset.peek;
+  showHero(h);
+}
+
 function sync() {
   for (const l of allOf(currentId) || []) pull(l);
   for (const root of [gearEl, stripEl]) {
@@ -522,6 +563,7 @@ function sync() {
     root.querySelectorAll('[data-status]').forEach((s) => { const l = find(s.dataset.status); if (l && l.status) s.textContent = nbsp(l.status()); });
     root.querySelectorAll('[data-lay-seg]').forEach((b) => { const l = find(b.dataset.laySeg); if (l) b.setAttribute('aria-checked', String(String(l.value) === b.dataset.val)); });
     root.querySelectorAll('[data-pick]').forEach((el) => { const l = find(el.dataset.pick); if (l) showPick(el, l.value, l.def); });
+    root.querySelectorAll('[data-hero]').forEach(showHero);
     root.querySelectorAll('[data-swd]').forEach((d) => { const l = find(d.dataset.swd); if (l && d.dataset.v !== String(l.value)) { d.dataset.v = String(l.value); d.innerHTML = l.detail(l.value); } });
     root.querySelectorAll('[data-chip]').forEach((c) => { const l = find(c.dataset.chip); if (l) c.textContent = `${playing(l) ? 'läuft' : 'angehalten'} · ${l.label}`; });
     // Unter-Ebenen ohne Wirkung, solange ihr Hauptschalter aus ist: abgedunkelt, aber bedienbar
@@ -598,6 +640,11 @@ function poll() {
 export function mountLayers({ gear, info, strip, stripOn: on, shared }) {
   gearEl = gear; onInfo = info || onInfo; stripEl = strip; stripOn = on || stripOn; sharedOf = shared || sharedOf;
   gearEl.addEventListener('keydown', onKey);
+  // Vergleich im Großbild: Maus/Stift zeigt, Tastatur-Fokus wirkt wie Zeigen; Touch übernimmt beim Tippen direkt (kein Zeigen)
+  gearEl.addEventListener('pointerover', (e) => { if (e.pointerType !== 'touch') peek(e, true); });
+  gearEl.addEventListener('pointerout', (e) => peek(e, false));
+  gearEl.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches(':focus-visible')) peek(e, true); });
+  gearEl.addEventListener('focusout', (e) => peek(e, false));
   for (const root of [gearEl, stripEl]) { if (!root) continue; root.addEventListener('input', onInput); root.addEventListener('click', onClick); }
   window.addEventListener('hashchange', poll);
   poll();

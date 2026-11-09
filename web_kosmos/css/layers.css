@@ -266,6 +266,28 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
 .seg.b-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; border: 0; overflow: visible; }
 .seg.b-grid button, .seg.b-grid button:first-child { min-width: 0; border: 1px solid var(--line-strong); border-radius: 5px; white-space: normal; text-align: center; line-height: 1.25; }
 
+/* Vorschaubilder (Vorschau 09.11.2026 Bild:A+B+C, Standbilder aus tools/layer_thumbs.py): Bild 40 × 28 statt Linien-Icon vor dem
+   Namen; Großbild der gewählten Stufe über der Wahl (120 px hoch), beim Zeigen geteilt in „Jetzt“ | „Beim Zeigen“ */
+.lay-thumb { width: 40px; height: 28px; flex: none; border-radius: 4px; object-fit: cover; background: #000; }
+.lay-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 4px 0 6px; }
+.lay-hero.is-cmp { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lay-fig { display: grid; gap: 4px; min-width: 0; margin: 0; }
+.lay-fig[hidden] { display: none; }
+.lay-hero-img { display: block; width: 100%; height: 120px; object-fit: cover; border: 1px solid var(--line); border-radius: 6px; background: #000; }
+.lay-fig figcaption { font-size: 13px; line-height: 1.35; color: var(--ink); overflow-wrap: break-word; }
+.lay-fig figcaption b { font-weight: 600; }
+/* Bild-Kacheln ab 6 Stufen (Bild:A): 4 Spalten, Bild 16:10, Name darunter; gewählt = Akzent-Rand 1 px */
+#station .seg.lay-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; border: 0; overflow: visible; }
+#station .seg.lay-tiles button { display: grid; align-content: start; padding: 0; min-width: 0; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; white-space: normal; text-align: center; line-height: 1.25; }
+#station .seg.lay-tiles button > span { padding: 5px 4px 6px; }
+.lay-tile-img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; background: #000; }
+/* Knopfreihe 2–5 Stufen (Bild:B): Mini-Bild 34 × 22 links im Knopf; 2 und 4 Stufen in zwei Spalten, 3 und 5 in drei (--cols aus
+   layers.js), damit keine Stufe allein in der letzten Zeile steht */
+#station .seg.lay-minis { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 4px; border: 0; overflow: visible; }
+#station .seg.lay-minis button { display: flex; align-items: center; gap: 8px; padding: 3px 8px 3px 3px; min-width: 0; border: 1px solid var(--line-strong); border-radius: 5px; white-space: normal; text-align: left; line-height: 1.25; }
+.lay-mini { width: 34px; height: 22px; flex: none; border-radius: 3px; object-fit: cover; background: #000; }
+#station :is(.lay-tiles, .lay-minis) button[aria-checked="true"] { border-color: var(--accent); }
+
 /* Wert unter dem Namen darf umbrechen („2026 · Sonne 7,7° südlich“ ragte am Handy aus dem Fenster) */
 #station .b-item .b-stack > .b-top output { white-space: normal; text-align: left; text-wrap: balance; }
 #station .b-item .b-stack > .b-top {
@@ -310,6 +332,8 @@ body.is-flying .tl, body.is-intro .tl { opacity: 0; pointer-events: none; }
   #station .lay-panel { grid-template-columns: minmax(0, 1fr); }
   #station .b-subs { grid-template-columns: minmax(0, 1fr); }
   .seg.b-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #station .seg.lay-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #station .seg.lay-minis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 /* schmal (Handy): Bühne mit weniger Rand */
 @media (max-width: 760px) {
