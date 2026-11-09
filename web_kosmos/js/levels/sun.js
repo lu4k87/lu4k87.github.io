@@ -735,6 +735,9 @@ export function create(ctx) {
   }
 
   return {
+    // Anflug (main.js approach): gerade auf die Sonnenmitte (Ursprung, Radius 1 = R☉), Größe gekoppelt an die Sonne der
+    // äußeren Station, flächige Überblendung statt Iris; erst am Ende hebt sich der Blick über den Rand (Heimpose)
+    approach: { center: new THREE.Vector3(), radius: 1 },
     scene, camera, home, unit: R_SUN, hotspots, controls, look,
     orbit: { minDistance: 0.12, maxDistance: 40, cineSpeed: 0.4 },
     update(dt, t, cam, flying) {

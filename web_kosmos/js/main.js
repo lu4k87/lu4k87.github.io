@@ -690,6 +690,36 @@ function sameCam(tr, ch, e, fx) {
   tr.inner.bank = tr.outer.bank;   // Rollen mitnehmen: die nächste Etappe dreht von hier aus weiter, ohne Sprung
 }
 
+// Anflug (Station mit approach, Sonne 02B aus dem Sonnensystem): die äußere Station zeigt den Körper anschaulich vergrößert,
+// die innere maßstäblich und nah – mit Iris lag die große Nah-Sonne als Blase in der kleinen, die Bahn bog sich (Bogen ARC,
+// Blick fest auf den Landepunkt am Rand; User 09.11.2026). Stattdessen fährt die innere Kamera gerade auf die Mitte des
+// Körpers zu (in Richtung der Landung), ihr Abstand in Körperradien folgt dem der äußeren Kamera zum Anker – beide Bilder
+// zeigen ihn gleich groß in der Mitte und blenden flächig über (fade, Anteil p) – und gleitet ab couple logarithmisch zur
+// Landung; ab dort hebt sich auch der Blick von der Mitte auf das Ziel der Landung (über den Rand), wie das Sinken Lokale
+// Gruppe → Milchstraße in einem Zug. Ohne Wende fährt die äußere Kamera bis zum gekoppelten Abstand der Landung (exakt),
+// mit Wende (turn.js) gleicht der Abstand ab couple aus. far = Mindestfaktor bis zur Landung, sonst Flug wie bisher
+const APPROACH = { fade: [0.45, 0.8], couple: 0.62, far: 4 };
+function approachOf(outer, inner, anchor, down) {
+  if (!down || !inner.approach || still()) return null;
+  const h = outer.hotspots.find((x) => x.to === inner.id);
+  if (!h || !h.radius) return null;
+  return { c: inner.approach.center.clone(), r: h.radius() / inner.approach.radius, a: anchor.clone(), dir: null, land: 0 };
+}
+// innere Kamera im Anflug: Ort auf der Geraden Mitte → Landung (nie näher als die Landung), Blick von der Mitte zum Ziel
+function approachPose(cam, ap, to, outerCam, e, up) {
+  const lo = Math.log(ap.land), coupled = Math.max(lo, Math.log(Math.max(outerCam.position.distanceTo(ap.a) / ap.r, 1e-9)));
+  const k = smoother(APPROACH.couple, 1, e);
+  cam.position.copy(ap.c).addScaledVector(ap.dir, Math.exp(coupled + (lo - coupled) * k));
+  _d0.copy(ap.c).sub(cam.position).normalize();
+  _d1.copy(to.target).sub(cam.position).normalize();
+  _q.setFromUnitVectors(_d0, _d1);
+  _d0.applyQuaternion(new THREE.Quaternion().slerp(_q, k));
+  // Blickziel im Abstand des gleitenden Punkts Mitte → Ziel (Bezugspunkt der Aufzeichnung ?camlog, Maßstab der Leiste)
+  const target = cam.position.clone().addScaledVector(_d0, _d1.copy(ap.c).lerp(to.target, k).distanceTo(cam.position));
+  aim(cam, target, up && up(k));
+  return target;
+}
+
 // opt.dur = feste Dauer der ganzen Fahrt (s), opt.opener = Fahrt des Auftakt-Films (sonst ist Navigation im Film gesperrt),
 // opt.home = Landung in der Heimpose des Ziels
 async function goTo(targetId, opt = {}) {
@@ -712,6 +742,8 @@ async function goTo(targetId, opt = {}) {
   state.queue = path;
   state.chain = planChain([state.active, ...lvs], opt.dur);
   state.chain.home = !!opt.home;   // Landung in der Heimpose statt im etwas weiteren Ankunftsblick
+  // Ziel mit Anflug (Sonne): alle Etappen ohne Bogen ARC – vom Universum bis zur Sonne eine gerade Fahrt (User 09.11.2026)
+  state.chain.straight = !!lvs[lvs.length - 1].approach;
   // Blickwinkel vor der Fahrt merken (Warp rechnet relativ dazu), Rollen beginnt bei null
   state.chain.cams = [state.active, ...lvs].map((lv) => ({ lv, fov: lv.camera.fov }));
   for (const lv of [state.active, ...lvs]) lv.bank = null;
@@ -849,6 +881,19 @@ function hop() {
     innerFrom = cur;
     innerTo = poseAt(cur.target, cur.pos, cur.pos.distanceTo(cur.target) * ZOOM);
   }
+  // Anflug (Sonne): innere Kamera startet auf der Geraden Mitte → Landung im gekoppelten Abstand, äußere fährt bis dorthin
+  let approach = approachOf(outer, inner, anchor, down);
+  if (approach) {
+    approach.dir = innerTo.pos.clone().sub(approach.c);
+    approach.land = approach.dir.length();
+    approach.dir.normalize();
+    const z = outerFrom.pos.distanceTo(anchor) / (approach.r * approach.land);
+    if (!(z >= APPROACH.far) || !(approach.land > 0)) approach = null;   // schon dicht dran: Flug wie bisher
+    else {
+      if (!turning) outerTo = poseAt(anchor, outerFrom.pos, outerFrom.pos.distanceTo(anchor) / z);
+      innerFrom = pose(approach.c.clone().addScaledVector(approach.dir, approach.land * z), approach.c);
+    }
+  }
   const multi = state.queue.length > 0;
   // gleicher Raum: die äußere Kamera fährt gerade auf den Anker zu bzw. von ihm weg wie sonst, aber nur bis zur Landung statt
   // um ZOOM. Hinein landet sie in der Blickrichtung des Users (nicht in der festen Ankunftspose: kein Kreisen um die Galaxie),
@@ -876,9 +921,9 @@ function hop() {
   const carry = cr && carryBend(same && !down ? { ...cr, c: sameMap(same, cr.c, false), from: sameMap(same, cr.from, false) } : cr);
   ch.carry = null;
   // Bogen nicht in der Wendestation (fährt ihren eigenen), nicht im gleichen Raum und nicht bei reduzierter Bewegung
-  const arcs = turning || same || still() ? null : arcPair(ch, from, to, cur.pos, down ? anchor : cur.target);
+  const arcs = turning || same || still() || ch.straight ? null : arcPair(ch, from, to, cur.pos, down ? anchor : cur.target);
   state.tr = {
-    k: ch.legs.length - state.queue.length - 1, down, outer, inner, to, anchor, carry, swing, carryC, same,
+    k: ch.legs.length - state.queue.length - 1, down, outer, inner, to, anchor, carry, swing, carryC, same, approach,
     u0: chainTime(ch, ch.legs.length - state.queue.length - 1), u1: chainTime(ch, ch.legs.length - state.queue.length),
     arcOuter: arcs && (down ? arcs.from : arcs.to), arcInner: arcs && (down ? arcs.to : arcs.from),
     outerFrom, outerTo, outerEnd, innerFrom, innerTo, prog: 0, fade: null,
@@ -953,7 +998,8 @@ function stepTransition(dt) {
     outerTgt = x !== null ? turnCam(tr.outer.camera, tn, x)
       : flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.down ? tr.carry : null, tr.swing, tr.upOuter, tr.arcOuter);
     if (x !== null) tr.outer.target = outerTgt;   // Maßstab in der Leiste misst zum gleitenden Blickpunkt
-    innerTgt = flyPose(tr.inner.camera, tr.innerFrom, tr.innerTo, e, e, null, tr.down ? null : tr.carry, null, tr.upInner, tr.arcInner);
+    innerTgt = tr.approach ? approachPose(tr.inner.camera, tr.approach, tr.innerTo, tr.outer.camera, e, tr.upInner)
+      : flyPose(tr.inner.camera, tr.innerFrom, tr.innerTo, e, e, null, tr.down ? null : tr.carry, null, tr.upInner, tr.arcInner);
     bank(tr.outer, dt, bk);
     bank(tr.inner, dt, bk);
   }
@@ -961,8 +1007,9 @@ function stepTransition(dt) {
   tr.innerTgt = innerTgt;
   if (tr.pass) tr.pass.step(e);
   // Station blendet Dinge aus, an denen die Kamera auf dem Weg hinein dicht vorbeizöge (Zwerggalaxien): Anteil des inneren Bildes
-  if (tr.outer.flight) tr.outer.flight(p);
-  if (tr.inner.flight) tr.inner.flight(0);
+  // zweites Argument: Station, in die die äußere gerade anfliegt (Sonnensystem hebt dann den Größen-Deckel der Sonne auf)
+  if (tr.outer.flight) tr.outer.flight(p, tr.approach ? tr.inner.id : null);
+  if (tr.inner.flight) tr.inner.flight(0, null);
   tr.outer.camera.updateMatrixWorld();
   tr.inner.camera.updateMatrixWorld();
   const a = tr.anchor.clone().project(tr.outer.camera);
@@ -976,11 +1023,13 @@ function stepTransition(dt) {
   // gleicher Raum: Bilder decken sich (kein Versatz), flächige Überblendung statt Iris; Lichtschleier und Zoom-Unschärfe müssen
   // keine Naht verdecken und bleiben nur angedeutet (voll verschmieren sie den hellen Kern als Dunst über die ganze Galaxie)
   if (tr.same) { tr.innerUv.copy(tr.anchorUv); tr.fade = smoother(SAME.fade[0], SAME.fade[1], p); }
+  // Anflug: Körper in beiden Bildern gleich groß in der Mitte → ebenso flächig überblenden
+  if (tr.approach) { tr.innerUv.copy(tr.anchorUv); tr.fade = smoother(APPROACH.fade[0], APPROACH.fade[1], p); }
   tr.prog = p;
   tr.maskR = 0.05 * Math.pow(ZOOM, p) * smooth(0, 0.08, p);
   tr.blur = still() ? 0 : 0.09 * Math.sin(Math.PI * p);
   tr.veil = still() ? 0 : Math.pow(Math.sin(Math.PI * e), 1.6);
-  if (tr.same) { tr.veil *= SAME.veil; tr.blur *= SAME.veil; }   // erst nach dem Setzen dämpfen
+  if (tr.same || tr.approach) { tr.veil *= SAME.veil; tr.blur *= SAME.veil; }   // erst nach dem Setzen dämpfen
   if (tr.pass) tr.blur *= FLYBY.blur;
   // Station dämpft Kino-Effekte ihrer Fahrten (Milchstraße: Sterne sollen Punkte bleiben, kein Warp)
   const fl = tr.outer.flightLook;

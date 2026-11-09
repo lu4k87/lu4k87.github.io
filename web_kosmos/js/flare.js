@@ -106,6 +106,7 @@ const GHOSTS = [
 export function createFlare({ strength = 1, tint = [1, 0.92, 0.8], own = false } = {}) {
   const group = new THREE.Group();
   group.renderOrder = 60;
+  group.visible = false;   // erst nach dem ersten update() mit platzierten Sprites sichtbar
   const tex = {
     disc: discTex(),
     ring: ringTex(),
@@ -184,22 +185,23 @@ export function createFlare({ strength = 1, tint = [1, 0.92, 0.8], own = false }
 
     if (useMaster) {
       // Linse:B – Master-Optik nach Nutzerreferenz; bei 1× dezent (User 26.10.2026 und 04.11.2026: viel zu stark → Teile
-      // halbiert), 2× ≈ Look vom 26.10., 5× ≈ ursprünglicher Look
-      place(rainbowRing, ndc.x, ndc.y, 1.15, camera, v * 0.16);
-      place(innerArc, ndc.x, ndc.y, 0.95, camera, v * 0.11);
-      place(halo, ndc.x, ndc.y, 0.65, camera, v * 0.2);
+      // halbiert; 09.11.2026: immer noch zu stark, Regenbogenring und Innenbogen lagen als Blase über dem ganzen Bild →
+      // Ring und Bogen auf ein Viertel, Hof, Ghost und Streif auf gut die Hälfte); 5× ≈ Look vom 04.11.
+      place(rainbowRing, ndc.x, ndc.y, 1.15, camera, v * 0.035);
+      place(innerArc, ndc.x, ndc.y, 0.95, camera, v * 0.025);
+      place(halo, ndc.x, ndc.y, 0.65, camera, v * 0.12);
 
       if (showGhost) {
         // Magenta-Sensor-Ghost: Wandert auf der optischen Achse mit Parallaxe
         const gx = moveGhost ? ndc.x * -0.55 + 0.12 : ndc.x + 0.28;
         const gy = moveGhost ? ndc.y * -0.55 - 0.12 : ndc.y - 0.28;
-        place(magentaGhost, gx, gy, 0.22, camera, v * 0.15);
+        place(magentaGhost, gx, gy, 0.22, camera, v * 0.07);
       } else {
         magentaGhost.visible = false;
       }
 
       if (settings.S.anamorphic !== false) {
-        place(streak, ndc.x, ndc.y, 0.10, camera, v * 0.25, 18);
+        place(streak, ndc.x, ndc.y, 0.10, camera, v * 0.15, 18);
       } else {
         streak.visible = false;
       }

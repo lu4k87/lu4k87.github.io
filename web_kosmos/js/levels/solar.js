@@ -72,7 +72,7 @@ attribute vec4 el;    // a [AE], e, i [rad], Ω [rad]
 attribute vec2 el2;   // ω [rad], M0 [rad]
 attribute float bright;
 attribute vec2 seed;  // x: Ausdünnen, y: Form und Größe des Brockens
-uniform float uDays, uPx, uMag, uKeep, uRef;
+uniform float uDays, uPx, uMag, uKeep, uRef, uFade;
 varying float vB, vPx, vSeed;
 varying vec2 vL;
 void main() {
@@ -93,8 +93,8 @@ void main() {
   // kleine Brocken (seed.y klein) bleiben beim Ausdünnen öfter stehen: viele kleine, wenige große
   float on = seed.x > min(1.0, uKeep * (1.0 + 2.0 * (1.0 - seed.y))) ? 0.0 : 1.0;
   vPx = uPx * 1.3 * mix(1.0, uMag * (0.4 + 1.2 * seed.y * seed.y * seed.y), smoothstep(1.0, 1.5, uMag)) * k;
-  gl_PointSize = vPx * on;
-  vB = bright * on * min(k, 1.0);
+  gl_PointSize = vPx * on * step(0.001, uFade);
+  vB = bright * on * min(k, 1.0) * uFade;
   vSeed = seed.y;
   // Richtung zur Sonne (Ursprung) im Bild, für die Beleuchtung des Brockens; gl_PointCoord zählt y nach unten
   vec4 sc = projectionMatrix * modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
@@ -358,7 +358,7 @@ export function create(ctx) {
     g.setAttribute('el2', new THREE.BufferAttribute(el2, 2));
     g.setAttribute('bright', new THREE.BufferAttribute(br, 1));
     g.setAttribute('seed', new THREE.BufferAttribute(sd, 2));
-    const m = new THREE.ShaderMaterial({ vertexShader: BELT_VERT, fragmentShader: BELT_FRAG, uniforms: { uDays: { value: 0 }, uPx: { value: 1 }, uMag: { value: 1 }, uKeep: { value: 1 }, uRef: { value: 1 }, uColor: { value: new THREE.Color(color) } }, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+    const m = new THREE.ShaderMaterial({ vertexShader: BELT_VERT, fragmentShader: BELT_FRAG, uniforms: { uDays: { value: 0 }, uPx: { value: 1 }, uMag: { value: 1 }, uKeep: { value: 1 }, uRef: { value: 1 }, uFade: { value: 1 }, uColor: { value: new THREE.Color(color) } }, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
     const pts = new THREE.Points(g, m);
     pts.frustumCulled = false;
     scene.add(pts);
@@ -464,7 +464,8 @@ export function create(ctx) {
   const flarePos = new THREE.Vector3(), coronaPos = new THREE.Vector3();
   const sideDir = new THREE.Vector3().crossVectors(camDir, new THREE.Vector3(0, 1, 0)).normalize();
   const hotspots = [
-    { id: 'sun', kind: 'dive', to: 'sun', pos: new THREE.Vector3(), focus: () => sr * 4 },
+    // radius = Sonne in AE wie gezeichnet (ohne Flug-Deckel): Anflug in Station 02B koppelt ihre Kamera daran (main.js approach)
+    { id: 'sun', kind: 'dive', to: 'sun', pos: new THREE.Vector3(), focus: () => sr * 4, radius: () => visR(SUN_R, real) },
     { id: 'flare', kind: 'info', pos: flarePos, focus: () => sr * 4.5, visible: () => flaresOn },
     { id: 'corona', kind: 'info', pos: coronaPos, focus: () => sr * 8, visible: () => coronaOn },
     { id: 'earth', kind: 'dive', to: 'earth', pos: P.earth.pos },
@@ -522,16 +523,22 @@ export function create(ctx) {
   const f2 = (x) => x.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtLight = (au) => { const s = au * AU / C; return s < 3600 ? `${Math.round(s / 60)} min` : `${Math.floor(s / 3600)} h ${String(Math.round((s % 3600) / 60)).padStart(2, '0')} min`; };
   let wT = -1;
+  // Flug: into = Station, in die diese Station gerade hinein fliegt (main.js, nur beim Anflug); HOME_D = Abstand der
+  // Heimpose (ohne ?view)
+  let into = null;
+  const HOME_D = Math.hypot(-3.2, 4.4, 7.4);
 
   return {
     scene, camera, home, unit: AU, hotspots, controls,
     orbit: { minDistance: 0.05, maxDistance: 160, cineSpeed: 0.6 },
     look: { exposure: 1.0, bloom: 0.07 },
+    flight(p, to) { into = to || null; },
     update(dt, t, cam, flying) {
       if (!flying) jd += dt * rate;
       place();
-      // im Flug von bzw. zur Erde: Sonne höchstens ≈ 2,5° Radius – sonst füllt die anschaulich vergrößerte Sonne das Bild
-      const s = Math.min(visR(SUN_R, real), flying && !real ? cam.position.distanceTo(sunG.position) * 0.045 : Infinity);
+      // im Flug von bzw. zur Erde: Sonne höchstens ≈ 2,5° Radius – sonst füllt die anschaulich vergrößerte Sonne das Bild;
+      // nicht im Anflug auf die Sonne (02B): dort wächst sie wie deren Sonne, beide Bilder decken sich in der Überblendung
+      const s = Math.min(visR(SUN_R, real), flying && !real && into !== 'sun' ? cam.position.distanceTo(sunG.position) * 0.045 : Infinity);
       if (sunG.scale.x !== s) { sr = s; sunG.scale.setScalar(s); coronaU.uSize.value = s * CORONA_EXT; glow.scale.setScalar(s * 5); }
       const ta = t * ta0;
       sunMat.uniforms.uTime.value = ta; coronaU.uTime.value = ta; loopU.uTime.value = ta; loopU.uSunR.value = sr;
@@ -553,7 +560,10 @@ export function create(ctx) {
       planets.forEach((x, i) => { occluders[i].radius = visR(x.b.r, real); });
       cam.updateMatrixWorld();
       const mag = settings.S.small;
-      beltMats.forEach((m) => { m.uniforms.uRef.value = cam.position.length(); m.uniforms.uMag.value = mag; m.uniforms.uKeep.value = keepShare(mag); });
+      // Kleinkörper im Flug erst nah am System (User 09.11.2026: aus der Milchstraße lag der Gürtel schon als weißer Ring im
+      // noch winzigen Sonnensystem): voll bis 1,6 × Abstand der Heimpose, ab 4 × aus – beim Anflug und Abflug gleich
+      const beltFade = flying ? 1 - THREE.MathUtils.smoothstep(cam.position.length(), 1.6 * HOME_D, 4 * HOME_D) : 1;
+      beltMats.forEach((m) => { m.uniforms.uRef.value = cam.position.length(); m.uniforms.uMag.value = mag; m.uniforms.uKeep.value = keepShare(mag); m.uniforms.uFade.value = beltFade; });
       coronaFrame(cam);
       // Massenauswurf: wächst und verblasst, Front in Ausbreitungsrichtung (im Bild); Flare-Blitz nur auf der sichtbaren Seite
       if (cme.visible) {
@@ -580,7 +590,10 @@ export function create(ctx) {
       // Linsenreflex nur aus der Ferne: nah an der Sonne wäre sein Lichthof größer als die Scheibe
       const far = cam.position.distanceTo(sunG.position) > sr * 7;
       flare.userData.update(sunWorld.set(0, 0, 0), cam, occluders, settings.S.lens && far, dt);
-      flare.visible = far;
+      // nur ausblenden, nie einschalten: update() blendet selbst aus (Sonne außer Bild, Linsenreflex aus); ein festes
+      // flare.visible = far zeigte dann die nie platzierten Sprites in voller Stärke – Regenbogenring und heller Bogen
+      // 1 AE groß um die Sonne (User 09.11.2026: „Linseneffekt viel zu stark, immer noch!“)
+      if (!far) flare.visible = false;
     },
     widget: () => `<table><thead><tr><th>Planet</th><th>Sonne</th><th>Erde</th><th>Licht</th></tr></thead><tbody id="w-pl"></tbody></table>
       <p class="w-foot">Abstände aus den JPL-Bahnelementen für den angezeigten Zeitpunkt; Lichtlaufzeit von der Erde aus.</p>`,
