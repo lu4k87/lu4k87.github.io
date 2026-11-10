@@ -442,7 +442,7 @@ export function createHud(handlers) {
         <input id="in-temp" type="range" min="${T_ROOM}" max="${T_MAX}" step="5" aria-label="Zieltemperatur">
       </div>
       <div class="tl-chapters" style="grid-template-columns:${cols}">${PHASES.map((p, i) =>
-        `<button type="button" data-k="${i}" aria-label="${esc(`${p.name}: an den Beginn bei ${fmt(PHASE_FROM[i])} °C springen`)}">${PHASE_SHORT[i]}</button>`).join('')}</div>
+        `<button type="button" data-k="${i}" aria-label="${esc(`${p.name}: an den Beginn bei ${fmt(PHASE_FROM[i])} °C springen`)}" title="${esc(`${p.name} · ab ${fmt(PHASE_FROM[i])} °C`)}"><span class="tl-ch-name">${PHASE_SHORT[i]}</span><span class="tl-ch-T">${fmt(PHASE_FROM[i])}${i === PHASES.length - 1 ? ' °C' : ''}</span></button>`).join('')}</div>
     </div>`;
   const tlEl = (sel) => tl.querySelector(sel);
   const segs = [...tl.querySelectorAll('.tl-track i')], chapters = [...tl.querySelectorAll('.tl-chapters button')];
@@ -661,7 +661,7 @@ export function createHud(handlers) {
     const shown = state.pyro ? state.pyro.shown : state.temp, playing = !!(state.pyro && state.pyro.playing);
     const refs = l.refs.map((r) => `<a href="#quelle-${r}">[${r}]</a>`).join(' ');
     panel.innerHTML = `
-      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · ${esc(l.zone)} · <span class="eyebrow-scale">${esc(l.scale)} (${esc(l.compare)})</span></p>
+      <p class="eyebrow">Ebene ${current + 1} von ${LEVELS.length} · ${esc(l.zone)} <span class="eyebrow-scale"><b>${esc(l.scale)}</b> ${esc(l.compare)}</span></p>
       <h1>${esc(l.title)}</h1>
       <p class="lead" id="panel-lead">${prose(l.lead)}</p>
       <button type="button" class="lead-more" aria-expanded="false" aria-controls="panel-lead">Weiterlesen</button>

@@ -759,7 +759,7 @@ export function create(ctx) {
     method: 'Modell nach XRD und HRTEM',
     tone: 1,
     grain: 0.017,
-    dof: 6.3,
+    dof: 2.8,        // Stapel sind tief gestaffelt: bei 6,3 verschmierte die Unschärfe das Atomraster fast überall
     bloom: 0.12,
     home: { pos: homePos, target: new THREE.Vector3(0, 0, 0) },
     cine: { orbit: 0.05, crane: 0.02, dolly: 0.025, drift: 0.01 },   // Leerlauf: halbe Ausschläge, die Infopunkte liegen tief gestaffelt

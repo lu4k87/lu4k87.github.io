@@ -10,7 +10,7 @@
   --line: rgba(255, 255, 255, 0.16);
   --glass-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0) 70%);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 8px 30px rgba(0, 0, 0, 0.28);
-  --glass-blur: blur(18px) saturate(1.5);
+  --glass-blur: blur(18px) saturate(1.5) brightness(0.72);   /* dunkles Glas bleibt auch über hellen REM-Szenen dunkel (Ebenen 3–5) */
   --accent: #ff9a3c;
   --accent-ink: #1b0e03;
   --accent-soft: rgba(255, 154, 60, 0.18);
@@ -42,6 +42,7 @@
     --line: rgba(0, 0, 0, 0.14);
     --glass-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0) 70%);
     --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 8px 30px rgba(0, 0, 0, 0.12);
+    --glass-blur: blur(18px) saturate(1.5);
     --accent: #b8520c;
     --accent-ink: #fff8f0;
     --accent-soft: rgba(184, 82, 12, 0.14);
@@ -51,10 +52,6 @@
     --pore-meso: #3d8a4a;
     --pore-macro: #a86b14;
     --water: #1f6fc4;
-  --ok: #2e7d4a;
-  --ok-soft: rgba(46, 125, 74, 0.1);
-  --climate: #12768a;
-  --climate-soft: rgba(18, 118, 138, 0.1);
     --ok: #2e7d4a;
     --ok-soft: rgba(46, 125, 74, 0.1);
     --climate: #12768a;
@@ -70,6 +67,7 @@
   --line: rgba(0, 0, 0, 0.14);
   --glass-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0) 70%);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 8px 30px rgba(0, 0, 0, 0.12);
+  --glass-blur: blur(18px) saturate(1.5);
   --accent: #b8520c;
   --accent-ink: #fff8f0;
   --accent-soft: rgba(184, 82, 12, 0.14);
@@ -140,6 +138,18 @@ button { font: inherit; color: inherit; }
   pointer-events: none;
 }
 .hud > * { pointer-events: auto; }
+/* Schleier hinter Marke und Zoom-Schiene: ihre helle Schrift liegt frei auf der Szene und war über hellen Ebenen (REM 3–4,
+   Nano 5–6) kaum lesbar. Weich auslaufend wie eine Randabdunklung, liegt unter allen Leisten und über dem Bild */
+.hud::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(5, 6, 8, 0.7), rgba(5, 6, 8, 0.56) 140px, rgba(5, 6, 8, 0.24) 260px, transparent 370px),
+    linear-gradient(180deg, rgba(5, 6, 8, 0.5), rgba(5, 6, 8, 0.2) 56px, transparent 104px);
+}
 body.panel-collapsed .hud {
   grid-template-columns: auto minmax(0, 1fr) 0;
   grid-template-areas:
@@ -165,7 +175,7 @@ body.panel-collapsed .panel { display: none; }
   gap: 12px;
   color: #f4f1ea;
   text-decoration: none;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.9), 0 1px 8px rgba(0, 0, 0, 0.8);
 }
 .brand-mark { width: 38px; height: 38px; color: #ff9a3c; --hex-fill: rgba(14, 14, 17, 0.85); filter: drop-shadow(0 0 8px rgba(255, 154, 60, 0.35)); }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
@@ -232,8 +242,7 @@ body.panel-collapsed .panel { display: none; }
 .rail-cmp {
   font-style: normal;
   font-weight: 400;
-  font-size: 11px;
-  color: rgba(244, 241, 234, 0.72);
+  font-size: 11px;   /* volle Tinte statt 72 %: gedimmt war der Vergleich über hellen Szenen nicht lesbar; Größe bleibt, sonst ragt die längste Zeile in den Platz der Info-Karte */
   margin-left: 3px;
 }
 .rail-track {
@@ -282,7 +291,7 @@ body.panel-collapsed .panel { display: none; }
   background: none;
   cursor: pointer;
   color: var(--ink);
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.9), 0 1px 3px rgba(0, 0, 0, 0.85), 0 1px 10px rgba(0, 0, 0, 0.8);   /* enger Hof + weicher Schatten: Schrift trägt auch über hellem REM-Gewebe */
 }
 .rail-level:focus-visible { outline: none; }
 .rail-level:focus-visible .rail-name { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 3px; }
@@ -420,6 +429,20 @@ body.panel-collapsed .panel { display: none; }
 .panel-body > section, .panel-body > .facts { margin-top: 6px; }
 .panel-body.is-entering { animation: settle 0.5s ease-out both; }
 @keyframes settle { from { opacity: 0.35; } to { opacity: 1; } }
+/* Weiche Kante statt hartem Schnitt, wo oben oder unten noch Inhalt folgt (nur bei scrollbarer Tafel: ohne Scrollweg
+   ist die Scroll-Zeitachse inaktiv, die Maske bleibt aus; Browser ohne animation-timeline zeigen die Tafel wie bisher) */
+@property --fade-t { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --fade-b { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@keyframes panel-fade { 0% { --fade-t: 0px; --fade-b: 26px; } 4%, 96% { --fade-t: 26px; --fade-b: 26px; } 100% { --fade-t: 26px; --fade-b: 0px; } }
+@supports (animation-timeline: scroll()) {
+  .panel-body {
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 var(--fade-t), #000 calc(100% - var(--fade-b)), transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 var(--fade-t), #000 calc(100% - var(--fade-b)), transparent);
+    animation: panel-fade linear both;
+    animation-timeline: scroll(self);
+  }
+  .panel-body.is-entering { animation: settle 0.5s ease-out both, panel-fade linear both; animation-timeline: auto, scroll(self); }
+}
 .panel h1 { font-size: 23px; line-height: 1.15; font-weight: 600; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
 .panel h2 { margin: 0; }
 .panel .sub { font-size: 15px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
@@ -437,7 +460,8 @@ body.panel-collapsed .panel { display: none; }
   margin-left: 1px;
 }
 .eyebrow { margin: 0; font: 500 13px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
-.eyebrow-scale { text-transform: none; }   /* sonst wird „µm“ zu „ΜM“ (großes Mü) */
+.eyebrow-scale { display: block; text-transform: none; letter-spacing: 0.02em; color: var(--ink); }   /* eigene Zeile wie an der Schiene (vorher brach die Klammer mittendrin um); ohne Versalien, sonst wird „µm“ zu „ΜM“ */
+.eyebrow-scale b { font-weight: 600; }
 .lead { margin: 0; font-size: 16px; color: var(--ink-soft); }
 .lead:not(.is-open) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .lead-more {
@@ -722,12 +746,16 @@ body.panel-collapsed .panel { display: none; }
   font-size: 14px;
   color: #f4f1ea;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  background: rgba(16, 17, 21, 0.5);   /* helle Tinte fest → dunkler Grund in beiden Themes, lesbar auch über hellen Ebenen */
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transition: opacity 0.6s;
 }
 body.touched .hint { opacity: 0; }
 body:has(.hs-card.is-open) .center-hint { opacity: 0; }   /* offene Info-Karte bekommt die ganze Bühne (hud.js stageRect) */
 body.is-notice .hint, body.is-notice .center-hint { opacity: 1; }   /* Kurzmeldung (hud.notice) schlägt beides */
-body.is-notice .hint { background: rgba(16, 17, 21, 0.66); border-radius: var(--radius); }   /* helle Tinte fest → dunkler Grund in beiden Themes */
+body.is-notice .hint { background: rgba(16, 17, 21, 0.66); }   /* Kurzmeldung: Grund etwas dichter */
 @container (max-width: 190px) { .hint { display: none; } }   /* zu schmal für die Zeile: Hinweis entfällt, Messleiste und Knöpfe bleiben nebeneinander */
 .edge-meter {
   display: flex;
@@ -1361,6 +1389,16 @@ body.hotspots-off #hotspots { display: none; }
 .tl-chapters { display: grid; gap: 3px; }
 .tl-chapters button { min-width: 0; min-height: 22px; padding: 2px 0; border: 0; background: none; color: var(--ink); font: 400 12px/1.3 var(--font); text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: color 0.15s; }
 .tl-chapters button:hover { color: var(--accent); }
+/* Namen passen erst ab ≈ 640 px Leistenbreite unter ihre Abschnitte (schmalster 9 %); darunter standen fünf von sechs
+   abgeschnitten da („Aufh…“). Schmal zeigt jedes Kapitel seine Starttemperatur als Achse, die Phase steht in der Kopfzeile */
+.tl-main { container: tlmain / inline-size; }
+.tl-ch-T { display: none; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+@container tlmain (max-width: 639px) {
+  .tl-ch-name { display: none; }
+  .tl-ch-T { display: inline; }
+  .tl-chapters button.is-on .tl-ch-T { font-weight: 400; color: var(--ink); }   /* Achse: Marken bleiben neutral, sonst liest sich „525 °C“ wie der Ist-Wert; die Phase zeigen Spur und Kopfzeile */
+  .tl-chapters button.is-on:hover .tl-ch-T { color: var(--accent); }
+}
 .tl-chapters button.is-on { font-weight: 600; color: var(--accent); }
 
 /* ---------- Laden, Fehler ---------- */
@@ -1405,6 +1443,7 @@ body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "top" "ladder" "stage" "bottom";
   }
+  .hud::before { background: linear-gradient(180deg, rgba(5, 6, 8, 0.62), rgba(5, 6, 8, 0.42) 92px, transparent 156px); }   /* Marke + Ebenen-Leiste liegen oben */
   .panel { max-height: 42dvh; }
   .panel-body { padding: 16px; }
   .panel h1 { font-size: 22px; }
@@ -1461,6 +1500,7 @@ body:not(.no-webgl) .fatal-webgl, body.no-webgl .fatal-start { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .hs-dot--dive, .hs-dot--dive::before, .loader-ring, .rail-level.is-current .hex--rail, .hsb--dive .hex, .hs-card-in { animation: none; }
   .panel-body.is-entering { animation: none; }
+  @supports (animation-timeline: scroll()) { .panel-body.is-entering { animation: panel-fade linear both; animation-timeline: scroll(self); } }   /* weiche Kante hängt am Scrollweg, keine Bewegung von selbst */
   * { transition-duration: 0.01ms !important; }
   .caption > *, .caption .cap-n::after { --d: 0s; transition-delay: 0s !important; }
 }

@@ -35,12 +35,13 @@ const SEM = {
 };
 const MOODS = [
   { top: [0.060, 0.051, 0.042], bot: [0.014, 0.012, 0.010], pool: [0.42, 0.62, 0.75, 0.07], dust: [1.0, 1.0],      // Studio, warm
-    grade: { sh: [0.9, 0.98, 1.1], hi: [1.07, 1.0, 0.91], sat: 1.05, con: 0.14 } },
-  SEM, SEM, SEM,
+    grade: { sh: [0.9, 0.98, 1.1], hi: [1.07, 1.0, 0.91], sat: 1.05, con: 0.24 } },   // con 0,24: Kohle hebt sich satter vom Waldboden ab
+  SEM, SEM,
+  { ...SEM, grade: { ...SEM.grade, con: 0.34 } },   // Zellwand füllt das Bild mit mittlerem Grau: stärkere S-Kurve, sonst wirkt sie milchig
   { top: [0.030, 0.045, 0.060], bot: [0.008, 0.012, 0.018], pool: [0.5, 0.6, 0.7, 0.07], dust: [0.35, 0.8],         // feucht, blau
     grade: { sh: [0.9, 0.99, 1.1], hi: [1.0, 1.02, 1.04], sat: 1.04, con: 0.14 } },
   { top: [0.020, 0.030, 0.065], bot: [0.006, 0.008, 0.020], pool: [0.5, 0.6, 0.6, 0.08], dust: [0.6, 1.8],          // Nano, tiefblau
-    grade: { sh: [0.88, 0.93, 1.16], hi: [1.06, 1.0, 0.95], sat: 1.08, con: 0.12 } },
+    grade: { sh: [0.88, 0.93, 1.16], hi: [1.06, 1.0, 0.95], sat: 1.08, con: 0.22 } },   // con 0,22: Schichtstapel trennen sich klarer vom Blau
   { top: [0.022, 0.028, 0.060], bot: [0.006, 0.008, 0.018], pool: [0.5, 0.55, 0.6, 0.08], dust: [0.45, 2.2],
     grade: { sh: [0.92, 0.93, 1.12], hi: [1.06, 1.01, 0.94], sat: 1.06, con: 0.12 } },
 ];
@@ -1037,7 +1038,8 @@ canvas.addEventListener('wheel', (e) => {
 canvas.addEventListener('pointerdown', endIntro);
 
 window.addEventListener('keydown', (e) => {
-  if (e.target.closest('input, textarea, select') || e.metaKey || e.ctrlKey || e.altKey) return;
+  // Ziel kann das Dokument selbst sein (Taste ohne Fokus, Hilfstechnik): das hat kein closest → brach mit TypeError ab
+  if (e.target.closest?.('input, textarea, select') || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === 'Escape' && hud.closeCard()) e.preventDefault();
   else if (e.key === 'Escape' || e.key === 'PageUp') { e.preventDefault(); goTo(state.index - 1); }
   else if (e.key === 'PageDown') { e.preventDefault(); diveHotspot(); }
