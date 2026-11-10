@@ -55,6 +55,7 @@ h1,h2,h3{text-wrap:balance}
 .list li{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
 .list li:first-child{border-top:0}
 .list .r{margin-left:auto;font-size:13.5px;color:var(--ink-2);white-space:nowrap}
+.r.wrap{white-space:normal;text-align:right}
 .tblwrap{position:relative;overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface)}
 .tbl{width:100%;min-width:640px;border-collapse:separate;border-spacing:0}
 .tbl th{font-size:13px;font-weight:600;text-align:left;padding:10px 14px;background:var(--thead);border-bottom:1px solid var(--line);color:var(--ink-2);white-space:nowrap;vertical-align:bottom}
@@ -82,6 +83,7 @@ h1,h2,h3{text-wrap:balance}
 .note.bad{background:var(--bad-soft);color:var(--bad)}
 .note i{margin-top:3px}
 .break{overflow-wrap:anywhere}
+.tbl .break{overflow-wrap:break-word}
 
 /* Formulare */
 .inp,.form input:not([type=checkbox]):not([type=radio]),.form select,.form textarea,select.lvl{height:34px;border:1px solid var(--field-line);border-radius:var(--r);padding:0 12px;background:var(--surface);color:var(--ink);font-size:13.5px;min-width:0;width:100%}
@@ -447,3 +449,24 @@ button.hi-team:hover{background:var(--sunken)}
 .choice.pic .pr{display:flex;gap:10px;align-items:flex-start}
 @media (max-width:1100px) and (min-width:641px){.choice.pic label{flex-direction:row;align-items:center;gap:16px} .choice.pic label .vsch{--vw:200px}}
 @media (max-width:640px){.vct thead th .vsch{--vw:52px} .vct th,.vct td{padding:8px 3px;font-size:13px} .vct thead th:first-child,.vct tbody th{padding-left:12px} .vct tbody th{white-space:normal}}
+/* Bugsuche 2026-11-10 */
+.search input,.cmd input{text-overflow:ellipsis}  /* langer Platzhalter endet mit … statt hart abgeschnitten */
+.vhead>a:last-child:not(:first-child),.det>a:not(.btn){padding-block:4px}  /* Klickziel mindestens 24 px hoch */
+.vrow .vt{min-height:24px}
+.top .btn[aria-current=page]{background:var(--surface);box-shadow:var(--shadow-1)}  /* Navigation B: aktiver Knopf wie aktiver Reiter */
+/* schmaler Kopf (Handy): Netz-Knopf nur als Symbol, Hauptknopf nur „+“ → Suche + Knopf und Kopf-Infos je eine Zeile */
+@container (max-width:400px){
+  .hi{gap:8px} .hi-du{display:none}
+  .topbar>.btn.pri span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .topbar .search{min-width:0}
+}
+@media (max-width:640px){.navB>.top{gap:8px 10px}}
+/* seitwärts scrollende Leisten und Tabellen: rechter Rand blendet aus, solange dort noch Inhalt folgt */
+@property --fade{syntax:'<length>';inherits:false;initial-value:0px}
+@keyframes edgefade{0%,92%{--fade:40px} 100%{--fade:0px}}
+@supports (animation-timeline:scroll()){
+  .tblwrap,.calwrap{mask-image:linear-gradient(90deg,#000 calc(100% - var(--fade)),transparent);animation:edgefade linear both;animation-timeline:scroll(self inline)}
+  @media (max-width:900px){.side nav,.rail{mask-image:linear-gradient(90deg,#000 calc(100% - var(--fade)),transparent);animation:edgefade linear both;animation-timeline:scroll(self inline)}}
+}
+.vhead .break>a,.wlan h3>a{padding-block:3px}  /* Zeilenlinks der Zugänge: Klickziel 24 px */
+.row.wrap>.note{flex:1 1 100%}

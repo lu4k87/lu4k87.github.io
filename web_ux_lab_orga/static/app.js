@@ -2,10 +2,15 @@
 const EN = document.documentElement.lang === 'en';  // Sprache wie der Server (app/i18n.py)
 document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-    const q = document.getElementById('q');
-    if (q) { e.preventDefault(); q.focus(); q.select(); }
+    const q = document.getElementById('q') || document.getElementById('q2');
+    const link = document.querySelector('.top a[href$="/suche"]');  // Navigation B: Suche ist eine eigene Seite
+    if (q) { e.preventDefault(); q.focus(); q.select(); } else if (link) { e.preventDefault(); link.click(); }
   }
 });
+
+// Fehler- oder Erfolgsmeldung eines Formulars weiter unten (z. B. Reservieren am Handy, Passwort im Profil) in den Blick holen
+const alertBox = document.querySelector('.note.bad[role=alert], .note[role=status]');
+if (alertBox && alertBox.getBoundingClientRect().bottom > innerHeight) alertBox.scrollIntoView({ block: 'center' });
 
 document.querySelectorAll('[data-copy]').forEach((btn) => btn.addEventListener('click', async () => {
   const el = document.getElementById(btn.dataset.copy);
