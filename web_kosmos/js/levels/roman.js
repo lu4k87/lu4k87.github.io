@@ -1,4 +1,4 @@
-// Station 01G: Nancy-Grace-Roman-Weltraumteleskop (NASA) auf dem Weg nach L2 (Einheit 1 m), Abstecher von Erde & Mond.
+// Station 01B4: Nancy-Grace-Roman-Weltraumteleskop (NASA) auf dem Weg nach L2 (Einheit 1 m), Abstecher von Erde & Mond.
 // Szene am Sonne-Erde-System (l2view.js): Sonne bei +x, der Solarflügel-Sonnenschild zeigt zu ihr, das Teleskop blickt
 // quer dazu nach +y. Gestartet am 30.08.2026; Ort ab dem Abtrennen aus den JPL-Bahndaten (l2view.js,
 // `craft: 'roman'`), vor dem Start Modell (`trip`); der Tageszähler der Anreise rechnet bis zur erwarteten Ankunft nach

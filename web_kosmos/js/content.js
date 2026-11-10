@@ -1519,7 +1519,7 @@ export const STATIONS = {
   },
 };
 
-// Station 11 Urknall vorerst aus der App genommen (User 27.10.2026, TODOS K1): Daten bleiben hier, Szene in levels/bigbang.js.
+// Station 07 Urknall vorerst aus der App genommen (User 27.10.2026, TODOS K1): Daten bleiben hier, Szene in levels/bigbang.js.
 // Zurück: Eintrag nach STATIONS verschieben, cmb.parent = 'bigbang', ROUTE + LOADER (main.js) ergänzen, OPENER.on = true.
 export const PARKED = {
   bigbang: {

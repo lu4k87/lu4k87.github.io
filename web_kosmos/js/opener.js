@@ -14,13 +14,13 @@
 // durchleuchteten Wolke vorbei in die Zielwolke; Fäden, heiße Adern, kühle dunkle Bahnen, leuchtende Ränder; der Nebel
 // kühlt nach Planck-Farbe blauweiß → weiß → gold → orange, der Raum dehnt sich) → der Nebel lichtet sich, das Plasma wird
 // durchsichtig (≈ 380.000 Jahre), die Rekombination wandert als glühende Front fleckig über das Bild und lässt genau die
-// Kugel der Hintergrundstrahlung von Station 10 zurück (gleiches Muster aus glsl.js CMB, dieselben Uniforms der Schale) →
+// Kugel der Hintergrundstrahlung von Station 06 zurück (gleiches Muster aus glsl.js CMB, dieselben Uniforms der Schale) →
 // dunkles Zeitalter: der Grund erlischt, die Keime des kosmischen Netzes glimmen violett, die ersten Sterne zünden
 // blauweiß in den dichtesten Knoten, einzelne Supernova-Blitze → erste Galaxien auf den Fäden, klein, blau, klumpig; die
-// Kamera stürzt durch das Netz voller Galaxien (User 27.10.2026: der Flug durch die Galaxien aus dem Film der Station 11,
+// Kamera stürzt durch das Netz voller Galaxien (User 27.10.2026: der Flug durch die Galaxien aus dem Film der Station 07,
 // länger und dichter; cosmicweb.js, galaxyflight.js), die Galaxien reifen zu Spiralen und Ellipsen, der Raum dehnt sich →
 // Wende im Bogen tief hinter der Mitte → Rückzug rückwärts an den Galaxien vorbei aus der Kugel (Fahrplan flightplan.js
-// openerCurves: eine Zoom-Fahrt ohne Halt) in die Heimpose der Station 10, deren Galaxien blenden ein (cmb.opening).
+// openerCurves: eine Zoom-Fahrt ohne Halt) in die Heimpose der Station 06, deren Galaxien blenden ein (cmb.opening).
 // Fünfte Fassung (Vorschau „Auftakt langsamer“, User 28.10.2026: Tempo B + C, Effekte A + B + C, Gas B + C, Blau dezenter):
 // ganzer Film 10 % langsamer; Luftholen in zwei Atemzügen (zusammen, kurz loslassen, tiefer zusammen), ab dem zweiten
 // Atemzug bis kurz nach dem Knall Zeitlupe; dabei zieht sich ein Linsenring in den Punkt, Lichtfäden stürzen hinein, die
@@ -317,7 +317,7 @@ void main() {
     }
     col += mix(vec3(0.95, 0.97, 1.0), uTint * 1.3, smoothstep(0.35, 0.95, r)) * uFlash * 9.0;   // Weiß, zu den Ecken blau
   } else {
-    // im Plasma: Strahl trifft von innen die Kugel der letzten Streuung um O (= Mitte der Station 10)
+    // im Plasma: Strahl trifft von innen die Kugel der letzten Streuung um O (= Mitte der Station 06)
     vec3 rd = rayDir(), oc = uCamPos - uO;
     float b = dot(oc, rd), h = b * b - dot(oc, oc) + uR * uR;
     vec3 d = normalize(oc + rd * (-b + sqrt(max(h, 0.0))));
@@ -326,7 +326,7 @@ void main() {
     // (stark übertrieben, echt ≈ 1/100.000)
     float wave = fbm(rd * 1.6 / uExpand + vec3(0.0, 0.0, uTime * 0.04), 3);
     vec3 far = satur(ember(uTemp * 1.6 * (1.0 + 0.12 * x * uContrast)) * uBright * (uGround + 0.12 * x * uContrast) * (1.0 + 0.4 * uFog * wave), 1.3);
-    // dieselbe Schale wie in Station 10 (Innenseite 0,4, Rand am Fenster, im Fenster nichts)
+    // dieselbe Schale wie in Station 06 (Innenseite 0,4, Rand am Fenster, im Fenster nichts)
     float c = dot(d, uCut);
     vec3 shell = c > uCutCos ? vec3(0.0) : cmbColor(x) * 0.26 * uShellIn * (0.5 + 0.5 * (1.0 - smoothstep(uCutCos - 0.04, uCutCos, c))) * uShellK;   // wie SHELL_FRAG in levels/cmb.js
     // Rekombination: das Plasma wird fleckig von der Bildmitte nach außen durchsichtig, die Front glüht kurz nach
@@ -487,7 +487,7 @@ vec4 field(vec3 p) {
 // Schritte und Oktaven der feinen Fäden je Qualitätsstufe (main.js QUALITY detail 0,55 / 0,8 / 1)
 const NEB_Q = (detail) => (detail >= 0.9 ? { NSTEPS: 56, OCTF: 3 } : detail >= 0.7 ? { NSTEPS: 44, OCTF: 2 } : { NSTEPS: 30, OCTF: 2 });
 
-// ctx: { detail, renderer }, station: { home, shell: { radius, uniforms }, opening } von Station 10 (levels/cmb.js), endLook =
+// ctx: { detail, renderer }, station: { home, shell: { radius, uniforms }, opening } von Station 06 (levels/cmb.js), endLook =
 // deren Look; ready = Feld des Nebels gebacken und Galaxien-Ära gebaut (vor dem ersten Bild abwarten)
 export function createOpener(ctx, station, tune = { ...TUNE }) {
   const scene = new THREE.Scene();

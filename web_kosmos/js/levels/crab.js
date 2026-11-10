@@ -1,4 +1,4 @@
-// Station 5: Krebsnebel (Einheit 1 Lj), Ellipsoid 4,1 × 2,7 pc (≈ 13 × 9 Lj, Bühler & Blandford 2014). Bild: lange
+// Station 03E: Krebsnebel (Einheit 1 Lj), Ellipsoid 4,1 × 2,7 pc (≈ 13 × 9 Lj, Bühler & Blandford 2014). Bild: lange
 // Achse x = Nordwest (+x) – Südost, Norden rechts oben, Osten links oben, Erde in +z.
 // Hülle aus Filamenten: grobes Netz (Schnitt zweier Grat-Flächen) aus radial gestreckten Rayleigh-Taylor-Fingern, darin
 // feine Fäden in dreifacher Dichte; ausgeworfene Sternmaterie, rot durch Hα, gelblich durch Helium/Schwefel, grünliche

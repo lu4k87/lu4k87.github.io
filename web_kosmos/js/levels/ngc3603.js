@@ -1,4 +1,4 @@
-// Station NGC 3603 (Einheit 1 Lj, Haufen HD 97950 im Ursprung, Blick von der Erde = −z, Norden = +y). Medium, Sterne,
+// Station 03G: NGC 3603 (Einheit 1 Lj, Haufen HD 97950 im Ursprung, Blick von der Erde = −z, Norden = +y). Medium, Sterne,
 // Himmel und Kamerafahrt kommen aus ../ngc3603.js (gemeinsam mit der Test-/Vorlagenseite web/ngc3603.html, nicht kopiert).
 // Ablauf: Landung aus der Milchstraße am Anfang der Fahrt (arrive), dann spielt main.js die 58-s-Fahrt ohne Schnitt ab
 // (film.at je Bild, Eingabe bricht ab); sie endet in der Heimpose (home = Endpose der Fahrt) → freies Umsehen ohne Sprung.

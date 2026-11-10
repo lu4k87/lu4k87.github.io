@@ -1,4 +1,4 @@
-// Ast der Milchstraße 03A: Säulen der Schöpfung im Adlernebel M16 (Einheit U = 0,55 Lj), Blick von der Erde = −z, oben = +y.
+// Station 03F, Ast der Milchstraße: Säulen der Schöpfung im Adlernebel M16 (Einheit U = 0,55 Lj), Blick von der Erde = −z, oben = +y.
 // Drei Säulen aus kaltem Gas und Staub, von oben rechts angestrahlt vom jungen Haufen NGC 6611. Lage nach MUSE (ESO 2015,
 // McLeod et al.): die Spitze der linken Säule zeigt zu uns, die Säule steht hinter NGC 6611; die übrigen Spitzen zeigen
 // von uns weg. Linke Säule ≈ 4 Lj (Wolkenbank y ≈ −6,6 bis Kopf ≈ 0,85: 7,45 U), etwa doppelt so hoch wie die rechte (3,8 U).

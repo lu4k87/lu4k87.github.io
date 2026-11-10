@@ -162,7 +162,7 @@ export function create(ctx) {
       api.scene.add(lines);
       let on = true, tide = true, gain = 2;
       const k = () => (tide ? tideK(api.jdNow()) : 0.7);
-      const pole = new THREE.Vector3(0, -1, 0), plumePos = pole.clone().multiplyScalar(1 + H_MAX * 0.2);
+      const pole = new THREE.Vector3(0, -1, 0), plumePos = pole.clone().multiplyScalar(1.06);   // am Fuß der Fontänen: weiter draußen (1 + 0,2 · H_MAX) lag das Abzeichen in der Heimpose unter dem Bildrand
       return {
         layers: [
           { id: 'jets', type: 'toggle', group: 'Fontänen', label: 'Fontänen am Südpol', value: true, set: (v) => { on = v; jet.visible = v; } },

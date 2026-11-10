@@ -45,7 +45,7 @@ const LOADERS = {
   darkmatter: () => import('./levels/darkmatter.js'),
   web: () => import('./levels/web.js'),
   cmb: () => import('./levels/cmb.js'),
-  // bigbang (Station 11 Urknall): vorerst aus der App genommen, Szene bleibt in levels/bigbang.js (TODOS K1)
+  // bigbang (Station 07 Urknall): vorerst aus der App genommen, Szene bleibt in levels/bigbang.js (TODOS K1)
   // Einfügemarken je Etappe (docs/plan_ebenen.md §2): jeder Chat fügt nur direkt unter seiner Marke ein
   // [E1] Sonne
   sun: () => import('./levels/sun.js'),
@@ -933,7 +933,7 @@ function hop() {
     upInner: upPath(innerFrom, innerTo, inner.camera.up), maskR: 0, blur: 0, veil: 0,
     anchorUv: new THREE.Vector2(0.5, 0.5), innerUv: new THREE.Vector2(0.5, 0.5), captioned: false,
   };
-  // Vorbeiflug an Galaxien auf der Fahrt hinein (Station 9 → 8): Feld entlang der Zoom-Linie der äußeren Kamera
+  // Vorbeiflug an Galaxien auf der Fahrt hinein (Station 05 → 04): Feld entlang der Zoom-Linie der äußeren Kamera
   if (down && outer.pass && !still()) { state.tr.pass = outer.pass; outer.pass.begin(outerFrom.pos, anchor); }
   // Station beginnt beim Hinausflug in sie (Urknall: Film von vorn, die Explosion kommt vor der Landung)
   if (!down && to.enter) to.enter();
@@ -1067,8 +1067,8 @@ function stepTransition(dt) {
   }
 }
 
-// ---------- Auftakt-Film beim Aufruf (User 27.10.2026): Urknall → Plasma → Hintergrundstrahlung, Landung in Station 10 ----------
-// opener.js spielt den Film; Station 10 ist von Anfang an aktiv (Bedienung ausgeblendet, Kinobalken), ab dem weißen Bild
+// ---------- Auftakt-Film beim Aufruf (User 27.10.2026): Urknall → Plasma → Hintergrundstrahlung, Landung in Station 06 ----------
+// opener.js spielt den Film; Station 06 ist von Anfang an aktiv (Bedienung ausgeblendet, Kinobalken), ab dem weißen Bild
 // führt der Film ihre Kamera und blendet am Ende in ihr Bild über. Läuft bei jedem Aufruf ohne Stations-Link und bei jedem
 // Neuladen (das #station=… setzt activate() selbst), auch bei reduzierter Bewegung (User 28.10.2026), nicht bei ?tour;
 // ?auftakt erzwingt ihn, ?auftakt=0 schaltet ihn ab (Tests). Überspringen (Esc, Enter, Leertaste, Reisetasten, Klick):
@@ -1121,7 +1121,7 @@ function renderOpener(o, lv, real) {
   renderer.render(o.scene, o.out.view === 'own' ? o.camera : lv.camera);
   if (o.out.mix > 0) renderLevel(lv, real);
 }
-// Ende (oder Überspringen): Bedienung blendet ein, Titel, Kamera frei in der Heimpose der Station 10
+// Ende (oder Überspringen): Bedienung blendet ein, Titel, Kamera frei in der Heimpose der Station 06
 function endOpener() {
   const a = state.opener;
   if (!a) return;
@@ -1410,7 +1410,7 @@ function frame(nowMs) {
     mixed ? { mix: op.out.mix } : tr ? { prog: tr.prog, maskR: tr.maskR, blur: tr.blur, veil: tr.veil, anchor: tr.anchorUv, inner: tr.innerUv, fade: tr.fade } : null, look, state.time);
 
   if (!tr) hud.update(lv.camera, lv, state.time);
-  hud.hint(!tr && lv.hint ? lv.hint() : '');   // Hinweis-Zeile des Films (Station 11)
+  hud.hint(!tr && lv.hint ? lv.hint() : '');   // Hinweis-Zeile des Films (Station 07)
   if (state.offer && (state.offer.t -= real) <= 0) state.offer = null;
   hud.setOffer(tr ? null : state.offer);
   stepTour(real);
@@ -1497,7 +1497,7 @@ canvas.addEventListener('pointerdown', (ev) => {
   if (ev.button === 2 || (ev.button === 0 && (ev.ctrlKey || ev.metaKey || ev.shiftKey))) state.follow = null;
   userInput();
 });
-// Film erneut abspielen (Ereignis kosmos:auftakt): erst in Station 10, dann von vorn
+// Film erneut abspielen (Ereignis kosmos:auftakt): erst in Station 06, dann von vorn
 window.addEventListener('kosmos:auftakt', async () => {
   if (state.opener || state.tr) return;
   const lv = await getLevel(OPENER.land);
@@ -1511,7 +1511,7 @@ async function start() {
   try {
     resize();
     const id = (location.hash.match(/station=(\w+)/) || [])[1];
-    // Auftakt-Film bei jedem Aufruf ohne Stations-Link und bei jedem Neuladen, danach steht Station 10; ohne Film wie
+    // Auftakt-Film bei jedem Aufruf ohne Stations-Link und bei jedem Neuladen, danach steht Station 06; ohne Film wie
     // bisher: Stations-Link oder erste Station der Route, Kranfahrt in die Heimpose
     const reload = (performance.getEntriesByType('navigation')[0] || {}).type === 'reload';
     const film = OPENER.on && (params.has('auftakt') ? params.get('auftakt') !== '0' : !tour && (!Object.hasOwn(STATIONS, id || '') || reload));

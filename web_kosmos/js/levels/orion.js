@@ -1,4 +1,4 @@
-// Station 4: Orion-Nebel (Einheit 1 Lj), Blickrichtung von der Erde = −z, Norden = +y, Osten = −x. Modell nach O'Dell
+// Station 03B: Orion-Nebel (Einheit 1 Lj), Blickrichtung von der Erde = −z, Norden = +y, Osten = −x. Modell nach O'Dell
 // et al. 2009: die Ionisationsfront ist eine gekrümmte Schale auf der Vorderseite der Molekülwolke OMC-1 (Paraboloid, zu
 // uns offen), davor eine leuchtende Schicht von ≈ 0,1 pc; θ¹ Ori C steht ≈ 0,2 pc vor der Front. Emission ∝ Dichte ×
 // UV-Fluss (1/d²), Linien nach Abstand: [O III] 501 nm innen (grünlich), Hα 656 nm überall, [S II] 672 nm außen.

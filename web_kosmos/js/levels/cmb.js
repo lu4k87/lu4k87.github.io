@@ -1,4 +1,4 @@
-// Station 10: Beobachtbares Universum (Einheit 1 Mrd. Lj, mitbewegte Abstände, ΛCDM mit Planck-2018-Werten aus
+// Station 06: Beobachtbares Universum (Einheit 1 Mrd. Lj, mitbewegte Abstände, ΛCDM mit Planck-2018-Werten aus
 // astro.js). Wir im Mittelpunkt; Galaxien bis zur Rotverschiebung z ≈ 14 (≈ 34 Mrd. Lj), Farbe nach z röter; dahinter das
 // „dunkle Zeitalter“ ohne Sterne; außen die Fläche der letzten Streuung (z = 1 090, ≈ 45,3 Mrd. Lj) mit der
 // Hintergrundstrahlung. Ihr Muster ist simuliert: Rauschen in Oktaven, gewichtet wie die Wurzel des gemessenen

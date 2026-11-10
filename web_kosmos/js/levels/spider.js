@@ -1,4 +1,4 @@
-// Ast der Milchstraße 03B: Roter Spinnennebel NGC 6537 (Einheit 1 Lj), Blick von der Erde = −z, Norden = +y, Osten = −x.
+// Station 03D, Ast der Milchstraße: Roter Spinnennebel NGC 6537 (Einheit 1 Lj), Blick von der Erde = −z, Norden = +y, Osten = −x.
 // Bipolarer planetarischer Nebel nach Kastner et al. 2025 (JWST/NIRCam, ALMA): zwei geschlossene, von H2 umrandete Keulen
 // je ≈ 1,1 pc entlang der Polachse (Positionswinkel ≈ 45°, 38° gegen die Himmelsebene geneigt; NO-Keule von uns weg,
 // SW-Keule zu uns), schmale Taille mit kaltem Staub-Torus (Radius ≈ 0,13 pc, punktsymmetrisch verdichtet), ionisierter

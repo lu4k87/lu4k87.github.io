@@ -1,4 +1,4 @@
-// Station 8: Lokale Gruppe (Einheit 1 kpc), Milchstraße im Ursprung (galaktische Ebene = y = 0). Andromeda, M33,
+// Station 04: Lokale Gruppe (Einheit 1 kpc), Milchstraße im Ursprung (galaktische Ebene = y = 0). Andromeda, M33,
 // Magellansche Wolken und 25 Zwerggalaxien an galaktischen Koordinaten (l, b) und Entfernung (McConnachie 2012); Größen
 // maßstäblich (Milchstraße ≈ 30 kpc Scheibe, M31 ≈ 1,4-fach), Formen als Modell (Generator von Station 3, eigene Arme/Ringe).
 // Neigungen: M31 77° (optisch, PA 38°), M33 ≈ 52°, LMC 26° (van der Marel & Kallivayalil 2014). Zukunft: Zweikörper-Modell

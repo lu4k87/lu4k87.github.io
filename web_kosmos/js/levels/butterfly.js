@@ -1,4 +1,4 @@
-// Ast der Milchstraße 03D: Schmetterlingsnebel NGC 6302 (Einheit 1 Lj), Blick von der Erde = −z, Norden = +y.
+// Station 03C, Ast der Milchstraße: Schmetterlingsnebel NGC 6302 (Einheit 1 Lj), Blick von der Erde = −z, Norden = +y.
 // Bipolarer planetarischer Nebel: zwei offene, zerfranste Flügel entlang der Polachse (im Hubble-Bild von unten links nach
 // oben rechts), dazwischen eine enge Taille, die ein dichter Staub-Torus einschnürt – von der Seite gesehen als dunkles Band
 // quer über die Mitte, das den Zentralstern im sichtbaren Licht verdeckt (Webb fand ihn erst im mittleren Infrarot,

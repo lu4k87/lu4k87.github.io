@@ -1,4 +1,4 @@
-// Station 1: Erde und Mond, maßstäblich (Einheit 1.000 km). Stand für den aktuellen Zeitpunkt: Sonnenrichtung aus den
+// Station 01: Erde und Mond, maßstäblich (Einheit 1.000 km). Stand für den aktuellen Zeitpunkt: Sonnenrichtung aus den
 // JPL-Bahnelementen, Erddrehung aus der Sternzeit Greenwich, Mondort aus der Almanach-Näherung (astro.js).
 // Erde: Tagkarte bis 16k (NASA Blue Marble) mit Geländerelief und weichem Terminator, Sonnenglitzern mit Windfeldern und Fresnel-Schimmer der Ozeane, Wolken als eigene Kugelschicht mit
 // Schattenwurf auf den Boden, Stadtlichter mit warmem Hof auf der Nachtseite, Atmosphäre als Hülle mit Einfachstreuung

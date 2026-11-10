@@ -83,7 +83,7 @@ void main() {
   gl_Position = vec4(position.xy, 0.0, 1.0);
 }
 `;
-// Hintergrundstrahlung (Station 10 und Auftakt-Film): Muster auf der Kugel als Rauschen in Oktaven ~ ℓ ≈ 10, 25, 50, 100,
+// Hintergrundstrahlung (Station 06 und Auftakt-Film): Muster auf der Kugel als Rauschen in Oktaven ~ ℓ ≈ 10, 25, 50, 100,
 // 220, 450, 900 mit Gewicht √D_ℓ (relativ zum ersten Peak, Planck 2018); k = Schärfe 0 … 1 blendet die feinen Oktaven
 // nacheinander ein (Plasma wird durchsichtig), k = 1 = volles Muster. Falschfarbe wie in den Planck-Karten. Braucht NOISE.
 export const CMB = /* glsl */ `

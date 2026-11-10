@@ -1,4 +1,4 @@
-// Station 01D: Hubble-Weltraumteleskop aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Hubble fliegt im
+// Station 01B1: Hubble-Weltraumteleskop aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Hubble fliegt im
 // Bahnsystem (orbitview.js, wie ISS und Tiangong): Flugrichtung x, Erde unten (−y), Steuerbord z; darunter die Erde für den
 // angezeigten Zeitpunkt. Bahn aus dem CelesTrak-Schnappschuss (HST).
 // Modell nach NASA-Maßen (13 m lang, 4,3 m breit; Spiegel 2,4 m und 0,3 m) und Fotos: Lichtschutzröhre in Silberfolie

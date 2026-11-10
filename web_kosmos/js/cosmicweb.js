@@ -1,4 +1,4 @@
-// Kosmisches Netz für den Urknall-Film (Station 11), einmal auf der CPU gerechnet, ohne three.js (Test
+// Kosmisches Netz für den Urknall-Film (Station 07), einmal auf der CPU gerechnet, ohne three.js (Test
 // tests/cosmicweb.test.js). Eine Quelle für alles: dieselbe Dichte zeichnet die Fäden (3D-Textur im Shader), setzt Sterne,
 // Galaxien und Lichtpunkte und bestimmt ihre Geburt (dicht = früh). Mitbewegte Koordinaten: Front = Radius 1, das Feld
 // reicht bis ±EXT. Kanäle: r = Grat-Rauschen (Fäden an den Nulldurchgängen), g = großräumige Dichte (Leerräume, Flecken

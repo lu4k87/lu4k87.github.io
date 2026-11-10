@@ -65,7 +65,7 @@ vec3 zoomed(sampler2D t, vec2 uv, vec2 c, float amt, vec3 e) {
 
 void main() {
   if (uTrans < 0.5) { gl_FragColor = vec4(sampleLevel(tA, vUv, uEhtA), 1.0); return; }
-  // reine Überblendung (Auftakt-Film → Station 10)
+  // reine Überblendung (Auftakt-Film → Station 06)
   if (uMix >= 0.0) { gl_FragColor = vec4(mix(sampleLevel(tA, vUv, uEhtA), sampleLevel(tB, vUv, uEhtB), uMix), 1.0); return; }
   vec2 d = (vUv - uAnchor) * vec2(uAspect, 1.0);
   float r = length(d);

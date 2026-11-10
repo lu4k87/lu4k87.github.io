@@ -1,16 +1,16 @@
-// Galaxien als eigenes Modell und Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (Station 9 → 8; Vorschau
+// Galaxien als eigenes Modell und Vorbeiflug an Galaxien auf der Fahrt hinein zur Lokalen Gruppe (Station 05 → 04; Vorschau
 // 26.10.2026 „Urknall und Kamerafahrt durch die Galaxien“: F5 Modell; Rückmeldung des Users 27.10.2026: der Flug an Galaxien
-// vorbei gehört auf die Fahrt vom kosmischen Netz in die Lokale Gruppe, nicht zwischen Station 10 und 11).
+// vorbei gehört auf die Fahrt vom kosmischen Netz in die Lokale Gruppe, nicht zwischen Station 06 und 07).
 // · galaxyAtlas(): 16 Formen, im Browser auf ein Canvas gemalt (Spiralen mit und ohne Balken, flockig, mit großem Bulge,
 //   blau, Ellipsen, von der Kante, unregelmäßig, Paar in Wechselwirkung) – keine Teleskopbilder, keine Lizenzfrage.
 // · galaxySprites()/glowPoints(): Galaxien als Tafeln mit Tönung, Geburt und Reifung (uT), ferne Galaxien/Sterne als
-//   Punkte mit Geburt und Ende; uS = Maßstab der Gruppe (Station 11 lässt den Raum wachsen), uPx = Pixel je Bogenmaß.
+//   Punkte mit Geburt und Ende; uS = Maßstab der Gruppe (Station 07 lässt den Raum wachsen), uPx = Pixel je Bogenmaß.
 // · galaxyField(): Galaxien prozedural im Shader (User 04.11.2026: Atlas-Tafeln wirkten flach, kopiert und rosa) – jede
 //   Galaxie eine eigene Form aus Seed, Typ (Spirale, Ellipse, unregelmäßig, Linse), Armzahl, Steigung, Balken, Bulge, Staub,
 //   Flockigkeit; echte Neigung im Raum (Scheibe als dünne Schicht mit Höhe, von der Kante schmal mit Staubband), Staubbahnen
 //   an der Innenkante der Arme (vorn stärker), HII-Knoten dezent, Lichthof; Billboard-Tafel, Scheibe per Strahl–Ebene-Schnitt.
 // · createFlyby(): Galaxien entlang der Fahrt (Lage: flightplan.js flybyField), beim Start an Kamera und Anker ausgerichtet,
-//   nur im Flug sichtbar; der Atlas bleibt für den Auftakt-Film (opener.js) und Station 11.
+//   nur im Flug sichtbar; der Atlas bleibt für den Auftakt-Film (opener.js) und Station 07.
 import * as THREE from 'three';
 import { mulberry32, gauss, blackbody } from './astro.js';
 import { NOISE } from './glsl.js';

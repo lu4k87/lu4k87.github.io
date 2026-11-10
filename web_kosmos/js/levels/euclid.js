@@ -1,4 +1,4 @@
-// Station 01F: Weltraumteleskop Euclid (ESA) am Lagrange-Punkt L2 (Einheit 1 m), Abstecher von Erde & Mond. Szene am
+// Station 01B3: Weltraumteleskop Euclid (ESA) am Lagrange-Punkt L2 (Einheit 1 m), Abstecher von Erde & Mond. Szene am
 // Sonne-Erde-System (l2view.js): Sonne bei +x, der Sonnenschild mit den Solarzellen zeigt zu ihr, das Teleskop blickt
 // quer dazu nach +y. Modell nach ESA-Maßen (4,7 m hoch, 3,7 m Durchmesser) und Fotos: Versorgungsmodul als Sechskant mit
 // Isolierdecken, Antenne (folgt der Erde), Sternsensoren und Kaltgas-Düsen; Nutzlastmodul mit dem Teleskop in einer

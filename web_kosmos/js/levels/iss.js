@@ -1,4 +1,4 @@
-// Station 01A: Internationale Raumstation aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Die ISS fliegt im
+// Station 01A1: Internationale Raumstation aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Die ISS fliegt im
 // Bahnsystem (orbitview.js): Flugrichtung vorn (x), Erde unten (−y), Steuerbord z. Darunter die Erde für den angezeigten
 // Zeitpunkt, Sonnenaufgang und Sonnenuntergang alle ≈ 46 min, Erdschein von unten, Polarlichter und Stadtlichter auf der Nachtseite.
 // Modell nach NASA-Maßen (gerundet) und Fotos: Gitterträger 94 m als Fachwerk mit Geräteboxen und Schienen, Solarflügel

@@ -1,4 +1,4 @@
-// Station 2: Sonnensystem (Einheit 1 AE). Planeten an den Orten von heute aus den JPL-Bahnelementen, Bahnen als echte
+// Station 02: Sonnensystem (Einheit 1 AE). Planeten an den Orten von heute aus den JPL-Bahnelementen, Bahnen als echte
 // Ellipsen (Exzentrizität, Neigung, Knoten) mit Leuchtspur hinter dem Planeten; Polachsen nach IAU/WGCCRE (Rektaszension,
 // Deklination des Nordpols J2000). Asteroidengürtel mit Kirkwood-Lücken (3:1, 5:2, 7:3), Hilda-Gruppe (3:2), Jupiter-
 // Trojaner an L4/L5 und Kuipergürtel mit Plutinos (3:2 zu Neptun) laufen nach Kepler im Vertex-Shader.

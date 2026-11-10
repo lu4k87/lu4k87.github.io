@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kosmos · Reise durch das All</title>
-<meta name="description" content="Interaktive, wissenschaftlich belegte 3D-Reise durch das All in 31 Stationen – von der ISS über Erde und Mond bis zum beobachtbaren Universum. Doku der Web-App.">
+<meta name="description" content="Interaktive, wissenschaftlich belegte 3D-Reise durch das All in 44 Stationen – von der ISS über Erde und Mond bis zum beobachtbaren Universum. Doku der Web-App.">
 <style>
   :root {
     --bg: #f3f1ec; --surface: #ffffff; --line: #d9d4c8;
@@ -80,10 +80,10 @@
     <div class="hero-text">
       <span class="tag">3D-Web-App · three.js · WebGL 2</span>
       <h1>Kosmos<br>Reise durch das All</h1>
-      <p class="lead">Eine interaktive 3D-Reise in <strong>31 Stationen</strong>, 13 davon auf der Reiseroute: von der ISS über Erde und Mond bis zum beobachtbaren Universum. <strong>Ein Klick auf ein blaue Markierung</strong> fliegt in die nächste Ebene, „Hinaus“ zoomt in die größere zurück.</p>
+      <p class="lead">Eine interaktive 3D-Reise in <strong>44 Stationen</strong>, 9 Halte davon auf der Reiseroute: von der ISS über Erde und Mond bis zum beobachtbaren Universum. <strong>Ein Klick auf eine blaue Markierung</strong> fliegt in die nächste Ebene, „Hinaus“ zoomt in die größere zurück.</p>
       <p>Jede Zahl der Seite hat eine Quelle (NASA, JPL, ESA, Fachartikel); was ein Modell oder eine eigene Rechnung ist, steht dabei.</p>
       <ul class="facts">
-        <li>31 Stationen, 13 auf der Route, ein durchgehender Flug</li>
+        <li>44 Stationen, 9 Halte auf der Route, ein durchgehender Flug</li>
         <li>Echte Bahnen (JPL) und Sternkatalog (Yale BSC)</li>
         <li>Schalter und Regler je Station</li>
         <li>Kein Build, läuft lokal im Browser</li>
@@ -134,10 +134,14 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Nr.</th><th>Station</th><th>Thema</th><th>Schalter in der Infotafel</th></tr></thead>
+        <thead><tr><th>Nr.</th><th>Station</th><th>Thema</th><th>Schalter der Station (Panel „Station“ links)</th></tr></thead>
         <tbody>
           <tr><td>01A1</td><td>ISS</td><td>Raumstation</td><td>Blick (Außen, Cupola), Zeitraffer (Echtzeit bis 10 min/s), Solarflügel (der Sonne nach oder fest); Zahnrad: iROSA, im Erdschatten aufhellen, Bahnspur, Wolken, Polarlichter mit Kp, Stadtlichter, Lufthülle</td></tr>
           <tr><td>01A2</td><td>Tiangong</td><td>Raumstation</td><td>Zeitraffer (Echtzeit bis 10 min/s), Solarflügel (der Sonne nach oder fest); Zahnrad: im Erdschatten aufhellen, Bahnspur, Wolken, Polarlichter mit Kp, Stadtlichter, Lufthülle</td></tr>
+          <tr><td>01B1</td><td>Hubble</td><td>Weltraumteleskop</td><td>Ziel (wählbar; das Teleskop bleibt darauf gerichtet, die Erde schiebt sich davor), Zeitraffer; Zahnrad: im Erdschatten aufhellen, Teleskop, Bahn, Erde</td></tr>
+          <tr><td>01B2</td><td>James Webb</td><td>Weltraumteleskop</td><td>Blick (Außen, Zur Erde), Zeitraffer; Zahnrad: Sonnenschild, Teleskop, Licht (kalte Seite aufhellen), Himmel</td></tr>
+          <tr><td>01B3</td><td>Euclid</td><td>Weltraumteleskop</td><td>Blick (Außen, Zur Erde), Zeitraffer; Zahnrad: Teleskop, Licht (kalte Seite aufhellen), Himmel</td></tr>
+          <tr><td>01B4</td><td>Roman</td><td>Weltraumteleskop</td><td>Blick (Außen, Zur Erde), Zeitraffer; Zahnrad: Teleskop, Licht (kalte Seite aufhellen), Himmel</td></tr>
           <tr><td>1</td><td>Erde</td><td>Erde–Mond-System</td><td>Sternbilder (Linien, Linien + Namen), Schattenkegel; Zeitleiste: Zeitraffer bis 1 Tag/s (Pause = Echtzeit); Zahnrad: Atmosphäre, Wolken, Polarlichter mit Kp, Wellen, Teilsturm, pulsierende Flecken, Satelliten, Trümmerwolken, Bahnen</td></tr>
           <tr><td>01C</td><td>Mond</td><td>Erdtrabant</td><td>Blick (Mond, von der Erde, Erdaufgang), Zeitraffer, Markierungen (Apollo, Krater &amp; Meere, Pole &amp; Rückseite), Mondfinsternis 26.06.2029; Zahnrad: Relief-Überhöhung, Erdschein, Erde am Himmel</td></tr>
           <tr><td>2</td><td>Sonnensystem</td><td>Planetensystem</td><td>Größen (anschaulich oder echt), Zeit (Jetzt bis Jahre pro Sekunde); Zahnrad: Planetenlauf, Protuberanzen und Flares mit Massenauswurf, Korona, Granulation, Atmosphären, Wolken der Erde, Bahnen mit Leuchtspur, Kleinkörper, Jupiter-Polarlicht (Oval, Polwirbel, Flares, Fußpunkte) und Magnetscheibe, Feldlinien, Teilchenströme</td></tr>
@@ -157,16 +161,24 @@
           <tr><td>02F</td><td>Neptun</td><td>Eisriese</td><td>Zeitraffer (Drehung, Umläufe), Ringe aufhellen; Zahnrad: Bänder, Methan-Hülle, Ringe mit Bögen, Bahnen und Leuchtpunkte der Monde</td></tr>
           <tr><td>02F1</td><td>Triton</td><td>Mond des Neptun</td><td>Blick (Triton, Neptun am Horizont, Geysire, Bahn), Zeitraffer, Jahr (Stand der Sonne 1900–2150), Vorbeiflug von Voyager 2 1989; Zahnrad: Geysire mit Überhöhung, Dunst, Neptunschein, Bahn</td></tr>
           <tr><td>02G</td><td>Uranus &amp; Monde</td><td>Eisriese</td><td>Jahr (Stand der Sonne, 1986 Voyager 2 bis 2070), Zeitraffer; im Zahnrad Ringe, Staubringe, Mondbahnen, Monde vergrößert</td></tr>
-          <tr><td>02G1</td><td>Miranda</td><td>Mond des Uranus</td><td>Blick (Miranda, Uranus am Horizont, Bahn), Licht (Voyager 2 · 1986 / heute), Voyager-2-Abdeckung als Gradnetz, Zeitraffer; Zahnrad: Uranusschein, Uranus, Ringe, weitere große Monde, Bahn</td></tr>
+          <tr><td>02G1</td><td>Miranda</td><td>Mond des Uranus</td><td>Blick (Miranda, Uranus am Horizont, Bahn), Licht (Voyager 2 (1986) / heute), Voyager-2-Abdeckung als Gradnetz, Zeitraffer; Zahnrad: Uranusschein, Uranus, Ringe, weitere große Monde, Bahn</td></tr>
           <tr><td>02H</td><td>Pluto &amp; Charon</td><td>Zwergplanet</td><td>Zeitraffer (10 min/s bis 1 Tag/s), Farbe (Modell oder Messbild LORRI), Vorbeiflug von New Horizons 2015; Zahnrad: Kamera dreht mit dem Paar, Bahnen und Schwerpunkt, kleine Monde (vergrößert), Dunst, Gradnetz für Gebiete ohne Karte, Bahn beim Vorbeiflug</td></tr>
+          <tr><td>02I</td><td>Merkur</td><td>Innerer Planet</td><td>Ansicht (Foto, Wärmebild als Modell), nächstes Perihel, nächstes Aphel, Zeitraffer; Zahnrad: Exosphäre (Natriumschweif), Magnetfeld</td></tr>
+          <tr><td>02J</td><td>Venus</td><td>Wolkenplanet</td><td>Ansicht (Sichtbar, Ultraviolett, Infrarot, Radar), Zeitraffer; Zahnrad: Wolken</td></tr>
           <tr><td>3</td><td>Milchstraße</td><td>Galaktisch</td><td>Drehung der Galaxie, Sonnenbahn mit Sichtlinien, Fermi-Blasen</td></tr>
+          <tr><td>03A</td><td>Kosmischer Tornado HH 49/50</td><td>Herbig-Haro-Objekt</td><td>Farben (Webb: NIRCam + MIRI, nur H₂ bei 4,7 µm, Stoßfronten nach Alter), Zeitraffer; Zahnrad: Gas, Stoßfronten, Hintergrund, Qualität</td></tr>
           <tr><td>03B</td><td>Orion-Nebel</td><td>Sternentstehung</td><td>Farben: sichtbar, Hubble-Palette, Infrarot</td></tr>
+          <tr><td>03C</td><td>Schmetterlingsnebel</td><td>Planetarischer Nebel</td><td>Farben (Hubble: sichtbar, Webb: MIRI, Schichten), Zeitraffer; Zahnrad: Gas, Flügel, Ausfluss, Staub, Sterne, Qualität</td></tr>
+          <tr><td>03D</td><td>Roter Spinnennebel</td><td>Planetarischer Nebel</td><td>Farben (Webb: NIRCam, Hubble: sichtbar, Schichten), Zeitraffer; Zahnrad: Gas, Keulen, Ausfluss, Kern, Sterne, Qualität</td></tr>
           <tr><td>03E</td><td>Krebsnebel</td><td>Supernova-Überrest</td><td>Spektrum (sichtbar, Röntgen, Radio), Jahr-Regler 1054 bis 2600</td></tr>
           <tr><td>03E1</td><td>Krebs-Pulsar</td><td>Neutronenstern</td><td>Zeitlupe (1 : 600 bis 1 : 60), Ton mit echtem Takt – kein Blitzen über 3 Hz; Zahnrad: Plasmawirbel, Spiralteilchen, Polkappen-Strudel</td></tr>
+          <tr><td>03F</td><td>Säulen der Schöpfung</td><td>Sternentstehung</td><td>Farben (Webb: NIRCam + MIRI, Webb: NIRCam, Webb: MIRI, Hubble: sichtbar), Zeitraffer; Zahnrad: Gas, Struktur, Bewegung, Sterne, Qualität</td></tr>
           <tr><td>03G</td><td>NGC 3603</td><td>Sternentstehung</td><td>Kamerafahrt (58 s) beim Hineinfliegen durch Haufen HD 97950, an Sher 25 und den Säulen vorbei, danach freies Umsehen; Look nach Hubble heic0715a</td></tr>
           <tr><td>03H</td><td>Sagittarius A*</td><td>Schwarzes Loch</td><td>Ansicht (Horizont, EHT-Blick, S-Sterne), Flare als heißer Fleck; Zahnrad: heiße Strömung, Einfallzone innerhalb 3 Rs, Minispirale</td></tr>
           <tr><td>4</td><td>Lokale Gruppe</td><td>Galaxiengruppe</td><td>Namen der Zwerggalaxien, Regler „Zukunft“; Zahnrad: Sternentstehung im Zeitraffer, diffuses Licht mit Bulge und Staubbahnen, junge Sterne, Halo mit Kugelsternhaufen, Gezeitenströme</td></tr>
+          <tr><td>04A</td><td>Andromeda-Galaxie</td><td>Nachbargalaxie</td><td>Linien (Ringe, Achse, Sichtlinie), Namen der Begleitgalaxien, Sternentstehung im Zeitraffer; Zahnrad: Andromeda, Nebel</td></tr>
           <tr><td>5</td><td>Kosmisches Netz</td><td>Großräumige Struktur</td><td>Strömung zum Laniakea-Superhaufen</td></tr>
+          <tr><td>05A</td><td>Dunkle Materie</td><td>Unsichtbares Gerüst</td><td>Look (Planetarium, Leuchtend, Geschwindigkeit), Galaxien, Wege seit dem Anfang, Zeitpunkt (0,2 bis 13,8 Mrd. Jahre), Sprünge „Anfang“ (z ≈ 20), „Mittag der Sternentstehung“ (z ≈ 2) und „Heute“, „Neu würfeln“; Zahnrad: Materie, Galaxien, Modell</td></tr>
           <tr><td>6</td><td>Beobachtbares Universum</td><td>Kosmologisch</td><td>Dipol (abgezogen oder sichtbar), Zeitschichten (Epochen), Regler „Blick zurück“</td></tr>
         </tbody>
       </table>

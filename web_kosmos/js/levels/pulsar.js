@@ -1,4 +1,4 @@
-// Station 6: Crab-Pulsar (Einheit 1 km). Neutronenstern R ≈ 13 km (NICER), Drehachse = +y, Magnetachse um 45° geneigt
+// Station 03E1: Crab-Pulsar (Einheit 1 km). Neutronenstern R ≈ 13 km (NICER), Drehachse = +y, Magnetachse um 45° geneigt
 // (Modellwert, umstritten). Bildaufbau nach drei Vorlagen (Leuchtturm-Strahlen, wirbelnde Feldlinien, Wind-Spirale mit
 // Leuchtring), jedes Element aus der Physik abgeleitet:
 // - Strahlkegel entlang der Magnetachse: heller Kern, hohler Rand wie im Radio; der zweite Kegel gibt den Zwischenpuls.

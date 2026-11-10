@@ -1,4 +1,4 @@
-// Station 3: Milchstraße als Modell (Einheit 1 kpc), von Norden gesehen dreht sie im Uhrzeigersinn.
+// Station 03: Milchstraße als Modell (Einheit 1 kpc), von Norden gesehen dreht sie im Uhrzeigersinn.
 // Sterne: exponentielle Scheibe (Skalenlänge 2,6 kpc, Skalenhöhe 0,3 kpc), Balken (Halblänge 5,0 kpc, 29° gegen die
 // Linie Sonne–Zentrum, Wegg et al. 2015) mit Bulge, Spiralarme als logarithmische Spiralen nach den Maser-Parallaxen von Reid et al. 2019
 // (Bezugsradius, -azimut, Steigung), junge blaue Sterne und rosa HII-Regionen in den Armen, Staubbahnen an deren

@@ -1,4 +1,4 @@
-// Station 7: Sagittarius A* (Einheit 1 Schwarzschild-Radius Rs = 2GM/c², M = 4,297·10⁶ M☉ → 1,27·10¹⁰ m).
+// Station 03H: Sagittarius A* (Einheit 1 Schwarzschild-Radius Rs = 2GM/c², M = 4,297·10⁶ M☉ → 1,27·10¹⁰ m).
 // Strahlverfolgung je Pixel in der Schwarzschild-Metrik: Photonenbahnen nach d²x/dλ² = −(3/2)·h²·x/r⁵ (h = |x × v|,
 // gleichwertig zur Binet-Gleichung u'' + u = (3/2)·u² mit Rs = 1); eingefangen unter r = 1, Schatten bei √27/2 Rs.
 // Scheibe in der Ebene y = 0 von der innersten stabilen Bahn (3 Rs) bis 20 Rs: Temperatur nach Novikov-Thorne

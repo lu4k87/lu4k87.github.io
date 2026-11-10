@@ -1,4 +1,4 @@
-// Station 01E: James-Webb-Weltraumteleskop am Lagrange-Punkt L2 (Einheit 1 m), Abstecher von Erde & Mond. Szene am
+// Station 01B2: James-Webb-Weltraumteleskop am Lagrange-Punkt L2 (Einheit 1 m), Abstecher von Erde & Mond. Szene am
 // Sonne-Erde-System (l2view.js): Sonne bei +x, die warme Seite des Sonnenschilds zeigt zu ihr; Erde und Mond stehen
 // einige Grad daneben am Himmel (Ort auf der Halo-Bahn aus den JPL-Bahndaten).
 // Modell nach NASA-Maßen (Fact Sheet) und Fotos: Hauptspiegel 6,5 m aus 18 sechseckigen Beryllium-Segmenten mit Gold

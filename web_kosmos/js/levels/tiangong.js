@@ -1,4 +1,4 @@
-// Station 01B: Chinesische Raumstation Tiangong aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Wie die ISS fliegt sie
+// Station 01A2: Chinesische Raumstation Tiangong aus der Nähe (Einheit 1 m), Abstecher von Erde & Mond. Wie die ISS fliegt sie
 // im Bahnsystem (orbitview.js): Flugrichtung vorn (x), Erde unten (−y), Steuerbord z; darunter die Erde für den
 // angezeigten Zeitpunkt mit Sonnenaufgängen und Sonnenuntergängen alle ≈ 46 min, Erdschein, Polarlichtern und Stadtlichtern.
 // Modell aus Grundkörpern („Modell, gerundet“): T-Form aus Tianhe (16,6 m, Stamm längs x) mit Andockknoten vorn und den

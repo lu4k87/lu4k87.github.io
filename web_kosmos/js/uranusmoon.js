@@ -291,7 +291,7 @@ export function createUranusMoon(ctx, cfg) {
   // ---------- Schalter der Infotafel ----------
   const controls = [
     { id: 'view', label: 'Blick', value: 'home', options: [['home', cfg.name], ['uranus', 'Uranus am Horizont'], ['orbit', 'Bahn']], set: setView },
-    { id: 'light', label: 'Licht', value: 'voyager', options: [['voyager', 'Voyager 2 · 1986'], ['now', 'Heute']], set: (v) => {
+    { id: 'light', label: 'Licht', value: 'voyager', options: [['voyager', 'Voyager\u00a02 (1986)'], ['now', 'Heute']], set: (v) => {   // ohne „2 · 1986“: brach in der halben Spalte zwischen „2“ und „·“ um
       jd = julianDate(v === 'now' ? ctx.date : new Date(VOYAGER));
       setView('home');
       refreshLayers();

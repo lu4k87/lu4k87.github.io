@@ -1,4 +1,4 @@
-// Station 9: Kosmisches Netz (Einheit 1 Mpc), statistisches Voronoi-Modell (van de Weygaert & Icke 1989): Zellkerne =
+// Station 05: Kosmisches Netz (Einheit 1 Mpc), statistisches Voronoi-Modell (van de Weygaert & Icke 1989): Zellkerne =
 // Mitten der Leerräume, Galaxien werden auf die Zellgrenzen geschoben – auf Wände (Ebene zwischen zwei Kernen), Fäden
 // (Schnitt dreier Zellen) und Knoten (Ecke von vier Zellen, dort Galaxienhaufen). Anteile nach Cautun et al. 2014,
 // grob auf Galaxien übertragen: Knoten 15 %, Fäden 45 %, Wände 25 %, Leerräume 15 %. Echte Haufen und Superhaufen an
@@ -6,7 +6,7 @@
 // Norma (= Großer Attraktor), Perseus (mit der Perseus-Pisces-Kette), Coma, Hercules, Shapley. Strömung: Galaxien
 // treiben zum Großen Attraktor und weiter zu Shapley – das Einzugsgebiet dieser Strömung ist Laniakea (Tully 2014);
 // die Strömung hier schematisch aus Punktmassen, keine gemessene Geschwindigkeitskarte.
-// Fahrt hinein zur Lokalen Gruppe (Station 8): Vorbeiflug an reifen Galaxien (pass, galaxyflight.js createFlyby) – Darstellung;
+// Fahrt hinein zur Lokalen Gruppe (Station 04): Vorbeiflug an reifen Galaxien (pass, galaxyflight.js createFlyby) – Darstellung;
 // Netz-Punkte blenden früh aus (FLYBY.web, Vorschau 08.11.2026 Fahrt:B: mehr leerer Raum).
 
 import * as THREE from 'three';

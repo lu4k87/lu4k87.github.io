@@ -1,5 +1,5 @@
-// Station 11: Urknall – Film von 55 s in der Reihenfolge der Kosmologie (Rückmeldung des Users 27.10.2026: „annähernd
-// realistisch“, Durchflug durch die Galaxien im Film, danach Landung in Station 10; Knall:A aus der Vorschau 26.10.2026
+// Station 07: Urknall – Film von 55 s in der Reihenfolge der Kosmologie (Rückmeldung des Users 27.10.2026: „annähernd
+// realistisch“, Durchflug durch die Galaxien im Film, danach Landung in Station 06; Knall:A aus der Vorschau 26.10.2026
 // bleibt). Zeit stückweise logarithmisch, je Abschnitt ein eigenes Bild:
 // · Anfang: Lichtblitz verlischt schnell, im Plasma flimmern die Keime des Netzes (dieselben Fäden wie später).
 // · Erstes Licht ≈ 370.000 J: die Glut kühlt nach Planck-Farbe (gelb-weiß → orange → dunkelrot → schwarz), der Nebel
@@ -270,7 +270,7 @@ export function create(ctx) {
     hint: () => (hintOn && film.t > HINT.from && film.t < HINT.to ? HINT.text : ''),
     restart(t0 = 0, tempo = 1) { film.t = t0; film.tempo = tempo; film.playing = true; apply(); },
     live: () => `${sectionAt(film.t)} · ${mmss(film.t)} von ${mmss(DUR)} · Darstellung, nicht maßstäblich`,
-    // Fahrt hinaus aus Station 10 beginnt (main.js hop): Film von vorn, der Blitz kommt vor der Landung
+    // Fahrt hinaus aus Station 06 beginnt (main.js hop): Film von vorn, der Blitz kommt vor der Landung
     enter() { if (!ctx.still) { film.t = 0; film.tempo = 1; film.playing = true; apply(); } },
     setPixelRatio(pr, H) {
       px = H / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));

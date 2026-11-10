@@ -1,4 +1,4 @@
-// Ast der Milchstraße 03C: Cosmic Tornado HH 49/50 im Chamäleon-I-Komplex (Einheit 0,1 Lj), Blick von der Erde = −z,
+// Station 03A, Ast der Milchstraße: Cosmic Tornado HH 49/50 im Chamäleon-I-Komplex (Einheit 0,1 Lj), Blick von der Erde = −z,
 // oben = +y wie im Webb-Bild weic2506a (dort liegt Norden 152,6° rechts der Senkrechten). Herbig-Haro-Objekt: Ausfluss
 // eines jungen Sterns (vermutlich Cederblad 110 IRS4, ≈ 1,5 Lj außerhalb unten rechts) trifft auf das Gas der Wolke und
 // heizt es in Stoßfronten auf; warmer Wasserstoff (H₂), CO und angeregter Staub leuchten im Infrarot orange-rot.

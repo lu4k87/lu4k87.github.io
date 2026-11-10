@@ -94,7 +94,8 @@ export function create(ctx) {
       const haze = hazeShell(api.sunL);
       api.scene.add(haze.mesh);
       const side = new THREE.Vector3().crossVectors(api.homeDir, new THREE.Vector3(0, 1, 0)).normalize();
-      const limb = side.clone().multiplyScalar(0.85).addScaledVector(new THREE.Vector3(0, 1, 0), 0.5).normalize().multiplyScalar(R_H * 0.97);
+      // Rand rechts oben in der Heimpose: mit +side lag das Abzeichen links außerhalb des Bildes – die Station zeigte mit Dunst keines
+      const limb = side.clone().multiplyScalar(-0.85).addScaledVector(new THREE.Vector3(0, 1, 0), 0.5).normalize().multiplyScalar(R_H * 0.97);
       const setHaze = (v) => { hazeOn = v; };
       return {
         controls: [{

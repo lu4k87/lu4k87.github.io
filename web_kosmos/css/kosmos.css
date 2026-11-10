@@ -632,7 +632,7 @@ body:is(.st-open, .cfg-open) .stage > .hint { left: calc(50% + (var(--st-w) + 16
 /* Kategorie nie kürzen (User 09.11.2026: „Reise · Nächste…“ am Handy): bricht ausgewogen in eine zweite Zeile */
 .explore .badge-cat {
   font: 700 11px/1.25 var(--mono);
-  color: var(--ink-muted);
+  color: var(--ink-soft);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   text-wrap: balance;
