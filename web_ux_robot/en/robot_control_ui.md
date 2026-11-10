@@ -674,7 +674,7 @@
 >> | **`/servo_server/delta_joint_cmds`** | `control_msgs/JointJog` | *Commands precise joint jogging steps per click.* |
 >> | **`/ui/robot_control/set_speed_index`** | `std_msgs/Int32` | *Saves the speed scale changed via web slider.* |
 >> | **`/ui/robot_control/speed_confirm`** | `std_msgs/Int32` | *Release for speed level 6 on Robot \| Hardware (sent after the confirmation, valid 15 s, used up by one raise; the Servo node checks it).* |
->> | **`/ui/scan_speed`** | `std_msgs/Int32` | *Level derived from the speed override for MoveTo/scans (0: Slow, 1: Normal, 2: Fast).* |
+>> | **`/ui/scan_speed`** | `std_msgs/Int32` | *Level derived from the speed override for MoveTo/scans (0: Slow, 1: Normal, 2: Fast). The Motion Handler uses the slower of this level and the displayed speed level `/ui/robot_control/current_speed` (lowering on the gamepad applies, raising only via the UI).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Publishes immediate non-blocking software E-STOP.* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Publishes the command to move the linear axis.* |
 >> | **`/ui/grasp_object_cmd`** | `std_msgs/String` | *Triggers autonomy pipeline actions (old grasp path, only with `legacy_grasp:=true`).* |

@@ -678,7 +678,7 @@
 >> | **`/servo_server/delta_joint_cmds`** | `control_msgs/JointJog` | *Steuert feine Joint-Jogs per Klick.* |
 >> | **`/ui/robot_control/set_speed_index`** | `std_msgs/Int32` | *Sichert die geänderte Geschwindigkeit.* |
 >> | **`/ui/robot_control/speed_confirm`** | `std_msgs/Int32` | *Freigabe für Tempostufe 6 an Robot \| Hardware (nach der Bestätigung gesendet, 15 s gültig, von einem Anheben verbraucht; der Servo-Node prüft sie).* |
->> | **`/ui/scan_speed`** | `std_msgs/Int32` | *Aus dem Tempo-Override abgeleitete Stufe für MoveTo/Scans (0: Slow, 1: Normal, 2: Fast).* |
+>> | **`/ui/scan_speed`** | `std_msgs/Int32` | *Aus dem Tempo-Override abgeleitete Stufe für MoveTo/Scans (0: Slow, 1: Normal, 2: Fast). Der Motion Handler fährt mit der langsameren aus dieser Stufe und der angezeigten Tempostufe `/ui/robot_control/current_speed` (Senken am Gamepad wirkt, Erhöhen nur über die UI).* |
 >> | **`/ui/emergency_stop_topic`** | `std_msgs/Empty` | *Publiziert sofortigen Software-E-STOP (blockierungsfreier Topic-Bypass).* |
 >> | **`/linear_axis_cmd`** | `std_msgs/Float64` | *Publiziert den Befehl zur Bewegung der Linearachse.* |
 >> | **`/ui/grasp_object_cmd`** | `std_msgs/String` | *Triggert Autonomie-Aktionen per Objekt-Identifikator (alter Greifpfad, nur mit `legacy_grasp:=true`).* |
