@@ -2,7 +2,8 @@
 // Leiste:A+B): drei Gruppen mit Überschrift – Szene (Ton, Kamerafahrt, Animation, Farblook) · Fenster (Infotafel, Zeitleiste,
 // Maßstab) · Anzeige (Kinobalken, Vollbild, UI, Hell, Qualität, Bildrate) – und ganz rechts „Mehr“ (⋯) mit einem Menü aller
 // Zusatz-Einstellungen als ablesbare Zeilen (gleiche Bauteile wie das Zahnrad: pickHtml, Schalter, Farblook-Kacheln).
-// Keine Wörter unter den Symbolen: Tooltip + aria-label nennen Name und Stufe („Animation: Ruhig“).
+// Keine Wörter unter den Symbolen: eigener Hover-Text (.qtip, mountTip) + aria-label nennen Name und Stufe („Animation: Ruhig“);
+// kein natives title – das erschien spät, klein und unter dem eigenen Mauszeiger kaum sichtbar (User 11.11.2026).
 // Ton: schaltet den Schalter „sound“ der Station (sound.js oder eigener Takt des Pulsars) zwischen „Aus“ und der ersten
 // Aufnahme; Station ohne Ton → Knopf ausgegraut mit Grund im Tooltip. Zeitleiste ebenso, wenn die Station keinen Ablauf
 // zum Abspielen hat. Alle übrigen folgen kosmos.settings.v1 (settings.js, auch aus dem Zahnrad).
@@ -28,9 +29,10 @@ export function mountQuick(root, onInput) {
   const $ = (id) => root.querySelector(`#${id}`);
   const snd = $('qk-sound'), full = $('qk-full'), tl = $('qk-timeline');
   let lv = null;
+  const tip = mountTip(root);
 
   const ctl = () => (lv?.controls || []).find((c) => c.id === 'sound');
-  const label = (b, text) => { b.title = text; b.setAttribute('aria-label', text); };
+  const label = (b, text) => { b.setAttribute('aria-label', text); tip.update(b); };
   function syncSound() {
     const c = ctl(), on = !!c && c.value !== 'off';
     snd.setAttribute('aria-disabled', String(!c));
@@ -212,4 +214,51 @@ export function mountQuick(root, onInput) {
 
   addEventListener('kosmos:sound', syncSound);   // einmaliger Ton (Apollo 11) zu Ende
   return { station(level) { lv = level; syncSound(); syncTl(); } };
+}
+
+// ---------- Hover-Text der Schnell-Leiste (User 11.11.2026): Name + Stufe aus aria-label unter dem Knopf, mittig, im Fenster
+// gehalten (8 px Rand); erst nach 350 ms, von Knopf zu Knopf sofort; auch bei Tastatur-Fokus; nie über einem offenen
+// Aufklapp-Fenster (Zero Overlap) und nie bei Touch. Klick blendet aus, neuer Zustand steht beim nächsten Überfahren drin.
+function mountTip(root) {
+  const tip = document.createElement('div');
+  tip.className = 'qtip';
+  tip.setAttribute('aria-hidden', 'true');   // Screenreader lesen das aria-label des Knopfs
+  document.body.append(tip);
+  let on = null, timer = 0, warm = 0;
+  const popOpen = () => !!root.querySelector('.qpop:not([hidden]), .qmenu:not([hidden])');
+  function place(b) {
+    const r = b.getBoundingClientRect(), w = Math.ceil(tip.getBoundingClientRect().width), pad = 8;
+    const x = Math.min(Math.max(pad, r.left + r.width / 2 - w / 2), innerWidth - pad - w);
+    tip.style.left = `${Math.floor(x)}px`;
+    tip.style.top = `${Math.round(r.bottom + 6)}px`;
+  }
+  function show(b) {
+    if (popOpen() || document.body.classList.contains('ui-off') && b.id !== 'qk-ui') return;
+    on = b;
+    tip.textContent = b.getAttribute('aria-label') || '';
+    tip.classList.add('is-on');
+    place(b);
+  }
+  function hide() {
+    clearTimeout(timer);
+    if (on) warm = performance.now();
+    on = null;
+    tip.classList.remove('is-on');
+  }
+  const btnOf = (e) => e.target.closest?.('.qg-row button, .qg--more > button');
+  root.addEventListener('pointerover', (e) => {
+    const b = btnOf(e);
+    if (!b || e.pointerType === 'touch' || b === on) return;
+    clearTimeout(timer);
+    if (on || performance.now() - warm < 300) show(b);
+    else timer = setTimeout(() => show(b), 350);
+  });
+  root.addEventListener('pointerout', (e) => { const b = btnOf(e); if (b && !b.contains(e.relatedTarget)) hide(); });
+  root.addEventListener('pointerdown', hide);
+  root.addEventListener('focusin', (e) => { const b = btnOf(e); if (b && b.matches(':focus-visible')) show(b); });
+  root.addEventListener('focusout', hide);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+  addEventListener('resize', hide);
+  // aria-label hat sich geändert (Stufe, an/aus): sichtbaren Text nachziehen
+  return { update(b) { if (b === on) { tip.textContent = b.getAttribute('aria-label') || ''; place(b); } } };
 }
