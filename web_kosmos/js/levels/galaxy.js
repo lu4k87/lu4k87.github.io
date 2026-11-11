@@ -427,6 +427,8 @@ export function create(ctx) {
     scene, camera, unit: KPC, hotspots, controls,
     ready: neb.ready,
     home: { pos: new THREE.Vector3(-14, 21, 19), target: new THREE.Vector3(-1.2, 0, 0.6) },
+    // Normale der Scheibe: Flüge landen flach über ihr statt von oben herab (main.js arrival, flatDir)
+    plane: new THREE.Vector3(0, 1, 0),
     orbit: { minDistance: 0.25, maxDistance: 80, cineSpeed: 0.5 },
     look: { exposure: 1.1, bloom: 0.09, sat: 1.1, con: 0.14 },
     // Fahrten hinein und hinaus: kaum Zoom-Unschärfe und Lichtschleier (main.js stepTransition) – die Sterne bleiben Punkte

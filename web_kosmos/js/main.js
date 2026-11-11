@@ -13,7 +13,7 @@ import { createDeepSky } from './deepsky.js';
 import { attachSound, soundTo } from './sound.js';
 import { startQuality, createAuto, loadTexture, sceneTextures, releaseTextures } from './perf.js';
 import { ZOOM, FLYBY } from './flightplan.js';
-import { TURN, planTurn, turnPose, turnPace, smoother } from './turn.js';
+import { TURN, planTurn, planTurnVia, turnPose, turnPace, smoother } from './turn.js';
 import { createBoot } from './boot.js';
 import { createOpener } from './opener.js';
 import { mountCursor } from './cursor.js';
@@ -515,8 +515,11 @@ function flyPose(cam, a, b, e, tk = e, pivot = null, bend = null, swing = null, 
 }
 // Blickwende hinaus (Anker hinten, Ziel vorn, z. B. Mond → Erde ~170°): als Gieren um die Hochachse U und Nicken, statt
 // Slerp auf kürzestem Weg – nahe 180° ist dessen Drehebene unbestimmt, fährt die Kamera dicht an der Linie Anker–Ziel
-// entlang, kippt sie und der Blick reißt herum (7,8 rad/s, Rollen 48 rad/s). Drehsinn einmal je Etappe (a.yaw), danach
-// stetig über ±180° hinweg; d0 = Richtung zum Anker, wird zur Blickrichtung. false = Blick zu nah an U (dann Slerp)
+// entlang, kippt sie und der Blick reißt herum (7,8 rad/s, Rollen 48 rad/s). Der Gierwinkel schließt stetig an das vorige
+// Bild an (a.az, über ±180° hinweg), das erste Bild nimmt den kürzeren Weg. Früher lag der Drehsinn nach dem ersten Bild fest
+// (a.yaw): lagen Anker und Ziel fast in einer Richtung, wechselte der kleine Winkel das Vorzeichen und zählte fortan als
+// ganze Umdrehung – NGC 3603 → Milchstraße drehte eine Pirouette (Blick 55° nach oben), Sonne → Sonnensystem flackerte.
+// d0 = Richtung zum Anker, wird zur Blickrichtung. false = Blick zu nah an U (dann Slerp)
 const _yx = new THREE.Vector3(), _yy = new THREE.Vector3(), _yh = new THREE.Vector3();
 function yawLook(d0, d1, U, tk, a) {
   const e0 = d0.dot(U), e1 = d1.dot(U);
@@ -526,8 +529,8 @@ function yawLook(d0, d1, U, tk, a) {
   _yx.normalize();
   _yy.crossVectors(U, _yx);
   let az = Math.atan2(_yh.dot(_yy), _yh.dot(_yx));
-  if (a.yaw === undefined) a.yaw = Math.sign(az) || 1;
-  if (az * a.yaw < 0) az += 2 * Math.PI * a.yaw;
+  if (a.az !== undefined) az += 2 * Math.PI * Math.round((a.az - az) / (2 * Math.PI));
+  a.az = az;
   const el = Math.asin(THREE.MathUtils.clamp(e0 + (e1 - e0) * tk, -1, 1)), c = Math.cos(el);
   d0.copy(_yx).multiplyScalar(c * Math.cos(az * tk)).addScaledVector(_yy, c * Math.sin(az * tk)).addScaledVector(U, Math.sin(el));
   return true;
@@ -641,9 +644,18 @@ function arcPair(ch, from, to, P, C) {
 // die Kamera mit Reisetempo dicht am Ziel vorbei und der Blick reißt herum. Hinein: der nächste Anker A liegt vor der Kamera
 // (näher als die Übersicht: zwischen Kamera und Ziel, um side seitlich; weiter weg: hinter dem Ziel, um behind versetzt);
 // hinaus: die Kamera zieht sich hinter den Anker zurück (out × Abstand des Ankers), Anker und Ziel liegen beide vorn
+// h = Hotspot des Ankers. Gleicher Raum mit Scheibe (Milchstraße in der Lokalen Gruppe, hinein): die Pose liegt schon auf
+// der flachen Geraden zum Anker (Seite der Übersicht, höchstens SAME.elev über der Scheibe), Blick auf ihn – die nächste
+// Etappe fährt dieselbe Gerade weiter. Vorher lag sie über der Mitte der Station: die Weiterfahrt (carryBend) zog erst
+// dorthin, stieg dabei auf 67° über die Scheibe und schwenkte dann 30° zurück (Kosmisches Netz → Milchstraße)
 const PASS = { side: 0.45, behind: 0.8, out: 1.6 };
-function passPose(lv, A, down) {
+const hotOf = (lv, id) => lv.hotspots.find((x) => x.to === id);
+function passPose(lv, A, down, h = null) {
   const ov = arrival(lv), T = ov.target, r = ov.pos.distanceTo(T);
+  if (down && h && h.same && h.plane && !still()) {
+    const d = ov.pos.clone().sub(A);
+    return pose(A.clone().addScaledVector(flatDir(d, h.plane), d.length()), A);
+  }
   const u = A.clone().sub(T), rho = u.length();
   // Anker im Zentrum (Sonne im Sonnensystem, Sgr A* in der Milchstraße): keine Richtung → Übersicht; sonst fällt die Pose
   // in den Anker, Kamera = Blickziel, die Projektion wird NaN und das Bild der ganzen Etappe schwarz
@@ -680,10 +692,11 @@ function flatDir(d, n) {
 const sameMap = (s, v, inward) => (inward ? v.clone().sub(s.a).multiplyScalar(s.k) : v.clone().divideScalar(s.k).add(s.a));
 const samePose = (s, P, inward) => pose(sameMap(s, P.pos, inward), sameMap(s, P.target, inward));
 // innere Kamera deckungsgleich zur äußeren; Blickwinkel gleitet logarithmisch vom Grundwert der äußeren zu dem der inneren
-// (Zoom-Weitung des Flugs fx obendrauf), damit am Ende keine Kamera springt
+// (Zoom-Weitung des Flugs fx obendrauf), damit am Ende keine Kamera springt; p = Anteil der inneren Station (hinaus 1 − e:
+// mit e sprang der Blickwinkel beim Hinausflug im ersten und im letzten Bild, sobald die Bühnen verschieden breit sind)
 function sameCam(tr, ch, e, fx) {
-  const o = tr.outer.camera, i = tr.inner.camera, base = (lv) => ch.cams.find((c) => c.lv === lv).fov;
-  const fov = Math.pow(base(tr.outer), 1 - e) * Math.pow(base(tr.inner), e) * (1 + FLYFX.fov * fx);
+  const o = tr.outer.camera, i = tr.inner.camera, base = (lv) => ch.cams.find((c) => c.lv === lv).fov, p = tr.down ? e : 1 - e;
+  const fov = Math.pow(base(tr.outer), 1 - p) * Math.pow(base(tr.inner), p) * (1 + FLYFX.fov * fx);
   for (const c of [o, i]) if (Math.abs(c.fov - fov) > 1e-6) { c.fov = fov; c.updateProjectionMatrix(); }
   i.position.copy(sameMap(tr.same, o.position, true));
   i.quaternion.copy(o.quaternion);
@@ -753,7 +766,15 @@ async function goTo(targetId, opt = {}) {
 // ---------- Fahrplan: alle Etappen auf einer Zeitachse, Tempo stetig, kein Halt – auch nicht an einer Wende ----------
 const homeWidth = (lv) => lv.home.pos.distanceTo(lv.home.target) * Math.tan(THREE.MathUtils.degToRad(lv.camera.fov) / 2) * lv.unit;
 // lv.arrive: eigene Landepose (NGC 3603 landet am Anfang ihrer Fahrt, lv.film), bei reduzierter Bewegung die Heimpose-Regel
-const arrival = (lv) => (lv.arrive && !still() ? pose(lv.arrive.pos, lv.arrive.target) : poseAt(lv.home.target, lv.home.pos, lv.home.pos.distanceTo(lv.home.target) * ARRIVE));
+// lv.plane = Normale der Scheibe der Station (Milchstraße): die Ankunft liegt höchstens SAME.elev über der Scheibe, auf der
+// Seite der Heimpose – wie die Landung aus der Lokalen Gruppe. Vorher zog jede Fahrt aus einer Kind-Station (Sonnensystem,
+// Nebel, Sgr A*; auch „Weiter“ auf der Route) die Kamera unter 43–50° von oben auf die Scheibe heraus (User 11.11.2026)
+const arrival = (lv) => {
+  if (lv.arrive && !still()) return pose(lv.arrive.pos, lv.arrive.target);
+  const d = lv.home.pos.clone().sub(lv.home.target);
+  if (!lv.plane) return poseAt(lv.home.target, lv.home.pos, d.length() * ARRIVE);
+  return pose(lv.home.target.clone().addScaledVector(flatDir(d, lv.plane), d.length() * ARRIVE), lv.home.target);
+};
 function planChain(lvs, dur) {
   const legs = lvs.slice(1).map((to, i) => {
     const dec = Math.abs(Math.log10(homeWidth(lvs[i]) / homeWidth(to)));
@@ -774,10 +795,31 @@ function planChain(lvs, dur) {
 }
 // Bogen in der Wendestation zwischen dem Anker des Kindes, aus dem die Fahrt kommt (E), und dem des nächsten (M);
 // Übersicht O wie bei der Ankunft dort (gemerkte Pose oder Heimpose)
+// Flache Wende (tn.flat): das nächste Kind liegt im gleichen Raum und hat eine Scheibe (Andromeda → Milchstraße). Über die
+// Übersicht O flog die Kamera rückwärts an der Milchstraße vorbei bis hinter sie (834 kpc) und fiel dann aus 57° auf die
+// Scheibe. Stattdessen steht sie seitlich der Linie E–M (auf der Seite der Übersicht, c), steigt leicht zu M geneigt, sinkt
+// leicht zu E geneigt (zusammen TURN.sweep) – beide Richtungen höchstens SAME.elev über der Scheibe – und landet im
+// Ankunftsabstand der inneren Station auf deren Blickziel: kein Vorbeiflug, kein Rückweg (Abstand zur Milchstraße wächst
+// über die Kuppe nur noch um ein Viertel statt auf das 1,7-Fache), die innere Kamera folgt deckungsgleich (sameCam)
 function planTurnAt(lvs, i) {
   const st = lvs[i], saved = state.poses.get(st.id);
   const O = saved && saved.child === lvs[i - 1].id ? saved : arrival(st);
-  const tn = planTurn(anchorOf(st, lvs[i - 1].id).toArray(), anchorOf(st, lvs[i + 1].id).toArray(), O.pos.toArray(), ZOOM);
+  const E = anchorOf(st, lvs[i - 1].id), A = anchorOf(st, lvs[i + 1].id), h = hotOf(st, lvs[i + 1].id);
+  let tn;
+  if (h && h.same && h.plane && !still()) {
+    const inner = lvs[i + 1], nx = lvs[i + 2], k = st.unit / inner.unit;
+    const land = nx && nx.meta.parent === inner.id ? passPose(inner, anchorOf(inner, nx.id), true, hotOf(inner, nx.id)) : arrival(inner);
+    const M = land.target.clone().divideScalar(k).add(A);
+    const w = E.clone().sub(M).normalize(), c = O.pos.clone().sub(M).projectOnPlane(w);
+    if (c.lengthSq() < 1e-8 * O.pos.distanceToSquared(M)) c.crossVectors(h.plane, w);
+    c.normalize();
+    const t = TURN.sweep / 2;
+    const lean = (s) => flatDir(c.clone().multiplyScalar(Math.cos(t)).addScaledVector(w, s * Math.sin(t)), h.plane).toArray();
+    // gleicher Abstand an beiden Enden (Andromeda ist so groß wie die Milchstraße): die Kuppe liegt nur so hoch wie nötig
+    const d = ZOOM * land.pos.distanceTo(land.target) / k;
+    tn = planTurnVia(E.toArray(), M.toArray(), lean(-1), lean(1), d, d, ZOOM, TURN.fitFlat);
+    tn.flat = true;
+  } else tn = planTurn(E.toArray(), A.toArray(), O.pos.toArray(), ZOOM);
   const tanH = Math.tan(THREE.MathUtils.degToRad(st.camera.fov) / 2);
   // pose = Übersicht ohne Bogen: der Rückflug landet im gewohnten Blick
   return Object.assign(tn, { id: st.id, at: i, pose: pose(O.pos, O.target), pace: turnPace(tn, tanH, st.camera.aspect) });
@@ -851,7 +893,8 @@ function hop() {
   // die Wendestation fährt ihren eigenen Bogen (turn.js)
   const turning = ch.turn && ch.turn.id === outer.id;
   // gleicher Raum (Hotspot same): die innere Kamera folgt der äußeren deckungsgleich (sameCam), ohne Schwenk und Bogen
-  const same = sameSpace(outer, inner, anchor, turning);
+  // (auch im Sinken einer flachen Wende: dort fährt die äußere Kamera den Bogen der Wende)
+  const same = sameSpace(outer, inner, anchor, turning && !(down && ch.turn.flat));
   if (down) {
     // nach einer Wende die Pose ohne Schwenk auf den Anker merken (Rückflug landet im gewohnten Blick)
     // Verschieben (rechte Maustaste) gilt nur bis zum Abflug: der Rückflug behält Drehung und Zoom, blickt aber wieder auf das
@@ -864,7 +907,7 @@ function hop() {
     outerFrom = swing ? pose(swing.at, cur.target) : pose(cur.pos, cur.target);
     outerFrom.look = cur.target.clone().sub(cur.pos).normalize();
     outerTo = poseAt(anchor, outerFrom.pos, Math.max(outerFrom.pos.distanceTo(anchor) / ZOOM, 1e-9));
-    innerTo = next && STATIONS[next].parent === to.id ? passPose(to, anchorOf(to, next), true) : ch.home ? pose(to.home.pos, to.home.target) : arrival(to);
+    innerTo = next && STATIONS[next].parent === to.id ? passPose(to, anchorOf(to, next), true, hotOf(to, next)) : ch.home ? pose(to.home.pos, to.home.target) : arrival(to);
     innerFrom = poseAt(innerTo.target, innerTo.pos, innerTo.pos.distanceTo(innerTo.target) * ZOOM);
   } else {
     const saved = state.poses.get(to.id);
@@ -898,7 +941,12 @@ function hop() {
   // gleicher Raum: die äußere Kamera fährt gerade auf den Anker zu bzw. von ihm weg wie sonst, aber nur bis zur Landung statt
   // um ZOOM. Hinein landet sie in der Blickrichtung des Users (nicht in der festen Ankunftspose: kein Kreisen um die Galaxie),
   // höchstens so weit weg wie die Ankunft und mindestens um SAME.min näher als beim Abflug
-  if (same && down) {
+  if (same && down && turning) {
+    // flache Wende: Landung am Ende ihres Bogens (planTurnAt hat Richtung und Abstand der inneren Station eingerechnet)
+    const q = turnPose(ch.turn, 1);
+    outerTo = pose(new THREE.Vector3().fromArray(q.pos), new THREE.Vector3().fromArray(q.target));
+    innerTo = samePose(same, outerTo, true);
+  } else if (same && down) {
     if (!ch.home) {   // auch vor einer weiteren Etappe hinein: ein Bogen zur Zwischenpose kreiste am Etappenende noch
       const d = cur.pos.clone().sub(anchor), land = Math.min(innerTo.pos.distanceTo(innerTo.target), d.length() * same.k / SAME.min);
       innerTo = pose(innerTo.target.clone().addScaledVector(flatDir(d, same.n), land), innerTo.target);
@@ -990,10 +1038,12 @@ function stepTransition(dt) {
   if (tr.same) {
     // gleicher Raum: eine Fahrt in den Koordinaten der äußeren Station um den Anker (Weiterfahrt aus der vorigen Etappe als
     // Bogen), die innere Kamera folgt deckungsgleich
-    outerTgt = flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.carry, null, tr.upOuter);
+    outerTgt = x !== null ? turnCam(tr.outer.camera, tn, x)
+      : flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.carry, null, tr.upOuter);
+    if (x !== null) tr.outer.target = outerTgt;
     bank(tr.outer, dt, bk);
     sameCam(tr, ch, e, fx);
-    innerTgt = sameMap(tr.same, tr.anchor, true);   // Bezugspunkt wie bei der äußeren Kamera (Aufzeichnung ?camlog)
+    innerTgt = sameMap(tr.same, x !== null ? outerTgt : tr.anchor, true);   // Bezugspunkt wie bei der äußeren Kamera (Aufzeichnung ?camlog)
   } else {
     outerTgt = x !== null ? turnCam(tr.outer.camera, tn, x)
       : flyPose(tr.outer.camera, tr.outerFrom, tr.outerTo, e, tkOuter, tr.anchor, tr.down ? tr.carry : null, tr.swing, tr.upOuter, tr.arcOuter);
@@ -1048,7 +1098,7 @@ function stepTransition(dt) {
     ch.carry = tr.down ? { down: true, c: end.target.clone(), from: end.pos.clone(), s: -1 }
       : { down: false, c: (tr.carryC || tr.anchor).clone(), from: end.pos.clone(), s: 1 };
     // gleicher Raum: Rate dieser Etappe (Abstand zum Anker ändert sich um weniger als ZOOM)
-    if (tr.same) {
+    if (tr.same && x === null) {
       ch.carry.s = Math.log(tr.outerTo.pos.distanceTo(tr.anchor) / tr.outerFrom.pos.distanceTo(tr.anchor)) / Math.log(ZOOM);
       if (tr.down) ch.carry.c = sameMap(tr.same, tr.anchor, true);
     }

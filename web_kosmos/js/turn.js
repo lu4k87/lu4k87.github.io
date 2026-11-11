@@ -12,7 +12,9 @@
 // fit = Abstand oben mindestens fit × Weg E–M (beide gut im Bild, weiter Schwenk wird langsam);
 // pace = Grenzen der Zeitdichte relativ zur Reisefahrt; gain = höchstens so viel länger wird die ganze Fahrt dadurch
 // (User 28.10.2026: Schwenk über die Kuppe weicher, sweep 0,8 → 0,65, tilt 0,4 → 0,3)
-export const TURN = { k: 0.5, sweep: 0.65, tilt: 0.3, fit: 1.5, pace: [0.5, 5], gain: 1.6 };
+// fitFlat = fit der flachen Wende (main.js planTurnAt, Andromeda → Milchstraße): die Kamera steht seitlich der Linie E–M,
+// beide liegen nebeneinander im Querformat – weiter auszuholen wäre ein Umweg (User 11.11.2026: keine unnötigen Rückfahrten)
+export const TURN = { k: 0.5, sweep: 0.65, tilt: 0.3, fit: 1.5, fitFlat: 1, pace: [0.5, 5], gain: 1.6 };
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -47,11 +49,16 @@ export function planTurn(E, M, O, zoom) {
   if (len(ax) < 1e-9) ax = cross(vE, Math.abs(vE[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]);
   ax = unit(ax);
   const tilt = Math.min(TURN.tilt, Math.max(0, (TURN.sweep - phi) / 2));
-  const lE = Math.log(len(sub(O, E))), lM = Math.log(len(sub(O, M)));
+  return planTurnVia(E, M, rotate(vE, ax, -tilt), rotate(vM, ax, tilt), len(sub(O, E)), len(sub(O, M)), zoom);
+}
+// Wende mit frei gewählten Richtungen statt über eine Übersicht O: a = Steigrichtung am Anker E, b = Sinkrichtung am Anker M
+// (Einheitsvektoren vom Anker zur Kamera), dE/dM = Abstand der gedachten Übersicht von E bzw. M – die Etappen-Enden liegen
+// bei dE/zoom und dM/zoom. Für Ziele, auf die die Kamera in einer festen Richtung sinken soll (Scheibe der Milchstraße flach)
+export function planTurnVia(E, M, a, b, dE, dM, zoom, fit = TURN.fit) {
+  const lE = Math.log(dE), lM = Math.log(dM);
   const tn = {
-    E, M, lE, lM, L: Math.log(zoom),
-    a: rotate(vE, ax, -tilt), b: rotate(vM, ax, tilt),   // Steig- und Sinkrichtung (vom Anker zur Kamera)
-    lift: Math.max(0, Math.log(TURN.fit * len(sub(M, E))) - (lE + lM) / 2),
+    E, M, lE, lM, L: Math.log(zoom), a, b,   // a, b = Steig- und Sinkrichtung (vom Anker zur Kamera)
+    lift: Math.max(0, Math.log(fit * len(sub(M, E))) - (lE + lM) / 2),
   };
   // Blickpunkt gleitet im Verhältnis zur Höhe (Bildtempo des Schwenks gleichmäßig): Tabelle ∫ e^l · Glocke, normiert
   const k = TURN.k, S = 64, g = [0];
