@@ -50,7 +50,7 @@ export default {
       { v: 30.07, t: '30,1 AE', l: 'Neptun', ref: true }, { v: 39.5, t: '39,5 AE', l: 'Pluto' },
     ],
     cap: 'Mittlere Bahnradien maßstäblich. Der Hauptteil des Kuipergürtels reicht von Neptuns Bahn bis etwa 50 AE, dahinter setzt sich die Streuscheibe bis fast 1.000 AE fort. Pluto umläuft die Sonne zweimal, während Neptun dreimal herumkommt.',
-    s: ['nasa-kuiper', 'jpl-elements', 'nssdc-pluto'],
+    s: ['nasa-kuiper', 'trujillo-2000', 'allen-2001', 'jpl-elements', 'nssdc-pluto'],
   },
   // ---------- 02B Sonne ----------
   'sun.region': {
@@ -220,6 +220,6 @@ export default {
       { d: '2001-02-12', t: 'Feb. 2001', l: 'Landung', l2: 'als erste Sonde', hl: true },
     ],
     cap: 'Ein abgebrochenes Bremsmanöver verzögerte die Ankunft bis zum 14. Februar 2000. Am 12. Februar 2001 setzte die Sonde im „Sattel“ von Eros auf – als erste auf einem Asteroiden.',
-    s: ['nssdc-near', 'veverka-2001'],
+    s: ['nssdc-near', 'veverka-1997', 'veverka-2001'],
   },
 };

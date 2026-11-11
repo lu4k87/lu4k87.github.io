@@ -152,7 +152,7 @@ export default {
       { l: 'Erde (Durchm.)', v: 2 * R_EARTH, t: n(2 * R_EARTH) },
     ] }],
     cap: 'Lange Achse des Flecks nach NASA/Hubble (2014), gerundet; der Wert vom Ende des 19. Jahrhunderts ist eine historische Schätzung. Heute passt die Erde nur noch gut einmal hinein, und der Fleck schrumpft weiter, um rund 0,19 Längengrade pro Jahr.',
-    s: ['hst-grs-2014', 'nasa-earth', 'simon-2018'],
+    s: ['hst-grs-2014', 'simon-2014', 'nasa-earth', 'simon-2018'],
   },
   'jupiter.bands': {
     k: 'bars', alt: 'Dauer einer Drehung von Jupiter, Saturn, Neptun, Uranus, Erde und Mars',
