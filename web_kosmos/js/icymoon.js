@@ -19,6 +19,7 @@ import { MOONS, SATURN, kronianState, lineOfSun as satLineOfSun } from './kronia
 import { createSaturn } from './levels/saturn.js';
 import { registerLayers, refreshLayers } from './layers.js';
 import { spinAxis } from './axes.js';
+import { litDir } from './moonsys.js';
 
 const RAD = Math.PI / 180;
 const Y = new THREE.Vector3(0, 1, 0);
@@ -191,7 +192,8 @@ function halfDisc(u) {
 // Keil-Ausschnitt für Ebenen über dem Boden (Ringe, Polarlicht): uniform uCut, uCutA, uCutB + vO (Ort am Mond)
 export const CUT_DISCARD = 'if (uCut > 0.5 && dot(vO, uCutA) > 0.0 && dot(vO, uCutB) > 0.0) discard;';
 
-// cfg: id, tex, seed, gain, tint [dunkel, hell], split, views {grau, farbe, gelaende: Erklärzeile}, home {j, s, y, dist, t},
+// cfg: id, tex, seed, gain, tint [dunkel, hell], split, views {grau, farbe, gelaende: Erklärzeile}, home {j, s, y, dist, t, lit?
+// (false = Heimpose nicht zur Tagseite drehen)},
 // features [{ id, lat, west, focus, r?, when? }], interior [{ r, c: [r,g,b], f? }] + oceanR, eclLead [d], horizon [d],
 // sys (JUPITER_SYS | SATURN_SYS), speeds [[Tage/s, Name]] + speed0 (Startstufe), scanDiv (Suchschritt = Umlauf / n),
 // viewKeys (Teil von grau/farbe/gelaende), extra(ctx, api) → { layers, controls, hotspots, update(dt, t, jd, cam), live() }
@@ -264,12 +266,14 @@ export function createIcyMoon(ctx, cfg) {
   spinAxis(moon);
 
   // ---------- Heimpose: hinter dem Mond (von Jupiter abgewandt) und darüber, Jupiter rechts über dem Rand (frei von der
-  // Infotafel); das Licht kommt so, wie die Sonne zum Zeitpunkt steht, der Tageslauf zieht die Schattengrenze weiter ----------
+  // Infotafel); das Licht kommt so, wie die Sonne zum Zeitpunkt steht, der Tageslauf zieht die Schattengrenze weiter;
+  // läge so mehr als ein Drittel im Dunkeln, dreht litDir die Kamera zur Sonne (Jupiter rückt dann aus der Mitte) ----------
   const J = jupL.clone().normalize(), right = new THREE.Vector3().crossVectors(J, Y).normalize();
   const H = cfg.home;
   const dCam = J.clone().multiplyScalar(-H.j).addScaledVector(right, H.s).addScaledVector(Y, H.y).normalize();
+  const turned = !frame.shadow && H.lit !== false && litDir(dCam, sunL);   // Ankunft auf der Tagseite; im Planetenschatten bleibt die Finsternis
   const toJ = J.clone().addScaledVector(dCam, -J.dot(dCam)).normalize();
-  const home = { pos: dCam.clone().multiplyScalar(H.dist), target: toJ.clone().multiplyScalar(H.t) };
+  const home = { pos: dCam.clone().multiplyScalar(H.dist), target: toJ.clone().multiplyScalar(H.t * (turned ? 0.35 : 1)) };
 
   // ---------- Schnitt: Viertelkeil schräg zur Heimpose, zwei Halbscheiben mit den Schichten ----------
   const w = dCam.clone().setY(0).normalize().applyAxisAngle(Y, 35 * RAD);   // etwas zur Seite: Schnitt und Oberfläche zugleich

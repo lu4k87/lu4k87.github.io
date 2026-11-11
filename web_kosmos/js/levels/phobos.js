@@ -14,7 +14,7 @@ import { createFlare } from '../flare.js';
 import { settings } from '../settings.js';
 import { NOISE, SKY_VERTEX } from '../glsl.js';
 import { registerLayers, refreshLayers } from '../layers.js';
-import { moonOrbit } from '../moonsys.js';
+import { moonOrbit, litDir } from '../moonsys.js';
 import { BUMP } from './asteroid.js';
 import { createMars, moonShape, dirLL, R } from './mars.js';
 import { MARS, MOONS, marsState, moonScene } from '../martian.js';
@@ -249,8 +249,11 @@ export function createMarsMoon(ctx, cfg) {
       const g = Math.abs(Math.acos(THREE.MathUtils.clamp(c.dot(sun), -1, 1)) - 65 * RAD);
       if (!best || g < best.g) best = { g, c };
     }
+    // Ankunft auf der Tagseite; im Marsschatten bleibt die Finsternis. Gedreht: Blick vor allem auf den Mond (Mars liegt
+    // dann oft hinter der Kamera – Tagseite hat Vorrang, User 11.11.2026; Mars zeigt der Blick „Mars über dem Horizont“)
+    const mix = state.vis > 0.5 && litDir(best.c, sun) ? 0.75 : cfg.homeMix;
     const pos = best.c.multiplyScalar(cfg.homeDist), dU = uPos.clone().sub(pos).normalize(), dM = pos.clone().multiplyScalar(-1).normalize();
-    return { pos, target: pos.clone().addScaledVector(dM.multiplyScalar(cfg.homeMix).addScaledVector(dU, 1 - cfg.homeMix).normalize(), cfg.homeDist), up: Y };
+    return { pos, target: pos.clone().addScaledVector(dM.multiplyScalar(mix).addScaledVector(dU, 1 - mix).normalize(), cfg.homeDist), up: Y };
   }
   const home = homePose();
   // Mars über dem Horizont: wenige Dutzend Meter über dem Standpunkt, Blick etwas unter die Marsmitte – Mars steht über dem

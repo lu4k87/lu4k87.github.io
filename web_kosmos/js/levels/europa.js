@@ -21,6 +21,7 @@ import { registerLayers, refreshLayers } from '../layers.js';
 import { STATIONS } from '../content.js';
 import { JUPITER, GALILEAN, jovianState, moonScene, lineOfSun } from '../jovian.js';
 import { spinAxis } from '../axes.js';
+import { litDir } from '../moonsys.js';
 
 const EL = GALILEAN.europa;
 const R = EL.r / 1000, RJ = JUPITER.r / 1000;   // Europa 1.560,8 km, Jupiter 71.492 km (Szene: 1.000 km)
@@ -353,6 +354,7 @@ export function create(ctx) {
     const right = new THREE.Vector3().crossVectors(f, Y).normalize(), up = new THREE.Vector3().crossVectors(right, f);
     const s = right.multiplyScalar(-0.35).addScaledVector(up, 0.94).normalize();
     const c = f.multiplyScalar(-Math.cos(10 * RAD)).addScaledVector(s, Math.sin(10 * RAD)).normalize();
+    if (!state.eclipse) litDir(c, sun);   // Ankunft auf der Tagseite; im Jupiterschatten bleibt die Finsternis
     return { pos: c.multiplyScalar(R * 5.6), target: new THREE.Vector3(), up: Y };
   }
   const home = homePose();

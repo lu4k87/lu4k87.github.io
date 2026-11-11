@@ -72,7 +72,7 @@ export function create(ctx) {
       farbe: '<b>Tönung</b> – das graue Messbild orange eingefärbt. Wie die Oberfläche in Farbe aussieht, wissen wir nur von der Landestelle: orangebraun.',
     },
     viewNames: { grau: 'Nahinfrarot', farbe: 'Tönung' },
-    home: { j: 0.81, s: 0.3, y: 0.5, dist: 2.45, t: 0.95 },
+    home: { j: 0.81, s: 0.3, y: 0.5, dist: 2.45, t: 0.95, lit: false },   // nicht zur Tagseite drehen: Titan füllt das Bild, der Dunst-Rand fiele heraus
     speeds: SPEEDS, speed0: 4, scanDiv: 120, horizon: 15 * 365.25, eclLead: 1 / 36,
     // Abzeichen auf der Oberfläche nur ohne Dunst; Mitte [° N, ° W] nach dem Gazetteer, Menrva und Xanadu aus der Karte abgelesen
     features: [

@@ -18,6 +18,7 @@ import { settings } from '../settings.js';
 import { SKY_VERTEX } from '../glsl.js';
 import { registerLayers, refreshLayers } from '../layers.js';
 import { spinAxis } from '../axes.js';
+import { litDir } from '../moonsys.js';
 
 const RAD = Math.PI / 180, Y = new THREE.Vector3(0, 1, 0);
 const R_IO = GALILEAN.io.r / 1e3, R_J = JUPITER.r / 1e3, RP_J = JUPITER.rp / 1e3, A_IO = GALILEAN.io.a / 1e3;
@@ -431,6 +432,7 @@ export function create(ctx) {
       const s = -(((ph - 70) / 50) ** 2) - ((c.dot(jdir) + 0.955) / 0.05) ** 2 - (jdir.dot(right) > 0 ? 1.5 : 0);
       if (s > bs) { bs = s; best = c; }
     }
+    if (state.sunVis > 0.5) litDir(best, sun);   // Tagseite vor Jupiter-Bildaufbau; im Jupiterschatten bleibt die Finsternis
     return { pos: best.multiplyScalar(R_IO * 5.4), target: jdir.clone().multiplyScalar(R_IO * 0.9), up: Y };
   }
   const home = homePose();

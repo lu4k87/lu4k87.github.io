@@ -121,3 +121,18 @@ export function tidalQuat(q, toPlanet, north) {
   qz.crossVectors(qx, north);
   return q.setFromRotationMatrix(qm.makeBasis(qx, north, qz));
 }
+
+// Ankunft auf der Tagseite (User 11.11.2026): Blickrichtung c (Körper → Kamera, Einheitsvektor) liegt höchstens maxPh
+// vom Licht sun entfernt, sonst wird sie auf dem Großkreis zur Sonne gedreht – das Licht bleibt echt, nur der Blickwinkel
+// ändert sich. Phasenwinkel 70,5° ↔ zwei Drittel der sichtbaren Scheibe beleuchtet ((1 + cos φ) / 2). Ändert c; true =
+// gedreht (dann den Körper weiter zur Bildmitte nehmen, sonst liegt die Tagseite neben dem Bild).
+export const LIT_PH = Math.acos(1 / 3);
+export function litDir(c, sun, maxPh = LIT_PH) {
+  const cg = THREE.MathUtils.clamp(c.dot(sun), -1, 1);
+  if (Math.acos(cg) <= maxPh) return false;
+  qx.copy(c).addScaledVector(sun, -cg);
+  if (qx.lengthSq() < 1e-8) qx.set(0, 1, 0).addScaledVector(sun, -sun.y);   // genau gegenüber: über den Nordpol herum
+  qx.normalize();
+  c.copy(sun).multiplyScalar(Math.cos(maxPh)).addScaledVector(qx, Math.sin(maxPh)).normalize();
+  return true;
+}

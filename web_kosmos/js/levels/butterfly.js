@@ -81,9 +81,9 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
 `;
 
 // Farben je Modus: Hubble sichtbar (WFC3, heic0910h/ESA 2025: innen weiß-blau, Flügel orange von Stickstoff und Wasserstoff,
-// Ränder rot), Webb MIRI (warmer Staub des Torus und der Stern leuchten, Gas schwächer), Schichten = je Bauteil eine Farbe
+// Ränder rot; Feinschliff 11.11.2026: Kern heller weiß-blau, Flügel weniger orange, Ränder kräftiger rot), Webb MIRI (warmer Staub des Torus und der Stern leuchten, Gas schwächer), Schichten = je Bauteil eine Farbe
 const LOOKS = {
-  hubble: { hot: [0.7, 0.8, 1.0], mid: [1.0, 0.42, 0.1], edge: [0.95, 0.12, 0.03], fe: [1.0, 0.35, 0.5], core: [0.6, 0.65, 0.8], tor: [0.0, 0.0, 0.0],
+  hubble: { hot: [0.6, 0.9, 1.7], mid: [0.82, 0.4, 0.13], edge: [1.6, 0.09, 0.05], fe: [1.0, 0.35, 0.5], core: [0.95, 1.05, 1.4], tor: [0.0, 0.0, 0.0],
     dustT: 1, star: 2, stars: 1 },
   miri: { hot: [0.45, 0.55, 0.8], mid: [0.75, 0.4, 0.3], edge: [0.35, 0.12, 0.2], fe: [0.55, 0.85, 1.0], core: [1.0, 0.75, 0.45], tor: [1.0, 0.45, 0.12],
     dustT: 0.3, star: 40, stars: 0.35 },

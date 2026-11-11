@@ -230,13 +230,13 @@ export function create(ctx) {
 
   // ---------- Posen ----------
   const e = () => tmp.copy(earthPos).normalize();
-  // Mond: von der Erdseite, zum Terminator gedreht (Phasenwinkel 70–110°), leicht von Norden
+  // Mond: von der Erdseite, zum Terminator gedreht (Phasenwinkel 55–70°: Tagseite mit Relief am Terminator), leicht von Norden
   function homePose() {
     const ed = e().clone(), cg = THREE.MathUtils.clamp(ed.dot(sun), -1, 1), g = Math.acos(cg);
     const w = ed.clone().addScaledVector(sun, -cg);
     if (w.lengthSq() < 1e-6) w.crossVectors(sun, Y);
     w.normalize();
-    const g1 = THREE.MathUtils.clamp(g, 70 * RAD, 110 * RAD);
+    const g1 = THREE.MathUtils.clamp(g, 55 * RAD, 70 * RAD);   // höchstens 70°: zwei Drittel im Licht (User 11.11.2026)
     const c = sun.clone().multiplyScalar(Math.cos(g1)).addScaledVector(w, Math.sin(g1)).addScaledVector(Y, 0.2).normalize();
     return { pos: c.multiplyScalar(R_M * 6.2), target: new THREE.Vector3(), up: Y };
   }
