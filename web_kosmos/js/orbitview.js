@@ -322,7 +322,7 @@ void main() {
       sunLight.intensity = 3.2 * lit;
       sunLight.position.copy(sun).multiplyScalar(radius * 2);
       const day = THREE.MathUtils.smoothstep(up.dot(sunFar), -0.35, 0.75);
-      scene.environmentIntensity = 0.05 + 1.25 * day;
+      scene.environmentIntensity = 0.3 + 1.0 * day;   // Sockel 0,3 (vorher 0,05): Metallfolie spiegelt im Erdschatten noch etwas Himmel, sonst steht das Modell schwarz vor Schwarz
       night.intensity = boost ? 0.45 * (1 - lit) * (1 - day) + 0.04 : 0.02;
       // Linsenreflex der Sonne, von der Erde verdeckt
       occluders[0].center.copy(far.position); occluders[0].radius = R_E * S;

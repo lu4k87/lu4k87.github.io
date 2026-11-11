@@ -105,8 +105,9 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   }
   vec3 cSync = vec3(0.5, 0.68, 1.0);
   if (uMode < 0.5) {
-    float sync = pow(max(1.0 - rs * rs, 0.0), 1.7) * (0.6 + 0.55 * fbm(pe * 0.33, 3)) * (0.55 + 0.6 * fib);
-    e = (fcol * fil * 6.2 * uFil + cSync * (sync * 0.65 + inner * 0.6) + vec3(0.5, 0.95, 0.75) * chim * 0.2 * uFil) * uGain;
+    // Schleier dünner und fleckiger (vorher 0,6 + 0,55 · fbm, × 0,65): lag als milchige Fläche über den Fäden
+    float sync = pow(max(1.0 - rs * rs, 0.0), 1.7) * (0.38 + 0.8 * fbm(pe * 0.33, 3)) * (0.55 + 0.6 * fib);
+    e = (fcol * fil * 7.0 * uFil + cSync * (sync * 0.5 + inner * 0.6) + vec3(0.5, 0.95, 0.75) * chim * 0.2 * uFil) * uGain;
     s = fil * 0.9 * uDust;
   } else if (uMode < 1.5) {
     // Chandra-Blick: Ring, Torus + Jet dominieren, innerer Nebel violett-blau, Filamente unsichtbar

@@ -32,6 +32,7 @@ const BODY = /* glsl */ `
 uniform vec3 uStar, uStar43;
 uniform float uGain, uMode, uDustT, uUV, uReach, uO3, uS2, uSat, uFil, uTurb, uShell, uBar, uM43, uCav, uDust, uMol;
 uniform highp sampler3D uField;
+const float KNEE = 2.5;
 // Oktaven 3 … OCT der Turbulenz (die ersten beiden stehen im Feld)
 float fbmTail(vec3 p) {
   p = ROT3 * (ROT3 * p * 2.03) * 2.03;
@@ -88,6 +89,7 @@ void sampleVol(vec3 p, out vec3 e, out float s) {
   if (d43 < 2.6 && uM43 > 0.0) m43 = exp(-pow(d43 / 0.9, 2.0)) * (0.5 + 0.8 * max(fbm(p * 1.3 + 4.0, 3) + 0.3, 0.0)) * smoothstep(-0.6, 0.6, sd + 0.3);
   float flux43 = 0.35 / (1.0 + d43 * d43 * 2.5);
   float em = (ne + cav) * flux + m43 * flux43 * 1.6;
+  em /= 1.0 + em * KNEE;   // weiches Knie: der Kern um das Trapez behält Zeichnung und Farbe, statt als weiße Fläche auszubrennen (Außenbereich fast unverändert)
   // Linien nach Abstand; mehr UV schiebt die Zonen nach außen (uReach = Strömgren-Radius ∝ UV^⅓)
   float o3 = exp(-d / (2.8 * uReach)) * uO3;
   float s2 = smoothstep(4.0 * uReach, 10.0 * uReach, d) * uS2;
@@ -135,7 +137,7 @@ export function create(ctx) {
 
   const field = bakeField(ctx.renderer, { size: 128, extent: EXT, body: FIELD });
   const neb = volume({ radius: 15.5, body: `#define OCT ${ctx.detail > 0.7 ? 5 : 4}\n${BODY}`, steps: STEPS[2], maxSteps: STEPS[3], uniforms: {
-    uStar: { value: STAR }, uStar43: { value: M43 }, uField: { value: field.texture }, uGain: { value: 0.4 }, uMode: { value: 0 }, uDustT: { value: 1 },
+    uStar: { value: STAR }, uStar43: { value: M43 }, uField: { value: field.texture }, uGain: { value: 0.46 }, uMode: { value: 0 }, uDustT: { value: 1 },
     uUV: { value: 1 }, uReach: { value: 1 }, uO3: { value: 1 }, uS2: { value: 1 }, uSat: { value: 1 }, uFil: { value: 1 }, uTurb: { value: 1 },
     uShell: { value: 1 }, uBar: { value: 1 }, uM43: { value: 1 }, uCav: { value: 1 }, uDust: { value: 1 }, uMol: { value: 1 },
   } });
@@ -203,7 +205,7 @@ export function create(ctx) {
   const to = (k, f = (v) => v) => (v) => { u[k].value = f(v); vol.invalidate(); };
   const fine = ctx.detail > 0.9;
   registerLayers('orion', [
-    { id: 'gain', type: 'range', group: 'Licht des Gases', label: 'Helligkeit', min: 0.25, max: 6, step: 0.25, value: 1, fmt: times, set: to('uGain', (v) => 0.4 * v) },
+    { id: 'gain', type: 'range', group: 'Licht des Gases', label: 'Helligkeit', min: 0.25, max: 6, step: 0.25, value: 1, fmt: times, set: to('uGain', (v) => 0.46 * v) },
     { id: 'uv', type: 'range', label: 'UV-Licht des Trapezes', min: 0.25, max: 6, step: 0.25, value: 1, fmt: times,
       set: (v) => { u.uUV.value = v; u.uReach.value = Math.cbrt(v); vol.invalidate(); },
       hint: 'θ¹ Ori C liefert fast das ganze UV-Licht des Nebels. Mehr UV: Leuchten und grünliche Mitte reichen weiter nach außen (Modell).' },

@@ -153,7 +153,8 @@ export function create(ctx) {
     const fade = Math.min(1, Math.max(0, (R - p.length()) / (R * 0.3)));
     if (fade <= 0) return;
     pos.push(p.x, p.y, p.z);
-    col.push(...blackbody(T).map((v) => v * k * fade));
+    const c = blackbody(T), l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];   // Farbe 1,8-fach gesättigt: Planck-Farben liegen nach der Normierung fast auf Weiß
+    col.push(...c.map((v) => Math.max(0, l + (v - l) * 1.8) * k * fade));
     size.push(s);
   };
   const n = Math.round(170000 * ctx.detail);
@@ -171,11 +172,13 @@ export function create(ctx) {
     }
     const sc = [6, 1.1, 0.9, 0.9][kind];
     p.add(new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(sc * (kind === 3 ? Math.abs(gauss(rand)) : 1)));
-    const T = kind === 3 ? 4300 + rand() * 900 : 5200 + rand() * 2600;
-    push(p, T, [0.14, 0.9, 2.6, 4.2][kind] * (0.4 + rand() * 1.2), 0.22);
+    // Farbe und Größe nach Umgebung (Morphologie-Dichte-Beziehung): Knoten = alte, rötlich-goldene Galaxien, Fäden gemischt,
+    // Wände und Leerräume = junge, bläuliche Scheiben; dünne Umgebung kleiner → Tiefe statt gleichförmiger weißer Punkte
+    const T = [8200 + rand() * 3200, 7000 + rand() * 3000, 5200 + rand() * 2600, 3900 + rand() * 800][kind];
+    push(p, T, [0.14, 0.9, 2.6, 4.2][kind] * (0.4 + rand() * 1.2), [0.15, 0.17, 0.21, 0.25][kind]);
   }
   // echte Haufen + Lokale Gruppe mit Faden zum Virgo-Haufen, Perseus-Pisces-Kette
-  const cluster = (c, m, s, k) => { for (let i = 0; i < m; i++) push(c.clone().add(new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(s * Math.abs(gauss(rand)))), 4400 + rand() * 900, k * 3 * (0.5 + rand()), 0.22); };
+  const cluster = (c, m, s, k) => { for (let i = 0; i < m; i++) push(c.clone().add(new THREE.Vector3(gauss(rand), gauss(rand), gauss(rand)).multiplyScalar(s * Math.abs(gauss(rand)))), 4000 + rand() * 900, k * 3 * (0.5 + rand()), 0.25); };
   for (const c of CLUSTERS) cluster(c.p, Math.round(c.n * (0.4 + 0.6 * ctx.detail)), c.s, 1.0);
   cluster(new THREE.Vector3(), 60, 0.6, 0.9);
   const virgo = CLUSTERS.find((c) => c.id === 'virgo').p, ga = CLUSTERS.find((c) => c.id === 'ga').p, perseus = CLUSTERS.find((c) => c.id === 'perseus').p;
