@@ -92,7 +92,7 @@ dev_ws/
 │   │   ├── http_monitoring_dashboard_p8083/study.py                       # Usability-Studie: Tests, Aufgaben, Testpersonen, Durchläufe, Fragebögen
 │   │   ├── http_monitoring_dashboard_p8083/vla.py                         # VLA-M: Aufträge an `vla_bridge` (/vla/instruction, /vla/skill, /vla/response) für den Modellvergleich
 │   │   ├── http_monitoring_dashboard_p8083/routines.py                    # Wiederkehrende Klickfolgen aus der Tabelle interactions (nur Auswertung, kein Abspielen)
-│   │   ├── index.html · js/ · css/                                        # Web-UI (Ansichten: Übersicht, System, Prozesse, UIs & Dienste, ROS-Graph, Topics, Robot-Nutzung, Greifen & Ablegen, VLA-M, Nutzer & Sessions, Evaluierung, Event Logs)
+│   │   ├── index.html · js/ · css/                                        # Web-UI (Ansichten: Übersicht, System, Prozesse, UIs & Dienste, ROS-Graph, Topics, Robot-Nutzung, Greifen & Ablegen, VLA-M, Nutzer & Sessions, Evaluierung, Ereignisse)
 │   │   └── launch/monitoring_dashboard.launch.py                               # ros2 launch … port:=8083 open_browser:=true db:=…
 │   ├── http_robot_control_ui_p8081/                                       # 🎮 HTML/JS: Eigenständiges Roboter-Steuerungs- & Jogging-Webpanel
 │   │   ├── index.html                                                     # Roboter-Steuerungsoberfläche (Port 8081)
