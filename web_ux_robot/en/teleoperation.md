@@ -178,7 +178,7 @@ The table below illustrates which project modules can be evaluated in pure softw
 >> | **`/joy`** | `sensor_msgs/Joy` | *Raw gamepad inputs from `joy_node`.* |
 >> | **`/servo_server/status`** | `std_msgs/Int8` | *MoveIt Servo warning codes (approaching/halt collision/singularity).* |
 >> | **`/ui/eef_position`** | `std_msgs/Float32MultiArray` | *Live end-effector pose for real-time Z-height checking.* |
->> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Current velocity scaling factor for accurate lookahead prediction.* |
+>> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Current velocity scaling factor for accurate lookahead prediction; a value outside the speed levels (not finite, below 0.1 or above 1) counts as the highest level (0.7).* |
 >> | **`/ui/moveit_collision_ground_enabled`** | `std_msgs/Bool` (latched) | *Follows the ground collision switch of the UX \| Control Interface: when it is OFF, downward motion is no longer blocked. Without a message (node not running) the block stays active.* |
 >> | **`/ui/ground_collision_level`** | `std_msgs/Float64` (latched) | *Z Collision Level in mm (TCP height) from `moveit_floor_collision`, set in the ground collision popup of the UX \| Control Interface → `Z_LIMIT`, caution zone starts 19 mm above. Clamped to 0–200 mm. Until the first message a strict fallback of 91 mm applies (without that node MoveIt Servo has no floor box either).* |
 >> | **`/ui/emergency_stop_active`** | `std_msgs/Bool` (latched) | *E-STOP latched → gamepad blocked; after the reset `/joy` passes only after 0.3 s in neutral (`NEUTRAL_HOLD`).* |

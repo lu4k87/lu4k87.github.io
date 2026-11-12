@@ -179,7 +179,7 @@ Die folgende Übersicht zeigt auf einen Blick, welche Projektmodule in reiner So
 >> | **`/joy`** | `sensor_msgs/Joy` | *Roher Gamepad-Input von `joy_node`.* |
 >> | **`/servo_server/status`** | `std_msgs/Int8` | *Überwacht Status-Codes des Servo-Servers.* |
 >> | **`/ui/eef_position`** | `std_msgs/Float32MultiArray` | *Bezieht die aktuelle Z-Höhe für den prädiktiven Kollisions-Check.* |
->> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Liest den aktuellen Geschwindigkeitsfaktor zur dynamischen Dämpfungsberechnung.* |
+>> | **`/ui/robot_control/current_speed`** | `std_msgs/Float32` | *Liest den aktuellen Geschwindigkeitsfaktor zur dynamischen Dämpfungsberechnung; ein Wert außerhalb der Tempostufen (nicht endlich, unter 0,1 oder über 1) zählt als höchste Stufe (0,7).* |
 >> | **`/ui/moveit_collision_ground_enabled`** | `std_msgs/Bool` (latched) | *Folgt dem Boden-Kollisionsschalter der UX \| Control Interface: Ist er AUS, wird die Abwärtsbewegung nicht mehr gesperrt. Ohne Nachricht (Node läuft nicht) bleibt die Sperre aktiv.* |
 >> | **`/ui/ground_collision_level`** | `std_msgs/Float64` (latched) | *Z Collision Level in mm (TCP-Höhe) von `moveit_floor_collision`, eingestellt im Boden-Kollisions-Popup der UX \| Control Interface → `Z_LIMIT`, Vorsichtszone beginnt 19 mm darüber. Auf 0–200 mm geklemmt. Bis zur ersten Nachricht gilt streng 91 mm (ohne diesen Node fehlt auch die Bodenbox in MoveIt Servo).* |
 >> | **`/ui/emergency_stop_active`** | `std_msgs/Bool` (latched) | *E-STOP verriegelt → Gamepad gesperrt; nach dem Quittieren geht `/joy` erst nach 0,3 s Ruhelage durch (`NEUTRAL_HOLD`).* |

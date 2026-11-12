@@ -236,7 +236,7 @@
 
 **Zweck & Aufgabe:** Ermöglicht "telepathische", freihändige Objektauswahl und Greifvorgänge via Tobii Glasses 3.
 
-**Absicherung:** ein Blickpunkt zählt nur, solange Videobild und Blickwert jünger als 0,3 s sind (`GAZE_TIMEOUT_S`) – ein eingefrorener RTSP-Stream setzt den Dwell zurück und zeigt *TOBII STREAM FROZEN - no gaze*, statt die Sequenz zu starten. Jede Teilfahrt wartet höchstens `move_timeout` (Parameter, Standard 60 s) auf die Antwort von `/ui/execute_move_to_pose`; danach bricht die Sequenz ab, eine verspätete Antwort wird verworfen.
+**Absicherung:** ein Blickpunkt zählt nur, solange Videobild und Blickwert jünger als 0,3 s sind (`GAZE_TIMEOUT_S`) – ein eingefrorener RTSP-Stream setzt den Dwell zurück und zeigt *TOBII STREAM FROZEN - no gaze*, statt die Sequenz zu starten. Jede Teilfahrt wird in zwei Schritten überwacht (`/ui/execute_move_to_pose` antwortet beim Start der Fahrt, nicht bei der Ankunft): innerhalb von `move_start_timeout` (Parameter, Standard 10 s) muss der Motion Handler antworten oder auf `/ui/motion_busy` „belegt“ melden; meldet er „belegt“, darf die Antwort insgesamt höchstens `move_timeout` (Standard 60 s) ausbleiben. Danach bricht die Sequenz ab, eine verspätete Antwort setzt sie nicht fort. Weil der Auftrag noch verspätet starten kann, bleibt die Blickauswahl gesperrt (*NO ANSWER FROM MOTION HANDLER*), bis feststeht, dass er nicht mehr fährt: die verspätete Antwort lehnt ihn ab (z. B. nach E-STOP), die Fahrt ist doch gelaufen (erst „belegt“, dann „frei“) oder der Motion Handler wurde neu gestartet.
 
 <details>
 <summary><b>🔽 Details anzeigen</b> · Run Command · Subscribes · Publishes · Services · Parameters</summary>
@@ -271,6 +271,7 @@
 >> | Topic / Interface | Msg Type | Beschreibung |
 >> |---|---|---|
 >> | **`/ui/sound_enabled`** | `std_msgs/Bool` | *Schaltet die akustische Rückmeldung gemeinsam mit dem Sound-Toggle der Web-UI stumm.* |
+>> | **`/ui/motion_busy`** | `std_msgs/Bool` (latched) | *Motion Handler belegt/frei: verlängert das Warten auf eine laufende Teilfahrt und hebt die Sperre nach einer ausgebliebenen Antwort auf.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control-Lock des Watchdogs (wer die Steuerung hat).* |
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -292,7 +293,8 @@
 >> |---|---|---|
 >> | `tobii_ip` | `net_get('tobii.ip')` | *IP der Tobii Glasses 3 aus `config/network.yaml` (`tobii.connection: auto`): `192.168.100.xxx` per Ethernet (LAN), `192.168.75.xxx` per WLAN; Rückfall `192.168.100.xxx`.* |
 >> | `dwell_threshold` | `2.0` | *Fixationsdauer [s] auf einem Objekt bis zur Auswahl.* |
->> | `move_timeout` | `60.0` | *Max. Wartezeit [s] auf die Antwort von `/ui/execute_move_to_pose` je Teilfahrt; danach bricht die Sequenz ab.* |
+>> | `move_start_timeout` | `10.0` | *Max. Wartezeit [s], bis der Motion Handler antwortet oder „belegt“ meldet (`/ui/motion_busy`); danach bricht die Sequenz ab und bleibt gesperrt, bis der alte Auftrag sicher nicht mehr fährt.* |
+>> | `move_timeout` | `60.0` | *Max. Wartezeit [s] auf die Antwort von `/ui/execute_move_to_pose`, solange der Motion Handler „belegt“ meldet; danach bricht die Sequenz ab und bleibt gesperrt.* |
 >
 > *Die Blickpunktdaten kommen nicht über ein ROS-Topic, sondern direkt aus dem RTSP-Stream der Tobii Glasses 3 (`rtsp://<tobii-ip>:8554/live/all`, JSON-Feld `gaze2d`). Die Objekterkennung läuft node-intern über YOLOv8 auf demselben Stream.*
 

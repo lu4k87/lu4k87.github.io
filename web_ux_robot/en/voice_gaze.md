@@ -236,7 +236,7 @@
 
 **Purpose & Task:** Enables "telepathic" hands-free object selection and grasping via Tobii Glasses 3.
 
-**Safeguards:** a gaze point counts only while the video frame and the gaze sample are younger than 0.3 s (`GAZE_TIMEOUT_S`) – a frozen RTSP stream resets the dwell and shows *TOBII STREAM FROZEN - no gaze* instead of starting the sequence. Each partial move waits at most `move_timeout` (parameter, default 60 s) for the answer of `/ui/execute_move_to_pose`; after that the sequence is aborted and a late answer is ignored.
+**Safeguards:** a gaze point counts only while the video frame and the gaze sample are younger than 0.3 s (`GAZE_TIMEOUT_S`) – a frozen RTSP stream resets the dwell and shows *TOBII STREAM FROZEN - no gaze* instead of starting the sequence. Each partial move is watched in two steps (`/ui/execute_move_to_pose` answers when the move starts, not when it arrives): within `move_start_timeout` (parameter, default 10 s) the motion handler has to answer or report busy on `/ui/motion_busy`; while it reports busy, the answer may take at most `move_timeout` (default 60 s) in total. After that the sequence is aborted and a late answer does not continue it. Because the request may still start late, the gaze selection stays blocked (*NO ANSWER FROM MOTION HANDLER*) until it is certain that the request no longer moves the arm: the late answer rejects it (e.g. after an E-STOP), the move ran after all (first busy, then idle), or the motion handler was restarted.
 
 <details>
 <summary><b>🔽 Show details</b> · Run Command · Services · Subscribes · Publishes · Parameters</summary>
@@ -278,6 +278,7 @@
 >> | Topic / Interface | Msg Type | Description |
 >> |---|---|---|
 >> | **`/ui/sound_enabled`** | `std_msgs/Bool` | *Mutes the acoustic feedback together with the Web UI sound toggle.* |
+>> | **`/ui/motion_busy`** | `std_msgs/Bool` (latched) | *Motion handler busy/idle: extends the wait for a running partial move and lifts the block after a missing answer.* |
 >> | **`/remote/control_state`** | `std_msgs/String` (latched) | *Control lock of the watchdog (who has control).* |
 >
 > ![Publishes](https://img.shields.io/badge/Publishes-green?style=flat-square)
@@ -292,7 +293,8 @@
 >> |---|---|---|
 >> | `tobii_ip` | `net_get('tobii.ip')` | *IP of the Tobii Glasses 3 from `config/network.yaml` (`tobii.connection: auto`): `192.168.100.xxx` via Ethernet (LAN), `192.168.75.xxx` via Wi-Fi; fallback `192.168.100.xxx`.* |
 >> | `dwell_threshold` | `2.0` | *Fixation time [s] on an object before it is selected.* |
->> | `move_timeout` | `60.0` | *Max. wait [s] for the answer of `/ui/execute_move_to_pose` per partial move; then the sequence is aborted.* |
+>> | `move_start_timeout` | `10.0` | *Max. wait [s] until the motion handler answers or reports busy (`/ui/motion_busy`); then the sequence is aborted and stays blocked until the old request can no longer move the arm.* |
+>> | `move_timeout` | `60.0` | *Max. wait [s] for the answer of `/ui/execute_move_to_pose` while the motion handler reports busy; then the sequence is aborted and stays blocked.* |
 >
 > *The gaze data does not arrive over a ROS topic — it is read straight from the Tobii Glasses 3 RTSP stream (`rtsp://<tobii-ip>:8554/live/all`, JSON field `gaze2d`). Object detection runs node-internally via YOLOv8 on that same stream.*
 
