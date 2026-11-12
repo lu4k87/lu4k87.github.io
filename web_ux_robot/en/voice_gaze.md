@@ -236,6 +236,8 @@
 
 **Purpose & Task:** Enables "telepathic" hands-free object selection and grasping via Tobii Glasses 3.
 
+**Safeguards:** a gaze point counts only while the video frame and the gaze sample are younger than 0.3 s (`GAZE_TIMEOUT_S`) – a frozen RTSP stream resets the dwell and shows *TOBII STREAM FROZEN - no gaze* instead of starting the sequence. Each partial move waits at most `move_timeout` (parameter, default 60 s) for the answer of `/ui/execute_move_to_pose`; after that the sequence is aborted and a late answer is ignored.
+
 <details>
 <summary><b>🔽 Show details</b> · Run Command · Services · Subscribes · Publishes · Parameters</summary>
 
@@ -290,6 +292,7 @@
 >> |---|---|---|
 >> | `tobii_ip` | `net_get('tobii.ip')` | *IP of the Tobii Glasses 3 from `config/network.yaml` (`tobii.connection: auto`): `192.168.100.xxx` via Ethernet (LAN), `192.168.75.xxx` via Wi-Fi; fallback `192.168.100.xxx`.* |
 >> | `dwell_threshold` | `2.0` | *Fixation time [s] on an object before it is selected.* |
+>> | `move_timeout` | `60.0` | *Max. wait [s] for the answer of `/ui/execute_move_to_pose` per partial move; then the sequence is aborted.* |
 >
 > *The gaze data does not arrive over a ROS topic — it is read straight from the Tobii Glasses 3 RTSP stream (`rtsp://<tobii-ip>:8554/live/all`, JSON field `gaze2d`). Object detection runs node-internally via YOLOv8 on that same stream.*
 
