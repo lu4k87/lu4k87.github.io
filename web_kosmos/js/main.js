@@ -332,12 +332,13 @@ async function warmUp(lv) {
 
 // ---------- Ladebild beim Aufruf: erst der Programmcode aller Stationen (spätere Flüge warten nicht mehr aufs Netz), dann
 // die Startstation samt Nachbarn bauen – genau das, was activate() behält, sonst gibt dropFar es gleich wieder frei.
-// Anteile: Code 15 %, Stationen 85 %; innerhalb einer Station zählen ihre Texturen (DefaultLoadingManager) bis 40 %,
+// Die nächste Station der Route nicht: nach dem Film wäre das die ISS mit 16k-Erdkarten (~3,5 s, 44 MB) – sie lädt
+// activate() nach Film bzw. Kranfahrt im Hintergrund (preload). Anteile: Code 15 %, Stationen 85 %; innerhalb einer Station zählen ihre Texturen (DefaultLoadingManager) bis 40 %,
 // dazwischen kriecht der Anteil langsam gegen 95 % (Shader binden und Hochladen in warmUp melden keinen Anteil), damit
 // die Linie nie steht. Der Text nennt den laufenden Schritt (step). Fehler einzelner Nachbarn halten den Start nicht auf.
 const boot = createBoot();
 async function bootLoad(first) {
-  const ids = (lean() ? [first] : [...new Set([first, ...neighbours(first), nextOnRoute(first)])]).filter((id) => LOADERS[id]);
+  const ids = (lean() ? [first] : [...new Set([first, ...neighbours(first)])]).filter((id) => LOADERS[id]);
   const mods = Object.values(LOADERS);
   let code = 0, built = 0, part = 0;
   const show = (label) => boot.set(0.15 * code / mods.length + 0.85 * (built + part) / ids.length, label);
