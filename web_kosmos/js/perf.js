@@ -2,12 +2,15 @@
 // Auflösung als letzte Stellschraube), Bilder abseits des Haupt-Threads entpacken, Grafikspeicher ungenutzter Texturen
 // freigeben. Kennt keine Stationen – main.js ruft die Bausteine auf.
 import * as THREE from 'three';
+import { guessTier } from './gpu.js';
 
 // Auto-Qualität: first/win = erstes bzw. weiteres Messfenster (s, nur ruhige Bilder), slow = Bildzeit (ms) „zu langsam“,
 // fast = „Luft“ für die Auflösung, hold = Pause nach einer Änderung (s; neue Renderziele kosten selbst Bilder),
 // step/min = Auflösung je Schritt und Untergrenze, patience = Fenster mit Luft, bevor die Auflösung wieder steigt
-export const AUTO = { first: 4, win: 2.5, slow: 40, fast: 20, hold: 4, step: 0.8, min: 0.5, patience: 3 };
-const KEY = 'kosmos.autoq.v1';
+// rise = Bildzeit (ms), unter der Grafik im Prozessor nach der ersten Messung von „Niedrig“ auf „Mittel“ steigt
+export const AUTO = { first: 4, win: 2.5, slow: 40, fast: 20, rise: 12, hold: 4, step: 0.8, min: 0.5, patience: 3 };
+// v2 (13.11.2026): Startstufe nach Art der Grafikkarte (gpu.js) – alte Messungen aus v1 gelten nicht mehr
+const KEY = 'kosmos.autoq.v2';
 
 function gpuName(renderer) {
   try {
@@ -17,19 +20,17 @@ function gpuName(renderer) {
 }
 
 // Startstufe: gemessene Stufe vom letzten Besuch auf derselben Grafikkarte (höchstens `days` alt, danach wird wieder
-// gemessen), sonst Schätzung – Software-Rendering, wenig Speicher oder Kerne, kleine Texturgrenze → „Leicht“
-// (4k-Erdkarten, beim Start nur eine Station), sonst „Mittel“
+// gemessen), sonst Schätzung nach Art der Grafikkarte (gpu.js guessTier): Laptop ohne eigene Grafikkarte oder schwacher
+// Rechner → „Niedrig“ (4k-Erdkarten, beim Start nur eine Station), eigene Grafikkarte → „Hoch“, sonst „Mittel“
 export function startQuality(renderer, days = 7) {
   const gpu = gpuName(renderer);
+  const { cls, q } = guessTier(gpu, { mem: navigator.deviceMemory, cores: navigator.hardwareConcurrency, maxTex: renderer.capabilities.maxTextureSize });
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(KEY)); } catch { /* privates Fenster: nur schätzen */ }
   if (saved && saved.gpu === gpu && [1, 2, 3].includes(saved.q) && Date.now() - saved.at < days * 864e5) {
-    return { gpu, q: saved.q, dyn: Math.min(1, Math.max(AUTO.min, +saved.dyn || 1)), saved: true };
+    return { gpu, cls, q: saved.q, dyn: Math.min(1, Math.max(AUTO.min, +saved.dyn || 1)), saved: true };
   }
-  const soft = /swiftshader|llvmpipe|softpipe|software|basic render/i.test(gpu);
-  const weak = soft || (navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 4
-    || renderer.capabilities.maxTextureSize < 8192;
-  return { gpu, q: weak ? 1 : 2, dyn: soft ? 0.7 : 1, saved: false };
+  return { gpu, cls, q, dyn: cls === 'soft' ? 0.7 : 1, saved: false };
 }
 
 // Auto-Qualität je Bild: step(dt, ruhig, Bildratengrenze). Gemessen werden nur ruhige Bilder (kein Flug, kein Film, kein
@@ -59,7 +60,12 @@ export function createAuto(start, apply) {
     if (a.first) {
       // wie früher: deutlich zu langsam → Leicht, sehr schnell auf feinem Schirm → Fein; von „Leicht“ mit Luft → Mittel
       a.first = false;
-      const q = ms > Math.max(30, cap ? 1150 / cap : 0) ? 1 : ms < 13 && (window.devicePixelRatio || 1) > 1.2 ? 3 : a.q < 2 && ms < fast ? 2 : a.q;
+      // von „Hoch“ (eigene Grafikkarte) bei mäßig zu langsam nur eine Stufe hinab; Grafik im Prozessor steigt nur mit viel Luft
+      // auf „Mittel“ (sonst lädt das Vorladen der Nachbarn wieder alles) und nie selbst auf „Hoch“
+      const lim = Math.max(30, cap ? 1150 / cap : 0), weak = start.cls === 'igpu' || start.cls === 'soft';
+      const q = ms > lim ? (a.q === 3 && ms < 2 * lim ? 2 : 1)
+        : !weak && ms < 13 && (window.devicePixelRatio || 1) > 1.2 ? 3
+          : a.q < 2 && ms < (weak ? AUTO.rise : fast) ? 2 : a.q;
       return set(q, a.dyn);
     }
     a.slow = ms > slow ? a.slow + 1 : 0;
