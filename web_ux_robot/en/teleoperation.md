@@ -312,7 +312,7 @@ Leap Motion 2 ──▶ leap_hand_teleop_node ──▶ /remote/twist ──▶ 
 
 | Step | Action | Result |
 |---|---|---|
-| Switch on | ✋ **Gestures** in the viewport toolbar | With a Leap Motion 2 connected and the node running, Gestures picks the Leap instead of the webcam; the window **LEAP** opens bottom right in the viewport. Robot \| Hardware (also mode unknown): dialog *Switch on Leap hand control for the real robot?* – hold **Hold to switch on** for 1 s |
+| Switch on | ✋ **Gestures** in the viewport toolbar | With a Leap Motion 2 connected and the node running, Gestures switches the Leap hand control on (without Leap data the log names the reason); the window **LEAP** opens bottom right in the viewport. Robot \| Hardware (also mode unknown): dialog *Switch on Leap hand control for the real robot?* – hold **Hold to switch on** for 1 s |
 | Show the hand | One hand about 20 cm above the Leap Motion, open | Chip **Ready**; the ring shows the hand from above, the arc = pinch strength |
 | Couple | Pinch thumb and index finger, other fingers relaxed | Chip **Coupled**; the TCP follows the hand – centre of the ring = TCP, dot = TCP target |
 | Stop | Open the hand | Zero twist, decoupled; to go on: pinch again |
@@ -341,18 +341,17 @@ Robot \| Hardware: switching on asks with the 1 s hold dialog (*Switch on free g
 
 **Calibration per user** (Remote › Gestures › *Free gestures: calibrate for your hand*): 8 short steps with a live top view of the hand (the frame is the 3D view) – far left / right / near / far fingertip, open hand, pinch, both hands together, both hands apart. Every step is taken over when the hand rests for ~1.2 s. The result sets the reach of the pointer, the pinch thresholds and the zoom strength; the pointer in the viewport uses the new values at once. *Save profile* stores it under a name in the browser (up to 12 profiles, **Export / Import** as JSON, built-in values = default), *Click after* sets the hold time (0.8–5 s; in Robot \| Hardware at least 2 s). During the calibration clicks and zoom are paused and the node stays „off“. Needs the restarted node `leap_hand_teleop` (publishes `hands`) – otherwise the LEAP window says so. Test: `python3 tools/test_gesture_free.py`.
 
-**Gesture commands** (window **Remote Teleop** › **Gestures**, source = Leap Motion or webcam): your own poses trigger commands. Pinch (couple) and open hand (release) stay fixed in the Leap node and cannot be assigned.
+**Gesture commands** (window **Remote Teleop** › **Gestures**, source = Leap Motion): your own poses trigger commands. Pinch (couple) and open hand (release) stay fixed in the Leap node and cannot be assigned.
 
 | Step | Action | Result |
 |---|---|---|
-| Calibrate | Select a gesture (Fist, Spread fingers, Point up, Thumbs down), **Record – hold 2 s**, keep the pose still | Template per source (Leap / webcam) saved in the browser; live match in %, finger bars with a tick for your recording. Poses that look too similar, or that the Leap reads as a pinch, are flagged |
+| Calibrate | Select a gesture (Fist, Spread fingers, Point up, Thumbs down), **Record – hold 2 s**, keep the pose still | Template saved in the browser; live match in %, finger bars with a tick for your recording. Poses that look too similar, or that the Leap reads as a pinch, are flagged |
 | Link | Pick a command, a hold time (0.3–5 s, minimum per command) and a match threshold (50–95 %, default 70 %) per gesture; in the Free gestures block also the finger spread that starts rotating (Spread bar shows it live) and the strength for a fast rotation | Close / open gripper (also Robot \| Hardware, hold ≥ 1 s), next hand scale 1:n (Leap only), speed ±1, stop planned motion (always allowed). Defaults: Fist = close gripper, Thumbs up = open gripper, Point up = next hand scale, Thumbs down = stop (0.5 s); a calibrated gesture is armed at once, **No command** disarms it |
 | Run | Gestures switched on, hand not coupled, hold the pose for the hold time | Fires once per show, then a 2 s pause; the command takes the same way as its button (control lock, E-STOP, rosbridge connection; no extra confirmation – the hold time replaces it). Chip **Locked** (e.g. planned motion running) does not block commands – that is what *Stop planned motion* is for. Not calibrated poses and a coupled hand never fire |
 | Backup | **Export** / **Import** | JSON file `rcu_gestures.json` with calibrations and commands (checked on import) |
 
 - **Fist and pinch:** the Leap reads some poses (often the fist) as a pinch (≥ 85 %). The node never couples a fist (middle, ring and little finger curled or Leap grab strength ≥ 50 %), but other poses read as a pinch would couple the TCP to the hand and the command would not fire – such a gesture is shown as *Read as pinch – not armed* and the page warns. Recording with the Leap needs Gestures switched off (the node then cannot couple); while coupled the recording is rejected. Choose another pose.
 - **Open gripper:** in Robot | Hardware (also mode unknown), while the gripper may hold an object (state not open/off), the gesture needs a second show within 5 s – as with voice control.
-- **Webcam in Robot | Hardware:** switching Gestures on asks with the 1 s hold dialog like the Leap; switching between Robot | Digital Twin and Robot | Hardware switches it off.
 
 **Dead man and locks** (every event = zero twist and decoupled; coupling again needs a visibly open hand after the event, then a new pinch started within 2 s of the last open hand (held for 0.15 s) – a pinch held through the event never starts by itself, an open hand shown during a lock does not count; a new hand also opens first. **Fist:** middle, ring and little finger curled or a Leap grab strength ≥ 0.5 (catches the loosely closed fist) never count as a pinch, even if the Leap reports one – while coupled a fist stops like an open hand):
 
