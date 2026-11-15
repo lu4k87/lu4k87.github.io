@@ -243,9 +243,12 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
 }
 </style>
 <link rel="stylesheet" href="css/scroll_flow.css">
-<script type="importmap">{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/" } }</script>
+<script type="application/json" id="three-importmap">{ "imports": {
+  "three": "./vendor/three/build/three.module.js",
+  "three/addons/controls/OrbitControls.js": "./vendor/three/examples/jsm/controls/OrbitControls.js",
+  "three/addons/environments/RoomEnvironment.js": "./vendor/three/examples/jsm/environments/RoomEnvironment.js",
+  "three/addons/utils/BufferGeometryUtils.js": "./vendor/three/examples/jsm/utils/BufferGeometryUtils.js" } }</script>
+<script src="js/three_importmap.js"></script>
 <script src="js/lite6_mesh.js" defer></script>
 <script src="js/lite6_twin.js" defer></script>
 <script src="js/hero3d.js" defer></script>

@@ -889,9 +889,11 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: cent
 @media (max-width: 760px) { .sys-loop { grid-template-columns: minmax(0, 1fr); } .sys-loop li.arr { justify-self: center; transform: rotate(90deg); } .rk-web .chips { margin-left: 0; } .pf-body { grid-template-columns: minmax(0, 1fr); } .pf-layers { grid-template-columns: repeat(3, minmax(0, 1fr)); } .sys-back { display: flex; margin: 8px 0 0; padding: 9px 12px; border-radius: var(--radius); border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--line-strong)); } .sys-back::before, .sys-back::after { content: none; } }
 </style>
 <link rel="stylesheet" href="css/scroll_flow.css">
-<script type="importmap">{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/" } }</script>
+<script type="application/json" id="three-importmap">{ "imports": {
+  "three": "./vendor/three/build/three.module.js",
+  "three/addons/controls/OrbitControls.js": "./vendor/three/examples/jsm/controls/OrbitControls.js",
+  "three/addons/utils/BufferGeometryUtils.js": "./vendor/three/examples/jsm/utils/BufferGeometryUtils.js" } }</script>
+<script src="js/three_importmap.js"></script>
 <script src="js/lite6_mesh.js" defer></script>
 <script src="js/lite6_twin.js" defer></script>
 <link rel="stylesheet" href="css/doc_path.css">
