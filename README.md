@@ -27,3 +27,4 @@
 | **Applied Research** | [`/web_applied_research`](https://lu4k87.github.io/web_applied_research) | KreiswertS – Plattform-Prototyp für den Austausch von Kunststoff-Resten in Kamp-Lintfort: Karte, Matching, drei Szenarien. | privat |
 | **Radial HUD** | [`/web_radial_mouse_hud`](https://lu4k87.github.io/web_radial_mouse_hud) | Rundes Menü am Mauszeiger für Linux – Klick auf die Vor-Seitentaste: Screenshot, neue Datei, Ordner, Apps, Ablage. | privat |
 | **UX Lab Orga** | [`/web_ux_lab_orga`](https://lu4k87.github.io/web_ux_lab_orga) | Organisation des UX Lab – Stundenplan, Team-Arbeitsstand, Geräte-Ausleihe, Projektmappen, Upload, Rechte. | privat |
+| **KreiswertS App** | in Arbeit | KreiswertS als lauffähige App – Next.js, Better Auth, Drizzle und PostgreSQL; Backend + Datenbank des Plattform-Prototyps. | privat |
