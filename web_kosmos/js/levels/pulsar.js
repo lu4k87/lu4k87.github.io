@@ -94,6 +94,7 @@ const NS_FRAG = /* glsl */ `
 ${NOISE}
 ${CAP_GLSL}
 varying vec3 vN, vP, vL;
+uniform float uLum;   // 1 = Station; der Film (tools/film/pulsar_film.js) hebt an: Oberfläche als weißes Eigenlicht
 void main() {
   vec3 N = normalize(vN), V = normalize(cameraPosition - vP);
   float mu = max(dot(N, V), 0.0);
@@ -105,6 +106,9 @@ void main() {
   float limb = 0.85 + 0.55 * pow(1.0 - mu, 2.5);
   vec3 col = vec3(0.6, 0.76, 1.0) * 1.35 * limb * mott + vec3(0.85, 0.94, 1.0) * (cap * 7.0 + warm * 0.7);
   col += vec3(0.55, 0.85, 1.0) * capSwirl(N) * 2.2 * uCapS;
+  float lk = uLum - 1.0;
+  // weißes Eigenlicht, zur Mitte am hellsten, der Rand bleibt bläulich und läuft in den Lichthof aus → Kugel aus Licht, keine weiße Scheibe
+  col = col * mix(1.0, 0.5 + 0.5 * pow(mu, 0.7), min(lk, 1.0)) * (1.0 + 0.3 * lk) + vec3(0.8, 0.9, 1.0) * lk * 0.9 * pow(mu, 1.4);
   gl_FragColor = vec4(col, 1.0);
 }
 `;
@@ -122,11 +126,12 @@ const BILLBOARD_VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = 
 // Lichthof um den Stern (zur Kamera gedreht): weicher Abfall, wird vom Stern selbst verdeckt
 const GLOW_FRAG = /* glsl */ `
 uniform float uRing;   // Einstein-Ring des Himmels hinter dem Stern: Radius √(2 R_s D) in Sternradien (Gravitationslinse an)
+uniform float uGain;   // 1 = Station; der Film hebt den Lichthof an (heller, breiter)
 varying vec2 vUv;
 void main() {
   float r = length(vUv - 0.5) * 2.0 * 8.0;   // in Sternradien (Fläche 16 R breit)
   float x = max(r - 1.0, 0.0);
-  float g = 0.45 * exp(-x / 0.35) + 0.08 / (1.0 + x * x * 0.6);
+  float g = (0.45 * exp(-x / 0.35) + 0.08 / (1.0 + x * x * 0.6)) * uGain + (uGain - 1.0) * (0.5 * exp(-x / 0.1) + 0.28 * exp(-x / 0.9) + 0.09 * exp(-x / 2.8));
   vec3 col = vec3(0.62, 0.78, 1.0) * g;
   if (uRing > 1.15) col += vec3(0.5, 0.62, 0.95) * 0.14 * exp(-pow((r - uRing) / 0.22, 2.0)) * smoothstep(1.1, 1.4, uRing);
   gl_FragColor = vec4(col * smoothstep(8.0, 5.0, r), 1.0);
@@ -328,10 +333,10 @@ export function create(ctx) {
   const m2W = new THREE.Vector3(), f1W = new THREE.Vector3(), f2W = new THREE.Vector3();
   const poles = { uM: { value: mWorld }, uM2: { value: m2W }, uE1: { value: e1W }, uE2: { value: e2W }, uF1: { value: f1W }, uF2: { value: f2W } };
 
-  const nsMat = new THREE.ShaderMaterial({ vertexShader: NS_VERT, fragmentShader: NS_FRAG, uniforms: { ...poles, uT: { value: 0 }, uCapS: { value: 1 } } });
+  const nsMat = new THREE.ShaderMaterial({ vertexShader: NS_VERT, fragmentShader: NS_FRAG, uniforms: { ...poles, uT: { value: 0 }, uCapS: { value: 1 }, uLum: { value: 1 } } });
   spin.add(new THREE.Mesh(new THREE.SphereGeometry(R_NS, 64, 32), nsMat));
   const additive = { blending: THREE.AdditiveBlending, depthWrite: false, transparent: true };
-  const glow = new THREE.Mesh(new THREE.PlaneGeometry(R_NS * 16, R_NS * 16), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_VERT, fragmentShader: GLOW_FRAG, uniforms: { uRing: { value: 0 } }, ...additive }));
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(R_NS * 16, R_NS * 16), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_VERT, fragmentShader: GLOW_FRAG, uniforms: { uRing: { value: 0 }, uGain: { value: 1 } }, ...additive }));
   glow.renderOrder = 2;
   scene.add(glow);
   const glare = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ vertexShader: BILLBOARD_VERT, fragmentShader: GLARE_FRAG, uniforms: { uI: { value: 1 } }, ...additive }));
