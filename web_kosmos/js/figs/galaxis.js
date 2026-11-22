@@ -341,8 +341,8 @@ export default {
   },
   'pulsar.interpulse': {
     k: 'range', min: 0, max: 1, step: 0.25, u: 'Perioden', alt: 'Lage von Hauptpuls und Zwischenpuls innerhalb einer Drehung des Pulsars',
-    marks: [{ v: 0, t: '0', l: 'Hauptpuls' }, { v: 0.4, t: '0,4', l: 'Zwischenpuls' }, { v: 1, t: '1', l: 'nächster Hauptpuls' }],
-    cap: `Pulsphase in Perioden: Der Zwischenpuls folgt 0,4 Perioden (${fmt(0.4 * P * 1e3, 1)} ms, eigene Rechnung) nach dem Hauptpuls – nicht nach einer halben Drehung, die Strahlkegel stehen nicht genau gegenüber.`,
+    marks: [{ v: 0, t: '0', l: 'Hauptpuls' }, { v: 0.5, t: '0,5', l: 'Zwischenpuls' }, { v: 1, t: '1', l: 'nächster Hauptpuls' }],
+    cap: `Pulsphase in Perioden: Der Zwischenpuls folgt 0,5 Perioden (${fmt(0.5 * P * 1e3, 1)} ms, eigene Rechnung) nach dem Hauptpuls, weil die Strahlkegel exakt gegenüber stehen. Der echte Krebs-Pulsar zeigt ihn bei 0,4 Perioden – das Modell weicht hier ab.`,
     s: ['buhler-2014', 'atnf'],
   },
 

@@ -2,9 +2,8 @@
 // (Modellwert, umstritten). Bildaufbau nach drei Vorlagen (Leuchtturm-Strahlen, wirbelnde Feldlinien, Wind-Spirale mit
 // Leuchtring), jedes Element aus der Physik abgeleitet:
 // - Strahlkegel entlang der Magnetachse: heller Kern, hohler Rand wie im Radio; der zweite Kegel gibt den Zwischenpuls.
-//   Er sitzt nicht genau gegenüber, sondern um 0,1 P versetzt (Gegenpol um die Drehachse gedreht, OFF_IP), damit Bild,
-//   Lichtkurve und Ton den Zwischenpuls des Crab bei 0,4 P zeigen; Feldlinien und Polkappe des Gegenpols ziehen mit,
-//   nur die geschlossenen Dipol-Linien bleiben symmetrisch (Schema).
+//   Er liegt exakt gegenüber (Gegenpol = −m, Dipol), der Zwischenpuls kommt darum nach einer halben Drehung (0,5 P).
+//   Schema: der echte Crab zeigt den Zwischenpuls bei 0,4 P; das Modell weicht hier bewusst davon ab.
 // - Geschlossene Feldlinien des Dipols r = L·sin²θ bis an den Lichtzylinder R_LC = c·P/2π (innen Cyan, außen Violett).
 // - Offene Feldlinien verlassen die Polkappen und wickeln sich jenseits von R_LC zur nachlaufenden Spirale auf:
 //   φ wächst um r/R_LC, weil das Feld außen der Drehung nicht nachkommt.
@@ -15,7 +14,7 @@
 //   Blatt), schematisch.
 // - Polstrahlen (Jets) entlang der Drehachse schematisch nah am Stern; im Krebsnebel sieht man sie erst Lichtjahre draußen.
 // Zeitlupe, weil 30 Blitze pro Sekunde ein Anfallsrisiko wären (WCAG 2.3.1); der Ton spielt den echten Takt: Hauptpuls und
-// Zwischenpuls bei 0,4 der Periode. Lichtkurve: Pulsprofil des Crab mit laufender Phasenmarke – die Erde liegt in +z.
+// Zwischenpuls bei 0,5 der Periode (Modell). Lichtkurve: Pulsprofil des Crab mit laufender Phasenmarke – die Erde liegt in +z.
 // Kino-Ebenen (Vorschau 27.10.2026 „Pulsar detailreicher“, Pulsar:A+B+C, alle im Zahnrad schaltbar, Standard an; Bausteine
 // in pulsarfx.js): Gravitationslinse am Himmel + Einstein-Ring, Stromblatt als Glasfläche, Lichtzylinder als Wand, Außenspalt,
 // Teilchen auf den Feldlinien, Streifen-Netz des Winds, Doppler-Boost, Synchrotron-Schleier, Puls-Aufleuchten (≤ 1 Hz), Kino-Look.
@@ -36,7 +35,6 @@ const ALPHA = 45 * Math.PI / 180;
 const R_S = 4.13;   // Schwarzschild-Radius bei 1,4 M☉ (2GM/c², eigene Rechnung) in km
 const TAU = Math.PI * 2;
 // Lage des Stromblatts (Polwinkel θ) in Richtung φ im Abstand r beim Drehwinkel ph – gleiche Formel wie in den Shadern
-const OFF_IP = 0.1 * TAU;   // Versatz des Gegenpols: Zwischenpuls bei 0,4 P statt 0,5 P
 const sheetTheta = (phi, r, ph, rlc) => Math.atan2(1, Math.tan(ALPHA) * Math.cos(phi + ph - r / rlc));
 
 // Volumen: Strahlkegel, Polkappen, Polstrahlen. Jeder Anteil nur dort gerechnet, wo er etwas beiträgt. Das Stromblatt
@@ -299,8 +297,8 @@ function buildWind(n, rlc) {
   return group;
 }
 
-// Pulsprofil (schematisch nach dem optischen Crab-Profil): Hauptpuls scharf, Zwischenpuls bei 0,4 P schwächer und breiter
-const profile = (f) => 0.03 + Math.exp(-(((f - 0.5) / 0.018) ** 2)) + 0.42 * Math.exp(-(((f - 0.9) / 0.03) ** 2)) + 0.06 * Math.exp(-(((f - 0.5) / 0.08) ** 2));
+// Pulsprofil (schematisch nach dem optischen Crab-Profil): Hauptpuls scharf bei 0,5, Zwischenpuls bei 0 (= 1) schwächer und breiter
+const profile = (f) => 0.03 + Math.exp(-(((f - 0.5) / 0.018) ** 2)) + 0.42 * (Math.exp(-((f / 0.03) ** 2)) + Math.exp(-(((f - 1) / 0.03) ** 2))) + 0.06 * Math.exp(-(((f - 0.5) / 0.08) ** 2));
 
 export function create(ctx) {
   const scene = new THREE.Scene();
@@ -326,8 +324,7 @@ export function create(ctx) {
   mag.rotation.z = ALPHA;
   spin.add(mag);
   const mWorld = new THREE.Vector3(), e1W = new THREE.Vector3(1, 0, 0), e2W = new THREE.Vector3(0, 0, 1);
-  // Gegenpol: −m um +0,1 P um die Drehachse gedreht → zeigt bei Phase f = 0,9 (0,4 P nach dem Hauptpuls) zur Erde
-  const qIP = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), OFF_IP);
+  // Gegenpol: exakt −m → zeigt bei Phase f = 0 (0,5 P nach dem Hauptpuls) zur Erde
   const m2W = new THREE.Vector3(), f1W = new THREE.Vector3(), f2W = new THREE.Vector3();
   const poles = { uM: { value: mWorld }, uM2: { value: m2W }, uE1: { value: e1W }, uE2: { value: e2W }, uF1: { value: f1W }, uF2: { value: f2W } };
 
@@ -371,7 +368,7 @@ export function create(ctx) {
   // Offene Feldlinien: vom Polkappenrand dem Dipol folgend bis 0,9 R_LC, dann radial hinaus und um die Drehachse
   // nachlaufend aufgewickelt (φ + Δr/R_LC) – im Rahmen der Drehung, damit die Spirale starr mitdreht wie das Feld
   const open = lineMat(0x9fb4ff, 0xc070ff, 600, 6000);
-  const ca = Math.cos(ALPHA), sa = Math.sin(ALPHA), ci = Math.cos(OFF_IP), si = Math.sin(OFF_IP);
+  const ca = Math.cos(ALPHA), sa = Math.sin(ALPHA);
   for (const pole of [1, -1]) {
     for (let k = 0; k < 12; k++) {
       const phi = (k / 12) * TAU;
@@ -384,7 +381,6 @@ export function create(ctx) {
         const r = L * Math.sin(th) ** 2;
         const x = r * Math.sin(th) * Math.cos(phi), y = pole * r * Math.cos(th), z = r * Math.sin(th) * Math.sin(phi);
         end = [x * ca - y * sa, x * sa + y * ca, z];   // Magnetrahmen → Drehrahmen (Rz(α))
-        if (pole < 0) end = [end[0] * ci + end[2] * si, end[1], end[2] * ci - end[0] * si];   // Gegenpol versetzt (Ry(OFF_IP))
         pts.push(...end);
         al.push(0.4);
       }
@@ -453,7 +449,7 @@ export function create(ctx) {
   scene.add(wind);
   let windT = 0;
 
-  // ---------- Ton: echter Takt (Hauptpuls + Zwischenpuls bei 0,4 P) ----------
+  // ---------- Ton: echter Takt (Hauptpuls + Zwischenpuls bei 0,5 P, Dipol-Schema) ----------
   let audio = null, isActive = false;   // Takt nur an der aktiven Station (onActive aus main.js activate)
   function sound(on) {
     if (audio) { audio.close(); audio = null; }
@@ -470,7 +466,7 @@ export function create(ctx) {
     const d = buf.getChannelData(0);
     const pulse = (t0, amp, w) => { for (let i = 0; i < n; i++) { const t = i / ac.sampleRate - t0; d[i] += amp * Math.exp(-(t * t) / (2 * w * w)) * (Math.random() * 2 - 1); } };
     pulse(0.003, 0.9, 0.0007);
-    pulse(0.003 + 0.4 * P, 0.4, 0.0009);
+    pulse(0.003 + 0.5 * P, 0.4, 0.0009);
     const src = ac.createBufferSource();
     src.buffer = buf;
     src.loop = true;
@@ -504,7 +500,7 @@ export function create(ctx) {
   // zur Erde = +z zeigt)
   const W = 300, H = 64;
   const curve = Array.from({ length: 121 }, (_, i) => { const f = i / 120; return `${(f * W).toFixed(1)},${(H - 6 - profile(f) * (H - 12)).toFixed(1)}`; }).join(' ');
-  const widget = () => `<svg viewBox="0 0 ${W} ${H}" aria-label="Lichtkurve des Krebs-Pulsars"><polyline points="${curve}" fill="none" stroke="#9cc8ff" stroke-width="1.6"/><line id="w-ph" x1="0" x2="0" y1="4" y2="${H - 4}" style="stroke: var(--accent)" stroke-width="1.6"/><circle id="w-dot" cx="0" cy="${H - 6}" r="3" style="fill: var(--accent)"/></svg><div class="w-cap"><span>Lichtkurve · Hauptpuls</span><span>Zwischenpuls bei 0,4 P</span></div>`;
+  const widget = () => `<svg viewBox="0 0 ${W} ${H}" aria-label="Lichtkurve des Krebs-Pulsars"><polyline points="${curve}" fill="none" stroke="#9cc8ff" stroke-width="1.6"/><line id="w-ph" x1="0" x2="0" y1="4" y2="${H - 4}" style="stroke: var(--accent)" stroke-width="1.6"/><circle id="w-dot" cx="0" cy="${H - 6}" r="3" style="fill: var(--accent)"/></svg><div class="w-cap"><span>Lichtkurve · Hauptpuls</span><span>Zwischenpuls bei 0,5 P</span></div>`;
   let lastPh = -1;
   // Ton: Knopf der Kopfzeile (quick.js) und Ebene „Ton“ schalten denselben Wert; Zeitlupe = ▶-Ebene im Block Zeigen
   const SLOWS = [[600, '1 : 600'], [200, '1 : 200'], [60, '1 : 60']];
@@ -581,7 +577,7 @@ export function create(ctx) {
       spin.updateMatrixWorld();
       mWorld.set(0, 1, 0).applyQuaternion(mag.getWorldQuaternion(q));
       e1W.set(0, 1, 0).cross(mWorld).normalize(); e2W.crossVectors(mWorld, e1W);
-      m2W.copy(mWorld).negate().applyQuaternion(qIP); f1W.copy(e1W).applyQuaternion(qIP); f2W.copy(e2W).applyQuaternion(qIP);
+      m2W.copy(mWorld).negate(); f1W.copy(e1W); f2W.copy(e2W);
       // Puls-Aufleuchten: Winkel zwischen der näheren Strahlachse und der Blickrichtung zur Kamera; Hauptpol voll, Gegenpol 0,62
       const cs = mWorld.dot(cam.position) / Math.max(dist, 1), cs2 = m2W.dot(cam.position) / Math.max(dist, 1);
       const ang = Math.acos(Math.min(Math.max(cs, cs2), 1));

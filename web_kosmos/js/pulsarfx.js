@@ -21,7 +21,7 @@ export const WIRBEL_CONE = /* glsl */ `
     e += col * fall * pole * uGain;
 `;
 
-// Zwei Pole: Hauptpol uM, Gegenpol uM2 (nicht genau gegenüber, sondern um 0,1 P versetzt, siehe pulsar.js), je Pol
+// Zwei Pole: Hauptpol uM, Gegenpol uM2 (exakt gegenüber, Gegenpol = −m), je Pol
 // zwei Achsen senkrecht dazu als Bezug für den Drehwinkel. nearPole gibt den Kosinus zum näheren Pol, sg = +1 Haupt-, −1 Gegenpol.
 export const POLES_GLSL = /* glsl */ `
 uniform vec3 uM, uM2, uE1, uE2, uF1, uF2;
