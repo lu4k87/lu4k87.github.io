@@ -499,7 +499,8 @@ export function create(ctx) {
   // Lichtkurve in der Infotafel: Profil als Pfad, Phasenmarke läuft mit der Drehung (Hauptpuls, wenn die Magnetachse
   // zur Erde = +z zeigt)
   const W = 300, H = 64;
-  const curve = Array.from({ length: 121 }, (_, i) => { const f = i / 120; return `${(f * W).toFixed(1)},${(H - 6 - profile(f) * (H - 12)).toFixed(1)}`; }).join(' ');
+  // Anzeige um ein Viertel verschoben: Zwischenpuls (Phase 0) bei x = 0,25, Hauptpuls (0,5) bei 0,75 – beide ganz im Bild
+  const curve = Array.from({ length: 121 }, (_, i) => { const x = i / 120; return `${(x * W).toFixed(1)},${(H - 6 - profile((x + 0.75) % 1) * (H - 12)).toFixed(1)}`; }).join(' ');
   const widget = () => `<svg viewBox="0 0 ${W} ${H}" aria-label="Lichtkurve des Krebs-Pulsars"><polyline points="${curve}" fill="none" stroke="#9cc8ff" stroke-width="1.6"/><line id="w-ph" x1="0" x2="0" y1="4" y2="${H - 4}" style="stroke: var(--accent)" stroke-width="1.6"/><circle id="w-dot" cx="0" cy="${H - 6}" r="3" style="fill: var(--accent)"/></svg><div class="w-cap"><span>Lichtkurve · Hauptpuls</span><span>Zwischenpuls bei 0,5 P</span></div>`;
   let lastPh = -1;
   // Ton: Knopf der Kopfzeile (quick.js) und Ebene „Ton“ schalten denselben Wert; Zeitlupe = ▶-Ebene im Block Zeigen
@@ -624,7 +625,7 @@ export function create(ctx) {
       const f = ((az / TAU) % 1 + 1.5) % 1;
       if (Math.abs(f - lastPh) < 0.002) return;
       lastPh = f;
-      const x = (f * W).toFixed(1), y = (H - 6 - profile(f) * (H - 12)).toFixed(1);
+      const x = (((f + 0.25) % 1) * W).toFixed(1), y = (H - 6 - profile(f) * (H - 12)).toFixed(1);
       const ph = el.querySelector('#w-ph'), dot = el.querySelector('#w-dot');
       if (ph) { ph.setAttribute('x1', x); ph.setAttribute('x2', x); }
       if (dot) { dot.setAttribute('cx', x); dot.setAttribute('cy', y); }
