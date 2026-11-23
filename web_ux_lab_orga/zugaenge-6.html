@@ -4,11 +4,11 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
 <title>Router-Verwaltung · UX Lab Orga</title>
-<link rel="stylesheet" href="static/fonts.css">
-<link rel="stylesheet" href="static/tokens.css">
-<link rel="stylesheet" href="static/css/fa.css">
-<link rel="stylesheet" href="static/app.css">
-<script src="static/app.js" defer></script>
+<link rel="stylesheet" href="static/fonts.css?v=cc828e8f46">
+<link rel="stylesheet" href="static/tokens.css?v=cd6ce6b45f">
+<link rel="stylesheet" href="static/css/fa.css?v=b2cc4a4811">
+<link rel="stylesheet" href="static/app.css?v=b2c3d3429e">
+<script src="static/app.js?v=34875995dc" defer></script>
 <link rel="stylesheet" href="demo.css">
 <script src="demo.js"></script>
 </head>
@@ -21,9 +21,9 @@
   <aside class="side">
     <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
     <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
-      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it on" href="zugaenge.html" aria-current="page"><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" data-demo-area="plan" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="berichte.html" ><i class="fa-solid fa-file-lines " aria-hidden="true"></i>Berichte</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it on" href="zugaenge.html" aria-current="page"><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
     </div><div class="grp"><span>Projektarbeit</span>
-      <a class="it " href="projekte.html" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+      <a class="it " href="projekte.html" data-demo-area="projekte" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" data-demo-area="upload" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
     </div><div class="grp"><span>Verwaltung</span>
       <a class="it " href="nutzer.html" data-demo-area="rechte" ><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it " href="einstellungen.html" ><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
     </div></nav>
@@ -67,8 +67,8 @@
     </div>
 
 
-  <span class="hi-date"><span data-clock="date">Di, 10. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
-  <time class="hi-time" data-clock="time">19:25</time>
+  <span class="hi-date"><span data-clock="date">Mo, 23. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">48</span></span></span>
+  <time class="hi-time" data-clock="time">21:25</time>
   <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
   
 
@@ -87,7 +87,7 @@
     <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
     <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
     <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
-    <dt>Server-Zeit</dt><dd class="mono">10.11.2026 · 19:25:55</dd>
+    <dt>Server-Zeit</dt><dd class="mono">23.11.2026 · 21:25:14</dd>
   </dl>
 </div>
 
@@ -116,7 +116,7 @@
       <dt>Schutz</dt><dd><span class="lvlchip streng"><i class="fa-solid fa-lock " aria-hidden="true"></i>streng</span><small class="sm2">erst eigenes Passwort bestätigen, dann 10 Minuten sichtbar</small></dd>
       
       <dt>Hinweis</dt><dd class="pre">Nur Lab-Leitung</dd>
-      <dt>Geändert</dt><dd>10.11.2026 · Passwort zuletzt 10.11.2026</dd>
+      <dt>Geändert</dt><dd>23.11.2026 · Passwort zuletzt 23.11.2026</dd>
     </dl>
     <div><h2 class="h3">Anleitungen</h2>
       <p class="sm2">Keine Anleitung angehängt.</p>
@@ -128,11 +128,11 @@
       <p>keine Rolle</p>
       <p class="sm2">Immer: wer Zugänge verwaltet</p>
       
-      <a class="btn danger" href="zugaenge-6-loeschen.html"><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Eintrag löschen …</span></a>
+      <a class="btn danger" href="#" data-demo-off><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Eintrag löschen …</span></a>
     
   </aside>
 </div>
-<script src="static/vault.js" defer></script>
+<script src="static/vault.js?v=1ad7300418" defer></script>
 </div>
   </main>
 </div>

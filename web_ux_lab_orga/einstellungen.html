@@ -4,11 +4,11 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
 <title>Einstellungen · UX Lab Orga</title>
-<link rel="stylesheet" href="static/fonts.css">
-<link rel="stylesheet" href="static/tokens.css">
-<link rel="stylesheet" href="static/css/fa.css">
-<link rel="stylesheet" href="static/app.css">
-<script src="static/app.js" defer></script>
+<link rel="stylesheet" href="static/fonts.css?v=cc828e8f46">
+<link rel="stylesheet" href="static/tokens.css?v=cd6ce6b45f">
+<link rel="stylesheet" href="static/css/fa.css?v=b2cc4a4811">
+<link rel="stylesheet" href="static/app.css?v=b2c3d3429e">
+<script src="static/app.js?v=34875995dc" defer></script>
 <link rel="stylesheet" href="demo.css">
 <script src="demo.js"></script>
 </head>
@@ -21,9 +21,9 @@
   <aside class="side">
     <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
     <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
-      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" data-demo-area="plan" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="berichte.html" ><i class="fa-solid fa-file-lines " aria-hidden="true"></i>Berichte</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
     </div><div class="grp"><span>Projektarbeit</span>
-      <a class="it " href="projekte.html" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+      <a class="it " href="projekte.html" data-demo-area="projekte" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" data-demo-area="upload" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
     </div><div class="grp"><span>Verwaltung</span>
       <a class="it " href="nutzer.html" data-demo-area="rechte" ><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it on" href="einstellungen.html" aria-current="page"><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
     </div></nav>
@@ -67,8 +67,8 @@
     </div>
 
 
-  <span class="hi-date"><span data-clock="date">Di, 10. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
-  <time class="hi-time" data-clock="time">19:25</time>
+  <span class="hi-date"><span data-clock="date">Mo, 23. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">48</span></span></span>
+  <time class="hi-time" data-clock="time">21:25</time>
   <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
   
 
@@ -87,7 +87,7 @@
     <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
     <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
     <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
-    <dt>Server-Zeit</dt><dd class="mono">10.11.2026 · 19:25:54</dd>
+    <dt>Server-Zeit</dt><dd class="mono">23.11.2026 · 21:25:13</dd>
   </dl>
 </div>
 
@@ -138,6 +138,23 @@
         </tr></tbody>
     </table></div>
   </section>
+  <section class="card vcard" aria-labelledby="vc-plan"><h2 class="h3" id="vc-plan">Stundenplan</h2>
+    <div class="tblwrap"><table class="tbl vct">
+      <thead><tr><th scope="col">Rolle</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx f"><span class="vy f"><span class="vl w7 a"></span><span class="vc"></span><span class="vc"></span></span><span class="vy f"><span class="vl w7"></span><span class="vc"></span><span class="vc"></span></span><span class="vy f"><span class="vl w7"></span><span class="vc"></span></span></span></span></span>Woche</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx vln"><span class="vq"></span><span class="vl w5"></span><span class="vsp"></span><span class="vk"></span></span><span class="vx vln"><span class="vq"></span><span class="vl w5"></span><span class="vsp"></span><span class="vk"></span></span><span class="vx vln"><span class="vq"></span><span class="vl w5"></span><span class="vsp"></span><span class="vk"></span></span></span></span>Personen<small>Standard</small></th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx"><span class="vl w2"></span><span class="vtr"><span class="vg o1 w4"></span></span></span><span class="vx"><span class="vl w2"></span><span class="vtr"><span class="vg o5 w5"></span></span></span><span class="vx"><span class="vl w2"></span><span class="vtr"><span class="vg o3 w3"></span></span></span><span class="vx"><span class="vl w2"></span><span class="vtr"><span class="vg o1 w5"></span></span></span></span></span>Tag</th></tr></thead>
+      <tbody><tr><th scope="row">Admin</th>
+        <td><label class="vhit"><input type="radio" name="v1_plan" value="A"  aria-label="Stundenplan: Woche – Admin"></label></td><td><label class="vhit"><input type="radio" name="v1_plan" value="" checked aria-label="Stundenplan: Personen – Admin"></label></td><td><label class="vhit"><input type="radio" name="v1_plan" value="C"  aria-label="Stundenplan: Tag – Admin"></label></td>
+        </tr><tr><th scope="row">Lab-Leitung</th>
+        <td><label class="vhit"><input type="radio" name="v2_plan" value="A"  aria-label="Stundenplan: Woche – Lab-Leitung"></label></td><td><label class="vhit"><input type="radio" name="v2_plan" value="" checked aria-label="Stundenplan: Personen – Lab-Leitung"></label></td><td><label class="vhit"><input type="radio" name="v2_plan" value="C"  aria-label="Stundenplan: Tag – Lab-Leitung"></label></td>
+        </tr><tr><th scope="row">Mitarbeiter:in</th>
+        <td><label class="vhit"><input type="radio" name="v3_plan" value="A"  aria-label="Stundenplan: Woche – Mitarbeiter:in"></label></td><td><label class="vhit"><input type="radio" name="v3_plan" value="" checked aria-label="Stundenplan: Personen – Mitarbeiter:in"></label></td><td><label class="vhit"><input type="radio" name="v3_plan" value="C"  aria-label="Stundenplan: Tag – Mitarbeiter:in"></label></td>
+        </tr><tr><th scope="row">Student:in / HiWi</th>
+        <td><label class="vhit"><input type="radio" name="v4_plan" value="A"  aria-label="Stundenplan: Woche – Student:in / HiWi"></label></td><td><label class="vhit"><input type="radio" name="v4_plan" value="" checked aria-label="Stundenplan: Personen – Student:in / HiWi"></label></td><td><label class="vhit"><input type="radio" name="v4_plan" value="C"  aria-label="Stundenplan: Tag – Student:in / HiWi"></label></td>
+        </tr><tr><th scope="row">Praktikant:in</th>
+        <td><label class="vhit"><input type="radio" name="v5_plan" value="A"  aria-label="Stundenplan: Woche – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_plan" value="" checked aria-label="Stundenplan: Personen – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_plan" value="C"  aria-label="Stundenplan: Tag – Praktikant:in"></label></td>
+        </tr><tr><th scope="row">Gast</th>
+        <td class="no" colspan="3">kein Zugriff</td></tr></tbody>
+    </table></div>
+  </section>
   <section class="card vcard" aria-labelledby="vc-team"><h2 class="h3" id="vc-team">Team</h2>
     <div class="tblwrap"><table class="tbl vct">
       <thead><tr><th scope="col">Rolle</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx vln"><span class="vo"></span><span class="vl w5"></span><span class="vsp"></span><span class="vl w2"></span></span><span class="vx vln"><span class="vo"></span><span class="vl w5"></span><span class="vsp"></span><span class="vl w2"></span></span><span class="vx vln"><span class="vo"></span><span class="vl w5"></span><span class="vsp"></span><span class="vl w2"></span></span></span></span>Liste<small>Standard</small></th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vgr"><span class="vc"><span class="vo"></span><span class="vl w9"></span></span><span class="vc"><span class="vo"></span><span class="vl w9"></span></span><span class="vc"><span class="vo"></span><span class="vl w9"></span></span><span class="vc"><span class="vo"></span><span class="vl w9"></span></span><span class="vc"><span class="vo"></span><span class="vl w9"></span></span><span class="vc"><span class="vo"></span><span class="vl w9"></span></span></span></span></span>Karten</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx f"><span class="vy f"><span class="vl w7 a"></span><span class="vc"></span><span class="vc"></span></span><span class="vy f"><span class="vl w7"></span><span class="vc"></span><span class="vc"></span></span><span class="vy f"><span class="vl w7"></span><span class="vc"></span></span></span></span></span>Phasen</th></tr></thead>
@@ -170,6 +187,60 @@
         <td><label class="vhit"><input type="radio" name="v5_geraet" value="" checked aria-label="Geräte: Liste – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_geraet" value="B"  aria-label="Geräte: Kacheln – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_geraet" value="C"  aria-label="Geräte: Belegung – Praktikant:in"></label></td>
         </tr><tr><th scope="row">Gast</th>
         <td class="no" colspan="3">kein Zugriff</td></tr></tbody>
+    </table></div>
+  </section>
+  <section class="card vcard" aria-labelledby="vc-projekte"><h2 class="h3" id="vc-projekte">Projekte</h2>
+    <div class="tblwrap"><table class="tbl vct">
+      <thead><tr><th scope="col">Rolle</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vgr"><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span></span></span></span>Raster<small>Standard</small></th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx"><span class="vl w2"></span><span class="vtr"><span class="vg o1 w4"></span></span></span><span class="vx"><span class="vl w2"></span><span class="vtr"><span class="vg o5 w5"></span></span></span><span class="vx"><span class="vl w2"></span><span class="vtr"><span class="vg o3 w3"></span></span></span><span class="vx"><span class="vl w2"></span><span class="vtr"><span class="vg o1 w5"></span></span></span></span></span>Zeitleiste</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vgr vmx"><span class="vq"></span><span class="vq a"></span><span class="vq a"></span><span class="vq a"></span><span class="vq"></span><span class="vq"></span><span class="vq"></span><span class="vq a"></span><span class="vq a"></span><span class="vq"></span><span class="vq"></span><span class="vq"></span><span class="vq"></span><span class="vq a"></span><span class="vq"></span><span class="vq"></span><span class="vq"></span><span class="vq"></span><span class="vq"></span><span class="vq a"></span><span class="vq a"></span><span class="vq"></span><span class="vq"></span><span class="vq"></span></span></span></span>Vollständigkeit</th></tr></thead>
+      <tbody><tr><th scope="row">Admin</th>
+        <td><label class="vhit"><input type="radio" name="v1_projekte" value="" checked aria-label="Projekte: Raster – Admin"></label></td><td><label class="vhit"><input type="radio" name="v1_projekte" value="B"  aria-label="Projekte: Zeitleiste – Admin"></label></td><td><label class="vhit"><input type="radio" name="v1_projekte" value="C"  aria-label="Projekte: Vollständigkeit – Admin"></label></td>
+        </tr><tr><th scope="row">Lab-Leitung</th>
+        <td><label class="vhit"><input type="radio" name="v2_projekte" value="" checked aria-label="Projekte: Raster – Lab-Leitung"></label></td><td><label class="vhit"><input type="radio" name="v2_projekte" value="B"  aria-label="Projekte: Zeitleiste – Lab-Leitung"></label></td><td><label class="vhit"><input type="radio" name="v2_projekte" value="C"  aria-label="Projekte: Vollständigkeit – Lab-Leitung"></label></td>
+        </tr><tr><th scope="row">Mitarbeiter:in</th>
+        <td><label class="vhit"><input type="radio" name="v3_projekte" value="" checked aria-label="Projekte: Raster – Mitarbeiter:in"></label></td><td><label class="vhit"><input type="radio" name="v3_projekte" value="B"  aria-label="Projekte: Zeitleiste – Mitarbeiter:in"></label></td><td><label class="vhit"><input type="radio" name="v3_projekte" value="C"  aria-label="Projekte: Vollständigkeit – Mitarbeiter:in"></label></td>
+        </tr><tr><th scope="row">Student:in / HiWi</th>
+        <td><label class="vhit"><input type="radio" name="v4_projekte" value="" checked aria-label="Projekte: Raster – Student:in / HiWi"></label></td><td><label class="vhit"><input type="radio" name="v4_projekte" value="B"  aria-label="Projekte: Zeitleiste – Student:in / HiWi"></label></td><td><label class="vhit"><input type="radio" name="v4_projekte" value="C"  aria-label="Projekte: Vollständigkeit – Student:in / HiWi"></label></td>
+        </tr><tr><th scope="row">Praktikant:in</th>
+        <td><label class="vhit"><input type="radio" name="v5_projekte" value="" checked aria-label="Projekte: Raster – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_projekte" value="B"  aria-label="Projekte: Zeitleiste – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_projekte" value="C"  aria-label="Projekte: Vollständigkeit – Praktikant:in"></label></td>
+        </tr><tr><th scope="row">Gast</th>
+        <td><label class="vhit"><input type="radio" name="v6_projekte" value="" checked aria-label="Projekte: Raster – Gast"></label></td><td><label class="vhit"><input type="radio" name="v6_projekte" value="B"  aria-label="Projekte: Zeitleiste – Gast"></label></td><td><label class="vhit"><input type="radio" name="v6_projekte" value="C"  aria-label="Projekte: Vollständigkeit – Gast"></label></td>
+        </tr></tbody>
+    </table></div>
+  </section>
+  <section class="card vcard" aria-labelledby="vc-mappe"><h2 class="h3" id="vc-mappe">Projektmappe</h2>
+    <div class="tblwrap"><table class="tbl vct">
+      <thead><tr><th scope="col">Rolle</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vgr"><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span></span></span></span>Fächer<small>Standard</small></th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx f"><span class="vy f"><span class="vx"><span class="vo"></span><span class="vl w9 a"></span></span><span class="vx"><span class="vo"></span><span class="vl w9"></span></span><span class="vx"><span class="vo"></span><span class="vl w9"></span></span><span class="vx"><span class="vo"></span><span class="vl w9"></span></span></span><span class="vc"><span class="vl w7"></span><span class="vl w5"></span><span class="vl w7"></span><span class="vl w4"></span></span></span></span></span>Reiter</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx vln"><span class="vl w5"></span><span class="vsp"></span><span class="vw"></span></span><span class="vx vln"><span class="vl w5"></span><span class="vsp"></span><span class="vw von"></span></span><span class="vx vln"><span class="vl w5"></span><span class="vsp"></span><span class="vw von"></span></span><span class="vx vln"><span class="vl w5"></span><span class="vsp"></span><span class="vw"></span></span></span></span>Steckbrief</th></tr></thead>
+      <tbody><tr><th scope="row">Admin</th>
+        <td><label class="vhit"><input type="radio" name="v1_mappe" value="" checked aria-label="Projektmappe: Fächer – Admin"></label></td><td><label class="vhit"><input type="radio" name="v1_mappe" value="B"  aria-label="Projektmappe: Reiter – Admin"></label></td><td><label class="vhit"><input type="radio" name="v1_mappe" value="C"  aria-label="Projektmappe: Steckbrief – Admin"></label></td>
+        </tr><tr><th scope="row">Lab-Leitung</th>
+        <td><label class="vhit"><input type="radio" name="v2_mappe" value="" checked aria-label="Projektmappe: Fächer – Lab-Leitung"></label></td><td><label class="vhit"><input type="radio" name="v2_mappe" value="B"  aria-label="Projektmappe: Reiter – Lab-Leitung"></label></td><td><label class="vhit"><input type="radio" name="v2_mappe" value="C"  aria-label="Projektmappe: Steckbrief – Lab-Leitung"></label></td>
+        </tr><tr><th scope="row">Mitarbeiter:in</th>
+        <td><label class="vhit"><input type="radio" name="v3_mappe" value="" checked aria-label="Projektmappe: Fächer – Mitarbeiter:in"></label></td><td><label class="vhit"><input type="radio" name="v3_mappe" value="B"  aria-label="Projektmappe: Reiter – Mitarbeiter:in"></label></td><td><label class="vhit"><input type="radio" name="v3_mappe" value="C"  aria-label="Projektmappe: Steckbrief – Mitarbeiter:in"></label></td>
+        </tr><tr><th scope="row">Student:in / HiWi</th>
+        <td><label class="vhit"><input type="radio" name="v4_mappe" value="" checked aria-label="Projektmappe: Fächer – Student:in / HiWi"></label></td><td><label class="vhit"><input type="radio" name="v4_mappe" value="B"  aria-label="Projektmappe: Reiter – Student:in / HiWi"></label></td><td><label class="vhit"><input type="radio" name="v4_mappe" value="C"  aria-label="Projektmappe: Steckbrief – Student:in / HiWi"></label></td>
+        </tr><tr><th scope="row">Praktikant:in</th>
+        <td><label class="vhit"><input type="radio" name="v5_mappe" value="" checked aria-label="Projektmappe: Fächer – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_mappe" value="B"  aria-label="Projektmappe: Reiter – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_mappe" value="C"  aria-label="Projektmappe: Steckbrief – Praktikant:in"></label></td>
+        </tr><tr><th scope="row">Gast</th>
+        <td><label class="vhit"><input type="radio" name="v6_mappe" value="" checked aria-label="Projektmappe: Fächer – Gast"></label></td><td><label class="vhit"><input type="radio" name="v6_mappe" value="B"  aria-label="Projektmappe: Reiter – Gast"></label></td><td><label class="vhit"><input type="radio" name="v6_mappe" value="C"  aria-label="Projektmappe: Steckbrief – Gast"></label></td>
+        </tr></tbody>
+    </table></div>
+  </section>
+  <section class="card vcard" aria-labelledby="vc-upload"><h2 class="h3" id="vc-upload">Dateien</h2>
+    <div class="tblwrap"><table class="tbl vct">
+      <thead><tr><th scope="col">Rolle</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx vln"><span class="vq"></span><span class="vl w5"></span><span class="vsp"></span><span class="vk"></span></span><span class="vx vln"><span class="vq"></span><span class="vl w5"></span><span class="vsp"></span><span class="vk"></span></span><span class="vx vln"><span class="vq"></span><span class="vl w5"></span><span class="vsp"></span><span class="vk"></span></span></span></span>Hochladen</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vx f"><span class="vy f"><span class="vx"><span class="vo"></span><span class="vl w9 a"></span></span><span class="vx"><span class="vo"></span><span class="vl w9"></span></span><span class="vx"><span class="vo"></span><span class="vl w9"></span></span><span class="vx"><span class="vo"></span><span class="vl w9"></span></span></span><span class="vc"><span class="vl w7"></span><span class="vl w5"></span><span class="vl w7"></span><span class="vl w4"></span></span></span></span></span>In der Mappe</th><th scope="col"><span class="vsch" aria-hidden="true"><span class="vm"><span class="vl w4 vbig"></span><span class="vgr"><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span><span class="vc"><span class="vq"></span><span class="vl w9"></span></span></span></span></span>Bibliothek<small>Standard</small></th></tr></thead>
+      <tbody><tr><th scope="row">Admin</th>
+        <td><label class="vhit"><input type="radio" name="v1_upload" value="A"  aria-label="Dateien: Hochladen – Admin"></label></td><td><label class="vhit"><input type="radio" name="v1_upload" value="B"  aria-label="Dateien: In der Mappe – Admin"></label></td><td><label class="vhit"><input type="radio" name="v1_upload" value="" checked aria-label="Dateien: Bibliothek – Admin"></label></td>
+        </tr><tr><th scope="row">Lab-Leitung</th>
+        <td><label class="vhit"><input type="radio" name="v2_upload" value="A"  aria-label="Dateien: Hochladen – Lab-Leitung"></label></td><td><label class="vhit"><input type="radio" name="v2_upload" value="B"  aria-label="Dateien: In der Mappe – Lab-Leitung"></label></td><td><label class="vhit"><input type="radio" name="v2_upload" value="" checked aria-label="Dateien: Bibliothek – Lab-Leitung"></label></td>
+        </tr><tr><th scope="row">Mitarbeiter:in</th>
+        <td><label class="vhit"><input type="radio" name="v3_upload" value="A"  aria-label="Dateien: Hochladen – Mitarbeiter:in"></label></td><td><label class="vhit"><input type="radio" name="v3_upload" value="B"  aria-label="Dateien: In der Mappe – Mitarbeiter:in"></label></td><td><label class="vhit"><input type="radio" name="v3_upload" value="" checked aria-label="Dateien: Bibliothek – Mitarbeiter:in"></label></td>
+        </tr><tr><th scope="row">Student:in / HiWi</th>
+        <td><label class="vhit"><input type="radio" name="v4_upload" value="A"  aria-label="Dateien: Hochladen – Student:in / HiWi"></label></td><td><label class="vhit"><input type="radio" name="v4_upload" value="B"  aria-label="Dateien: In der Mappe – Student:in / HiWi"></label></td><td><label class="vhit"><input type="radio" name="v4_upload" value="" checked aria-label="Dateien: Bibliothek – Student:in / HiWi"></label></td>
+        </tr><tr><th scope="row">Praktikant:in</th>
+        <td><label class="vhit"><input type="radio" name="v5_upload" value="A"  aria-label="Dateien: Hochladen – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_upload" value="B"  aria-label="Dateien: In der Mappe – Praktikant:in"></label></td><td><label class="vhit"><input type="radio" name="v5_upload" value="" checked aria-label="Dateien: Bibliothek – Praktikant:in"></label></td>
+        </tr><tr><th scope="row">Gast</th>
+        <td><label class="vhit"><input type="radio" name="v6_upload" value="A"  aria-label="Dateien: Hochladen – Gast"></label></td><td><label class="vhit"><input type="radio" name="v6_upload" value="B"  aria-label="Dateien: In der Mappe – Gast"></label></td><td><label class="vhit"><input type="radio" name="v6_upload" value="" checked aria-label="Dateien: Bibliothek – Gast"></label></td>
+        </tr></tbody>
     </table></div>
   </section>
   <section class="card vcard" aria-labelledby="vc-rechte"><h2 class="h3" id="vc-rechte">Nutzer &amp; Rechte</h2>

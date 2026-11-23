@@ -4,11 +4,11 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
 <title>Stundenplan · UX Lab Orga</title>
-<link rel="stylesheet" href="static/fonts.css">
-<link rel="stylesheet" href="static/tokens.css">
-<link rel="stylesheet" href="static/css/fa.css">
-<link rel="stylesheet" href="static/app.css">
-<script src="static/app.js" defer></script>
+<link rel="stylesheet" href="static/fonts.css?v=cc828e8f46">
+<link rel="stylesheet" href="static/tokens.css?v=cd6ce6b45f">
+<link rel="stylesheet" href="static/css/fa.css?v=b2cc4a4811">
+<link rel="stylesheet" href="static/app.css?v=b2c3d3429e">
+<script src="static/app.js?v=34875995dc" defer></script>
 <link rel="stylesheet" href="demo.css">
 <script src="demo.js"></script>
 </head>
@@ -21,9 +21,9 @@
   <aside class="side">
     <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
     <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
-      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it on" href="stundenplan.html" aria-current="page"><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it on" href="stundenplan.html" data-demo-area="plan" aria-current="page"><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="berichte.html" ><i class="fa-solid fa-file-lines " aria-hidden="true"></i>Berichte</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
     </div><div class="grp"><span>Projektarbeit</span>
-      <a class="it " href="projekte.html" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+      <a class="it " href="projekte.html" data-demo-area="projekte" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" data-demo-area="upload" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
     </div><div class="grp"><span>Verwaltung</span>
       <a class="it " href="nutzer.html" data-demo-area="rechte" ><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it " href="einstellungen.html" ><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
     </div></nav>
@@ -67,8 +67,8 @@
     </div>
 
 
-  <span class="hi-date"><span data-clock="date">Di, 10. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">46</span></span></span>
-  <time class="hi-time" data-clock="time">19:25</time>
+  <span class="hi-date"><span data-clock="date">Mo, 23. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">48</span></span></span>
+  <time class="hi-time" data-clock="time">21:25</time>
   <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
   
 
@@ -87,7 +87,7 @@
     <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
     <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
     <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
-    <dt>Server-Zeit</dt><dd class="mono">10.11.2026 · 19:25:54</dd>
+    <dt>Server-Zeit</dt><dd class="mono">23.11.2026 · 21:25:13</dd>
   </dl>
 </div>
 
@@ -98,8 +98,69 @@
     </div>
   
     <div class="page">
-<div class="ph"><div><h1>Stundenplan</h1><p class="sub">Wer wann im Lab arbeitet – Woche, Personen, Tag.</p></div></div>
-<div class="empty"><i class="fa-solid fa-person-digging " aria-hidden="true"></i><b>Dieser Bereich ist in Vorbereitung</b><span>Wer wann im Lab arbeitet – Woche, Personen, Tag.</span></div>
+
+
+
+<div class="ph">
+  <div><h1>Stundenplan</h1>
+    <p class="sub">KW 48 · 23.–27. November 2026 · <span class="nw">Lab geöffnet 9–17 Uhr</span></p></div>
+  <div class="acts">
+<form method="post" action="#" class="seg" aria-label="Ansicht Stundenplan">
+  <input type="hidden" name="area" value="plan"><input type="hidden" name="next" value="/stundenplan">
+  <button name="variant" value="A" class="" aria-pressed="false">Woche</button><button name="variant" value="B" class="on" aria-pressed="true">Personen</button><button name="variant" value="C" class="" aria-pressed="false">Tag</button>
+</form>
+
+    <nav class="row" aria-label="Zeitraum">
+      <a class="btn" href="stundenplan_d-.html" data-demo-area="plan" aria-label="Eine Woche zurück"><i class="fa-solid fa-chevron-left " aria-hidden="true"></i></a>
+      <a class="btn" href="stundenplan.html" data-demo-area="plan">Heute</a>
+      <a class="btn" href="stundenplan_d-.html" data-demo-area="plan" aria-label="Eine Woche vor"><i class="fa-solid fa-chevron-right " aria-hidden="true"></i></a></nav>
+    <a class="btn" href="stundenplan-einstellungen.html"><i class="fa-solid fa-gear " aria-hidden="true"></i><span>Öffnungszeit &amp; Soll</span></a>
+    <a class="btn pri" href="stundenplan-neu_d-2026-11-23.html"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Schicht</span></a></div>
+</div>
+
+
+<div class="tblwrap"><table class="tbl plan">
+  <thead><tr><th scope="col">Person</th><th scope="col" class="today">Mo 23.11.</th><th scope="col" class="">Di 24.11.</th><th scope="col" class="">Mi 25.11.</th><th scope="col" class="">Do 26.11.</th><th scope="col" class="">Fr 27.11.</th><th scope="col">Stunden Woche</th></tr></thead>
+  <tbody>
+  <tr>
+    <th scope="row"><div class="who"><span class="av " aria-hidden="true">CN</span><div class="break"><b>Clara Neumann</b><small>Doktorandin</small><small class="mh num">9 h</small></div></div></th>
+    <td></td><td><a class="cell-t num" href="stundenplan-5.html" title="Studienplanung">9–15</a></td><td></td><td><a class="cell-t num" href="stundenplan-10.html" title="Studienplanung">9–12</a></td><td></td>
+    <td class="num"><b>9 h</b></td>
+  </tr><tr>
+    <th scope="row"><div class="who"><span class="av " aria-hidden="true">AB</span><div class="break"><b>Dr. Anna Berger</b><small>Lab-Leitung</small><small class="mh num">2 h</small></div></div></th>
+    <td><a class="cell-t num" href="stundenplan-3.html" title="Sprechstunde">10–12</a></td><td></td><td></td><td></td><td></td>
+    <td class="num"><b>2 h</b></td>
+  </tr><tr>
+    <th scope="row"><div class="who"><span class="av " aria-hidden="true">JW</span><div class="break"><b>Jonas Weber</b><small>Wiss. Mitarbeiter</small><small class="mh num">20 h</small></div></div></th>
+    <td><a class="cell-t num" href="stundenplan-2.html" title="Eye-Tracking">9–17</a></td><td></td><td><a class="cell-t num" href="stundenplan-9.html" title="Eye-Tracking">9–13</a></td><td></td><td><a class="cell-t num" href="stundenplan-15.html" title="Eye-Tracking">9–17</a></td>
+    <td class="num"><b>20 h</b></td>
+  </tr><tr>
+    <th scope="row"><div class="who"><span class="av " aria-hidden="true">LH</span><div class="break"><b>Lena Hoffmann</b><small>Studentin · Masterarbeit</small><small class="mh num">8 h</small></div></div></th>
+    <td></td><td><a class="cell-t num" href="stundenplan-7.html" title="Schreiben">14–18</a></td><td></td><td></td><td><a class="cell-t num" href="stundenplan-16.html" title="Schreiben">10–14</a></td>
+    <td class="num"><b>8 h</b></td>
+  </tr><tr>
+    <th scope="row"><div class="who"><span class="av " aria-hidden="true">MY</span><div class="break"><b>Mehmet Yilmaz</b><small>HiWi · Lab-Betreuung</small><small class="mh num">12 h / 12</small></div></div></th>
+    <td><a class="cell-t num" href="stundenplan-1.html" title="Lab-Dienst">8–12</a></td><td></td><td><a class="cell-t num" href="stundenplan-8.html" title="Lab-Dienst">8–12</a></td><td></td><td><a class="cell-t num" href="stundenplan-14.html" title="Lab-Dienst">8–12</a></td>
+    <td class="num"><b>12 / 12 h</b><small class="sm2">Soll erfüllt</small></td>
+  </tr><tr>
+    <th scope="row"><div class="who"><span class="av " aria-hidden="true">PR</span><div class="break"><b>Paul Richter</b><small>Student · Projektarbeit</small><small class="mh num">4 h</small></div></div></th>
+    <td></td><td></td><td></td><td><a class="cell-t num" href="stundenplan-13.html" title="Kiosk-UI">14–18</a></td><td></td>
+    <td class="num"><b>4 h</b></td>
+  </tr><tr>
+    <th scope="row"><div class="who"><span class="av " aria-hidden="true">SK</span><div class="break"><b>Sophie Klein</b><small>Studentin · Bachelorarbeit</small><small class="mh num">8 h</small></div></div></th>
+    <td><a class="cell-t num" href="stundenplan-4.html" title="VR-Prototyp">13–17</a></td><td></td><td></td><td><a class="cell-t num" href="stundenplan-11.html" title="VR-Prototyp">9–13</a></td><td></td>
+    <td class="num"><b>8 h</b></td>
+  </tr><tr>
+    <th scope="row"><div class="who"><span class="av " aria-hidden="true">TS</span><div class="break"><b>Tim Schröder</b><small>HiWi · Usability-Tests</small><small class="mh num">8 h / 10</small></div></div></th>
+    <td></td><td><a class="cell-t num" href="stundenplan-6.html" title="Usability-Tests">10–14</a></td><td></td><td><a class="cell-t num" href="stundenplan-12.html" title="Usability-Tests">12–16</a></td><td></td>
+    <td class="num"><b class="t-warn">8 / 10 h</b><small class="sm2 t-warn">2 h offen</small></td>
+  </tr>
+  <tr class="cover"><th scope="row"><b>Lab besetzt?</b><small class="sm2">9–17 Uhr</small></th>
+    <td><span class="row"><i class="fa-solid fa-check t-acc" aria-hidden="true"></i>ganztags</span></td><td><span class="row"><i class="fa-solid fa-check t-acc" aria-hidden="true"></i>ganztags</span></td><td><span class="row wrap"><span class="chip warn">Lücke 13–17</span></span></td><td><span class="row"><i class="fa-solid fa-check t-acc" aria-hidden="true"></i>ganztags</span></td><td><span class="row"><i class="fa-solid fa-check t-acc" aria-hidden="true"></i>ganztags</span></td><td></td></tr>
+  </tbody>
+</table></div>
+
+
 </div>
   </main>
 </div>

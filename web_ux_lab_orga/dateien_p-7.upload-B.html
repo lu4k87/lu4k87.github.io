@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Dateien in der Mappe · UX Lab Orga</title>
+<link rel="stylesheet" href="static/fonts.css?v=cc828e8f46">
+<link rel="stylesheet" href="static/tokens.css?v=cd6ce6b45f">
+<link rel="stylesheet" href="static/css/fa.css?v=b2cc4a4811">
+<link rel="stylesheet" href="static/app.css?v=b2c3d3429e">
+<script src="static/app.js?v=34875995dc" defer></script>
+<link rel="stylesheet" href="demo.css">
+<script src="demo.js"></script>
+</head>
+<body>
+
+
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="app navA">
+
+  <aside class="side">
+    <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
+    <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it " href="stundenplan.html" data-demo-area="plan" ><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="berichte.html" ><i class="fa-solid fa-file-lines " aria-hidden="true"></i>Berichte</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+    </div><div class="grp"><span>Projektarbeit</span>
+      <a class="it " href="projekte.html" data-demo-area="projekte" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it on" href="dateien.html" data-demo-area="upload" aria-current="page"><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+    </div><div class="grp"><span>Verwaltung</span>
+      <a class="it " href="nutzer.html" data-demo-area="rechte" ><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it " href="einstellungen.html" ><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
+    </div></nav>
+    <div class="me">
+      <a href="profil.html" title="Demo-Admin" ><span class="av " aria-hidden="true">D</span><span class="break"><b>Demo-Admin</b><small class="sm2">Admin</small></span></a>
+      <form method="post" action="#"><button class="btn ghost sm" aria-label="Abmelden" title="Abmelden"><i class="fa-solid fa-arrow-right-from-bracket " aria-hidden="true"></i></button></form>
+    </div>
+  </aside>
+
+  <main id="main" class="" tabindex="-1"><div class="demo-bar" role="note"><b>Demo</b><span>Alle Personen, Geräte und Daten sind erfunden · Speichern, Hochladen und Anmelden sind abgeschaltet</span><span class="demo-msg" role="status" aria-live="polite"></span></div>
+  
+    <div class="topbar">
+      <form class="search" role="search" action="#"><i class="fa-solid fa-magnifying-glass " aria-hidden="true"></i><label class="vh" for="q">Suchen</label><input id="q" name="q" type="search" placeholder="Person oder Gerät …" autocomplete="off"></form>
+      <span class="sp"></span>
+      
+
+
+
+
+
+
+
+
+
+
+<div class="hi">
+  
+
+  <button type="button" class="hi-team" popovertarget="hi-onpop">
+    <span class="hi-avs" aria-hidden="true"><span class="av " aria-hidden="true">D</span></span>
+    <span class="hi-on-t">1 online</span><span class="vh"> – wer gerade online ist</span></button>
+  <div class="hi-pop" id="hi-onpop" popover role="dialog" aria-labelledby="hi-onpop-h"><div class="hi-pop-h" id="hi-onpop-h">Gerade online</div>
+    <ul class="hi-list"><li><span class="av " aria-hidden="true">D</span><span>Demo-Admin (du)<small>Admin</small></span></li></ul>
+    <p class="hi-note">aktiv in den letzten 5 Minuten</p></div>
+  
+
+
+  <button type="button" class="hi-bell" popovertarget="hi-bellpop" aria-label="2 fällig"><i class="fa-solid fa-bell " aria-hidden="true"></i><span class="hi-badge" aria-hidden="true">2</span></button>
+  <div class="hi-pop" id="hi-bellpop" popover role="dialog" aria-labelledby="hi-bellpop-h"><div class="hi-pop-h" id="hi-bellpop-h">Fällig</div>
+    <ul class="hi-list"><li><a href="geraete-4.html"><i class="fa-solid fa-box hi-w" aria-hidden="true"></i><span>Rückgabe überfällig<small>Tobii Pro Glasses 3 · Paul Richter</small></span></a></li><li><a href="geraete-6.html"><i class="fa-solid fa-hand-holding " aria-hidden="true"></i><span>Reserviert – heute abholen<small>Sony Alpha 7 IV · Clara Neumann</small></span></a></li></ul>
+    </div>
+
+
+  <span class="hi-date"><span data-clock="date">Mo, 23. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">48</span></span></span>
+  <time class="hi-time" data-clock="time">21:25</time>
+  <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+
+<form method="post" action="#" class="hi-theme"><input type="hidden" name="area" value="theme"><input type="hidden" name="next" value="/dateien?p=7">
+  <button name="variant" value="dark" class="to-dark" aria-label="Dunkles Farbschema" title="Dunkles Farbschema"><i class="fa-solid fa-moon " aria-hidden="true"></i></button>
+  <button name="variant" value="light" class="to-light" aria-label="Helles Farbschema" title="Helles Farbschema"><i class="fa-solid fa-sun " aria-hidden="true"></i></button>
+</form>
+
+<form method="post" action="#" class="hi-lang" role="group" aria-label="Sprache"><input type="hidden" name="area" value="lang"><input type="hidden" name="next" value="/dateien?p=7"><button name="variant" value="de" lang="de" aria-pressed="true" title="Deutsch"><span aria-hidden="true">DE</span><span class="vh">Deutsch</span></button><button name="variant" value="en" lang="en" aria-pressed="false" title="English"><span aria-hidden="true">EN</span><span class="vh">English</span></button>
+</form>
+
+  
+<div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
+  <dl class="hi-dl">
+    <dt>Netz</dt><dd><span>UXLab-WLAN</span><span class="hi-k"><i class="fa-solid fa-check " aria-hidden="true"></i> dein Gerät ist im Lab-Netz</span></dd>
+    <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
+    <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
+    <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
+    <dt>Server-Zeit</dt><dd class="mono">23.11.2026 · 21:25:15</dd>
+  </dl>
+</div>
+
+</div>
+
+      
+
+    </div>
+  
+    <div class="page">
+
+<div class="ph"><div><h1>Dateien · In der Mappe</h1><p class="sub">Jedes Fach der Projektmappe nimmt Dateien direkt an</p></div>
+  <div class="acts">
+<form method="post" action="#" class="seg" aria-label="Ansicht Dateien">
+  <input type="hidden" name="area" value="upload"><input type="hidden" name="next" value="/dateien?p=7">
+  <button name="variant" value="A" class="" aria-pressed="false">Hochladen</button><button name="variant" value="B" class="on" aria-pressed="true">In der Mappe</button><button name="variant" value="C" class="" aria-pressed="false">Bibliothek</button>
+</form>
+</div></div>
+<form class="row wrap" method="get" action="#"><label class="lbl" for="pp">Projekt</label><select id="pp" name="p"><option value="3" >Sprachassistent für die Pflege</option><option value="1" >VR-Montagetraining</option><option value="2" >Eye-Tracking im Cockpit-HMI</option><option value="4" >UX Robot – assistiver Roboterarm</option><option value="5" >Barrierefreie Kiosk-UI</option><option value="7" selected>Gestensteuerung mit Leap Motion</option><option value="6" >Smart-Home-Dashboard für Senioren</option></select><button class="btn"><i class="fa-solid fa-folder-open " aria-hidden="true"></i><span>Mappe zeigen</span></button>
+  <span class="sp"></span><a class="btn ghost" href="projekte-7.html" data-demo-area="mappe"><i class="fa-solid fa-up-right-from-square " aria-hidden="true"></i><span>Projektmappe öffnen</span></a></form>
+<div class="g4 mgrid">
+  <section class="card slot"><div class="sh"><span class="ic-box"><i class="fa-solid fa-file-lines " aria-hidden="true"></i></span><h2 class="h3">Dokumentation</h2><i class="fa-solid fa-circle-check ok" aria-hidden="true"></i><span class="vh">vorhanden</span></div>
+    
+<div class="item">
+  <b class="it-t">Dokumentation</b>
+  <div class="file"><i class="fa-solid fa-file-pdf " aria-hidden="true"></i><a class="break" href="#" data-demo-off>Projektbericht.pdf</a>
+<span class="sp"></span><small class="sm2 nw">1 KB</small></div>
+  <p class="sm2 meta"> Jonas Weber · 23.11.</p>
+  
+  <a class="del" href="#" data-demo-off><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Aktuelle Version löschen</span></a>
+</div>
+
+    
+    
+<form method="post" action="#" enctype="multipart/form-data" class="form upf">
+  <input type="hidden" name="project_id" value="7"><input type="hidden" name="part" value="doku"><input type="hidden" name="next" value="/dateien?p=7">
+  <label class="dz"><input type="file" name="file" multiple required><span><i class="fa-solid fa-cloud-arrow-up " aria-hidden="true"></i><b>Datei wählen oder hierher ziehen</b><small class="sm2">PDF · DOCX · XLSX · TXT · MD · bis 200 MB</small></span></label>
+  <button class="btn sm pri"><i class="fa-solid fa-upload " aria-hidden="true"></i><span>Hochladen</span></button>
+</form>
+</section>
+  <section class="card slot"><div class="sh"><span class="ic-box"><i class="fa-solid fa-image " aria-hidden="true"></i></span><h2 class="h3">Poster</h2><i class="fa-solid fa-circle-check ok" aria-hidden="true"></i><span class="vh">vorhanden</span></div>
+    
+<div class="item">
+  <b class="it-t">Poster</b>
+  <div class="file"><i class="fa-solid fa-file-pdf " aria-hidden="true"></i><a class="break" href="#" data-demo-off>Poster.pdf</a>
+<span class="sp"></span><small class="sm2 nw">1 KB</small></div>
+  <p class="sm2 meta"> Jonas Weber · 23.11.</p>
+  
+  <a class="del" href="#" data-demo-off><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Aktuelle Version löschen</span></a>
+</div>
+
+    
+    
+<form method="post" action="#" enctype="multipart/form-data" class="form upf">
+  <input type="hidden" name="project_id" value="7"><input type="hidden" name="part" value="poster"><input type="hidden" name="next" value="/dateien?p=7">
+  <label class="dz"><input type="file" name="file" multiple required><span><i class="fa-solid fa-cloud-arrow-up " aria-hidden="true"></i><b>Datei wählen oder hierher ziehen</b><small class="sm2">PDF · PNG · JPG · bis 200 MB</small></span></label>
+  <button class="btn sm pri"><i class="fa-solid fa-upload " aria-hidden="true"></i><span>Hochladen</span></button>
+</form>
+</section>
+  <section class="card slot"><div class="sh"><span class="ic-box"><i class="fa-solid fa-globe " aria-hidden="true"></i></span><h2 class="h3">Webseite</h2><i class="fa-solid fa-circle-check ok" aria-hidden="true"></i><span class="vh">vorhanden</span></div>
+    
+<div class="item">
+  <b class="it-t">Webseite</b>
+  <div class="file"><i class="fa-solid fa-link " aria-hidden="true"></i><a class="break" href="https://uxlab.example/2024-05-7" target="_blank" rel="noopener noreferrer nofollow">https://uxlab.example/2024-05-7</a>
+<span class="sp"></span></div>
+  <p class="sm2 meta"> Jonas Weber · 23.11.</p>
+  
+  <a class="del" href="#" data-demo-off><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Aktuelle Version löschen</span></a>
+</div>
+
+    
+    
+<form method="post" action="#" enctype="multipart/form-data" class="form upf">
+  <input type="hidden" name="project_id" value="7"><input type="hidden" name="part" value="web"><input type="hidden" name="next" value="/dateien?p=7">
+  <div class="fld"><label class="lbl" for="u-7-web">Adresse</label><input id="u-7-web" name="url" type="url" maxlength="300" placeholder="https://…" required></div>
+  
+  <button class="btn sm pri"><i class="fa-solid fa-upload " aria-hidden="true"></i><span>Link speichern</span></button>
+</form>
+</section>
+  <section class="card slot"><div class="sh"><span class="ic-box"><i class="fa-solid fa-person-chalkboard " aria-hidden="true"></i></span><h2 class="h3">Präsentation</h2><i class="fa-solid fa-circle-check ok" aria-hidden="true"></i><span class="vh">vorhanden</span></div>
+    
+<div class="item">
+  <b class="it-t">Präsentation</b>
+  <div class="file"><i class="fa-solid fa-file-powerpoint " aria-hidden="true"></i><a class="break" href="#" data-demo-off>Zwischenstand.pptx</a>
+<span class="sp"></span><small class="sm2 nw">1 KB</small></div>
+  <p class="sm2 meta"> Jonas Weber · 23.11.</p>
+  
+  <a class="del" href="#" data-demo-off><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Aktuelle Version löschen</span></a>
+</div>
+
+    
+    
+<form method="post" action="#" enctype="multipart/form-data" class="form upf">
+  <input type="hidden" name="project_id" value="7"><input type="hidden" name="part" value="praesentation"><input type="hidden" name="next" value="/dateien?p=7">
+  <label class="dz"><input type="file" name="file" multiple required><span><i class="fa-solid fa-cloud-arrow-up " aria-hidden="true"></i><b>Datei wählen oder hierher ziehen</b><small class="sm2">PPTX · PDF · bis 200 MB</small></span></label>
+  <button class="btn sm pri"><i class="fa-solid fa-upload " aria-hidden="true"></i><span>Hochladen</span></button>
+</form>
+</section>
+  <section class="card slot"><div class="sh"><span class="ic-box"><i class="fa-solid fa-film " aria-hidden="true"></i></span><h2 class="h3">Video</h2><i class="fa-solid fa-circle-check ok" aria-hidden="true"></i><span class="vh">vorhanden</span></div>
+    
+<div class="item">
+  <b class="it-t">Video</b>
+  <div class="file"><i class="fa-solid fa-film " aria-hidden="true"></i><a class="break" href="#" data-demo-off>Demo.mp4</a>
+<span class="sp"></span><small class="sm2 nw">1 KB</small></div>
+  <p class="sm2 meta"> Jonas Weber · 23.11.</p>
+  
+  <a class="del" href="#" data-demo-off><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Aktuelle Version löschen</span></a>
+</div>
+
+    
+    
+<form method="post" action="#" enctype="multipart/form-data" class="form upf">
+  <input type="hidden" name="project_id" value="7"><input type="hidden" name="part" value="video"><input type="hidden" name="next" value="/dateien?p=7">
+  <label class="dz"><input type="file" name="file" multiple required><span><i class="fa-solid fa-cloud-arrow-up " aria-hidden="true"></i><b>Datei wählen oder hierher ziehen</b><small class="sm2">MP4 · WEBM · bis 200 MB</small></span></label>
+  <button class="btn sm pri"><i class="fa-solid fa-upload " aria-hidden="true"></i><span>Hochladen</span></button>
+</form>
+</section>
+  <section class="card slot"><div class="sh"><span class="ic-box"><i class="fa-solid fa-images " aria-hidden="true"></i></span><h2 class="h3">Bilder</h2><i class="fa-solid fa-circle-check ok" aria-hidden="true"></i><span class="vh">vorhanden</span></div>
+    
+<div class="item">
+  <b class="it-t">Bilder</b>
+  <div class="file"><i class="fa-solid fa-file-image " aria-hidden="true"></i><a class="break" href="#" data-demo-off>Foto.png</a>
+<span class="sp"></span><small class="sm2 nw">1 KB</small></div>
+  <p class="sm2 meta"> Jonas Weber · 23.11.</p>
+  
+  <a class="del" href="#" data-demo-off><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Aktuelle Version löschen</span></a>
+</div>
+
+    
+    
+<form method="post" action="#" enctype="multipart/form-data" class="form upf">
+  <input type="hidden" name="project_id" value="7"><input type="hidden" name="part" value="bilder"><input type="hidden" name="next" value="/dateien?p=7">
+  <label class="dz"><input type="file" name="file" multiple required><span><i class="fa-solid fa-cloud-arrow-up " aria-hidden="true"></i><b>Datei wählen oder hierher ziehen</b><small class="sm2">PNG · JPG · bis 200 MB</small></span></label>
+  <button class="btn sm pri"><i class="fa-solid fa-upload " aria-hidden="true"></i><span>Hochladen</span></button>
+</form>
+</section>
+  <section class="card slot"><div class="sh"><span class="ic-box"><i class="fa-solid fa-database " aria-hidden="true"></i></span><h2 class="h3">Studiendaten</h2><i class="fa-solid fa-circle-check ok" aria-hidden="true"></i><span class="vh">vorhanden</span></div>
+    
+<div class="item">
+  <b class="it-t">Studiendaten</b>
+  <div class="file"><i class="fa-solid fa-file-csv " aria-hidden="true"></i><a class="break" href="#" data-demo-off>Messwerte.csv</a>
+<span class="sp"></span><small class="sm2 nw">1 KB</small></div>
+  <p class="sm2 meta"> Jonas Weber · 23.11.</p>
+  
+  <a class="del" href="#" data-demo-off><i class="fa-solid fa-trash " aria-hidden="true"></i><span>Aktuelle Version löschen</span></a>
+</div>
+
+    
+    
+<form method="post" action="#" enctype="multipart/form-data" class="form upf">
+  <input type="hidden" name="project_id" value="7"><input type="hidden" name="part" value="daten"><input type="hidden" name="next" value="/dateien?p=7">
+  <label class="dz"><input type="file" name="file" multiple required><span><i class="fa-solid fa-cloud-arrow-up " aria-hidden="true"></i><b>Datei wählen oder hierher ziehen</b><small class="sm2">XLSX · CSV · TXT · PDF · bis 200 MB</small></span></label>
+  <button class="btn sm pri"><i class="fa-solid fa-upload " aria-hidden="true"></i><span>Hochladen</span></button>
+</form>
+</section></div>
+</div>
+  </main>
+</div>
+</body>
+</html>

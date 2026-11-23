@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Stundenplan · UX Lab Orga</title>
+<link rel="stylesheet" href="static/fonts.css?v=cc828e8f46">
+<link rel="stylesheet" href="static/tokens.css?v=cd6ce6b45f">
+<link rel="stylesheet" href="static/css/fa.css?v=b2cc4a4811">
+<link rel="stylesheet" href="static/app.css?v=b2c3d3429e">
+<script src="static/app.js?v=34875995dc" defer></script>
+<link rel="stylesheet" href="demo.css">
+<script src="demo.js"></script>
+</head>
+<body>
+
+
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="app navA">
+
+  <aside class="side">
+    <a class="brand" href="index.html"><span class="mark">UX</span><span><b>UX Lab</b> Orga</span></a>
+    <nav aria-label="Hauptnavigation"><div class="grp"><span>Lab</span>
+      <a class="it " href="index.html" ><i class="fa-solid fa-house " aria-hidden="true"></i>Übersicht</a><a class="it on" href="stundenplan.html" data-demo-area="plan" aria-current="page"><i class="fa-solid fa-calendar-week " aria-hidden="true"></i>Stundenplan</a><a class="it " href="team.html" data-demo-area="team" ><i class="fa-solid fa-users " aria-hidden="true"></i>Team</a><a class="it " href="berichte.html" ><i class="fa-solid fa-file-lines " aria-hidden="true"></i>Berichte</a><a class="it " href="geraete.html" data-demo-area="geraet" ><i class="fa-solid fa-toolbox " aria-hidden="true"></i>Geräte</a><a class="it " href="zugaenge.html" ><i class="fa-solid fa-key " aria-hidden="true"></i>Zugänge</a>
+    </div><div class="grp"><span>Projektarbeit</span>
+      <a class="it " href="projekte.html" data-demo-area="projekte" ><i class="fa-solid fa-folder-open " aria-hidden="true"></i>Projekte</a><a class="it " href="dateien.html" data-demo-area="upload" ><i class="fa-solid fa-photo-film " aria-hidden="true"></i>Dateien</a>
+    </div><div class="grp"><span>Verwaltung</span>
+      <a class="it " href="nutzer.html" data-demo-area="rechte" ><i class="fa-solid fa-user-shield " aria-hidden="true"></i>Nutzer &amp; Rechte</a><a class="it " href="einstellungen.html" ><i class="fa-solid fa-gear " aria-hidden="true"></i>Einstellungen</a>
+    </div></nav>
+    <div class="me">
+      <a href="profil.html" title="Demo-Admin" ><span class="av " aria-hidden="true">D</span><span class="break"><b>Demo-Admin</b><small class="sm2">Admin</small></span></a>
+      <form method="post" action="#"><button class="btn ghost sm" aria-label="Abmelden" title="Abmelden"><i class="fa-solid fa-arrow-right-from-bracket " aria-hidden="true"></i></button></form>
+    </div>
+  </aside>
+
+  <main id="main" class="" tabindex="-1"><div class="demo-bar" role="note"><b>Demo</b><span>Alle Personen, Geräte und Daten sind erfunden · Speichern, Hochladen und Anmelden sind abgeschaltet</span><span class="demo-msg" role="status" aria-live="polite"></span></div>
+  
+    <div class="topbar">
+      <form class="search" role="search" action="#"><i class="fa-solid fa-magnifying-glass " aria-hidden="true"></i><label class="vh" for="q">Suchen</label><input id="q" name="q" type="search" placeholder="Person oder Gerät …" autocomplete="off"></form>
+      <span class="sp"></span>
+      
+
+
+
+
+
+
+
+
+
+
+<div class="hi">
+  
+
+  <button type="button" class="hi-team" popovertarget="hi-onpop">
+    <span class="hi-avs" aria-hidden="true"><span class="av " aria-hidden="true">D</span></span>
+    <span class="hi-on-t">1 online</span><span class="vh"> – wer gerade online ist</span></button>
+  <div class="hi-pop" id="hi-onpop" popover role="dialog" aria-labelledby="hi-onpop-h"><div class="hi-pop-h" id="hi-onpop-h">Gerade online</div>
+    <ul class="hi-list"><li><span class="av " aria-hidden="true">D</span><span>Demo-Admin (du)<small>Admin</small></span></li></ul>
+    <p class="hi-note">aktiv in den letzten 5 Minuten</p></div>
+  
+
+
+  <button type="button" class="hi-bell" popovertarget="hi-bellpop" aria-label="2 fällig"><i class="fa-solid fa-bell " aria-hidden="true"></i><span class="hi-badge" aria-hidden="true">2</span></button>
+  <div class="hi-pop" id="hi-bellpop" popover role="dialog" aria-labelledby="hi-bellpop-h"><div class="hi-pop-h" id="hi-bellpop-h">Fällig</div>
+    <ul class="hi-list"><li><a href="geraete-4.html"><i class="fa-solid fa-box hi-w" aria-hidden="true"></i><span>Rückgabe überfällig<small>Tobii Pro Glasses 3 · Paul Richter</small></span></a></li><li><a href="geraete-6.html"><i class="fa-solid fa-hand-holding " aria-hidden="true"></i><span>Reserviert – heute abholen<small>Sony Alpha 7 IV · Clara Neumann</small></span></a></li></ul>
+    </div>
+
+
+  <span class="hi-date"><span data-clock="date">Mo, 23. Nov.</span><span class="hi-kw"> · KW <span data-clock="kw">48</span></span></span>
+  <time class="hi-time" data-clock="time">21:25</time>
+  <button type="button" class="hi-net" popovertarget="hi-netpop"><i class="fa-solid fa-wifi " aria-hidden="true"></i><span class="hi-nm">UXLab-WLAN</span><span class="hi-du"><span class="hi-k">du</span><span class="mono">192.0.2.23</span></span><span class="hi-app"><span class="hi-k">App</span><span class="mono">192.0.2.10:8110</span></span><i class="fa-solid fa-chevron-down " aria-hidden="true"></i><span class="vh"> – Netz und Verbindung</span></button>
+  
+
+<form method="post" action="#" class="hi-theme"><input type="hidden" name="area" value="theme"><input type="hidden" name="next" value="/stundenplan?">
+  <button name="variant" value="dark" class="to-dark" aria-label="Dunkles Farbschema" title="Dunkles Farbschema"><i class="fa-solid fa-moon " aria-hidden="true"></i></button>
+  <button name="variant" value="light" class="to-light" aria-label="Helles Farbschema" title="Helles Farbschema"><i class="fa-solid fa-sun " aria-hidden="true"></i></button>
+</form>
+
+<form method="post" action="#" class="hi-lang" role="group" aria-label="Sprache"><input type="hidden" name="area" value="lang"><input type="hidden" name="next" value="/stundenplan?"><button name="variant" value="de" lang="de" aria-pressed="true" title="Deutsch"><span aria-hidden="true">DE</span><span class="vh">Deutsch</span></button><button name="variant" value="en" lang="en" aria-pressed="false" title="English"><span aria-hidden="true">EN</span><span class="vh">English</span></button>
+</form>
+
+  
+<div class="hi-pop" id="hi-netpop" popover role="dialog" aria-labelledby="hi-netpop-h"><div class="hi-pop-h" id="hi-netpop-h">Netz und Verbindung</div>
+  <dl class="hi-dl">
+    <dt>Netz</dt><dd><span>UXLab-WLAN</span><span class="hi-k"><i class="fa-solid fa-check " aria-hidden="true"></i> dein Gerät ist im Lab-Netz</span></dd>
+    <dt>Dein Gerät</dt><dd><span class="mono">192.0.2.23</span></dd>
+    <dt>App für andere Geräte</dt><dd><span class="mono" id="hi-url">https://192.0.2.10:8110</span><button type="button" class="btn sm" data-copy="hi-url"><i class="fa-solid fa-copy " aria-hidden="true"></i><span>Kopieren</span></button><span class="hi-k" id="hi-url-st" role="status"></span></dd>
+    <dt>Verbindung</dt><dd>HTTPS, verschlüsselt</dd>
+    <dt>Server-Zeit</dt><dd class="mono">23.11.2026 · 21:25:13</dd>
+  </dl>
+</div>
+
+</div>
+
+      <a class="btn pri" href="nutzer-neu.html"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Nutzer anlegen</span></a>
+
+    </div>
+  
+    <div class="page">
+
+
+
+<div class="ph">
+  <div><h1>Stundenplan</h1>
+    <p class="sub">KW 48 · 23.–27. November 2026 · <span class="nw">Lab geöffnet 9–17 Uhr</span></p></div>
+  <div class="acts">
+<form method="post" action="#" class="seg" aria-label="Ansicht Stundenplan">
+  <input type="hidden" name="area" value="plan"><input type="hidden" name="next" value="/stundenplan">
+  <button name="variant" value="A" class="on" aria-pressed="true">Woche</button><button name="variant" value="B" class="" aria-pressed="false">Personen</button><button name="variant" value="C" class="" aria-pressed="false">Tag</button>
+</form>
+
+    <nav class="row" aria-label="Zeitraum">
+      <a class="btn" href="stundenplan_d-.html" data-demo-area="plan" aria-label="Eine Woche zurück"><i class="fa-solid fa-chevron-left " aria-hidden="true"></i></a>
+      <a class="btn" href="stundenplan.html" data-demo-area="plan">Heute</a>
+      <a class="btn" href="stundenplan_d-.html" data-demo-area="plan" aria-label="Eine Woche vor"><i class="fa-solid fa-chevron-right " aria-hidden="true"></i></a></nav>
+    <a class="btn" href="stundenplan-einstellungen.html"><i class="fa-solid fa-gear " aria-hidden="true"></i><span>Öffnungszeit &amp; Soll</span></a>
+    <a class="btn pri" href="stundenplan-neu_d-2026-11-23.html"><i class="fa-solid fa-plus " aria-hidden="true"></i><span>Schicht</span></a></div>
+</div>
+
+
+<div class="calwrap"><div class="wk nd5 sl20">
+  <div class="wc"></div>
+  <div class="dh today"><span>Mo 23.11.</span>
+    <a class="btn sm ghost" href="stundenplan-neu_d-2026-11-23.html" aria-label="Schicht am 23.11. eintragen"><i class="fa-solid fa-plus " aria-hidden="true"></i></a></div><div class="dh"><span>Di 24.11.</span>
+    <a class="btn sm ghost" href="stundenplan-neu_d-2026-11-24.html" aria-label="Schicht am 24.11. eintragen"><i class="fa-solid fa-plus " aria-hidden="true"></i></a></div><div class="dh"><span>Mi 25.11.</span>
+    <a class="btn sm ghost" href="stundenplan-neu_d-2026-11-25.html" aria-label="Schicht am 25.11. eintragen"><i class="fa-solid fa-plus " aria-hidden="true"></i></a></div><div class="dh"><span>Do 26.11.</span>
+    <a class="btn sm ghost" href="stundenplan-neu_d-2026-11-26.html" aria-label="Schicht am 26.11. eintragen"><i class="fa-solid fa-plus " aria-hidden="true"></i></a></div><div class="dh"><span>Fr 27.11.</span>
+    <a class="btn sm ghost" href="stundenplan-neu_d-2026-11-27.html" aria-label="Schicht am 27.11. eintragen"><i class="fa-solid fa-plus " aria-hidden="true"></i></a></div>
+  <div class="tc" aria-hidden="true"><span class="rs1">8:00</span><span class="rs3">9:00</span><span class="rs5">10:00</span><span class="rs7">11:00</span><span class="rs9">12:00</span><span class="rs11">13:00</span><span class="rs13">14:00</span><span class="rs15">15:00</span><span class="rs17">16:00</span><span class="rs19">17:00</span></div>
+  
+  <div class="day ln3" aria-label="Mo 23.11."><a class="blk rs1 re9 gs1 ge2" href="stundenplan-1.html" title="Mehmet Yilmaz · 8–12 · Lab-Dienst"><b>Mehmet Y.</b><span>8–12 · Lab-Dienst</span></a><a class="blk rs3 re19 gs2 ge3" href="stundenplan-2.html" title="Jonas Weber · 9–17 · Eye-Tracking"><b>Jonas W.</b><span>9–17 · Eye-Tracking</span></a><a class="blk rs5 re9 gs3 ge4" href="stundenplan-3.html" title="Dr. Anna Berger · 10–12 · Sprechstunde"><b>Anna B.</b><span>10–12 · Sprechstunde</span></a><a class="blk rs11 re19 gs1 ge2" href="stundenplan-4.html" title="Sophie Klein · 13–17 · VR-Prototyp"><b>Sophie K.</b><span>13–17 · VR-Prototyp</span></a>
+  </div>
+  <div class="day ln2" aria-label="Di 24.11."><a class="blk rs3 re15 gs1 ge2" href="stundenplan-5.html" title="Clara Neumann · 9–15 · Studienplanung"><b>Clara N.</b><span>9–15 · Studienplanung</span></a><a class="blk rs5 re13 gs2 ge3" href="stundenplan-6.html" title="Tim Schröder · 10–14 · Usability-Tests"><b>Tim S.</b><span>10–14 · Usability-Tests</span></a><a class="blk rs13 re21 gs2 ge3" href="stundenplan-7.html" title="Lena Hoffmann · 14–18 · Schreiben"><b>Lena H.</b><span>14–18 · Schreiben</span></a>
+  </div>
+  <div class="day ln2" aria-label="Mi 25.11."><span class="blk gap rs11 re19"><b><i class="fa-solid fa-triangle-exclamation " aria-hidden="true"></i> unbesetzt</b><span>13–17 Uhr</span></span><a class="blk rs1 re9 gs1 ge2" href="stundenplan-8.html" title="Mehmet Yilmaz · 8–12 · Lab-Dienst"><b>Mehmet Y.</b><span>8–12 · Lab-Dienst</span></a><a class="blk rs3 re11 gs2 ge3" href="stundenplan-9.html" title="Jonas Weber · 9–13 · Eye-Tracking"><b>Jonas W.</b><span>9–13 · Eye-Tracking</span></a>
+  </div>
+  <div class="day ln2" aria-label="Do 26.11."><a class="blk rs3 re9 gs1 ge2" href="stundenplan-10.html" title="Clara Neumann · 9–12 · Studienplanung"><b>Clara N.</b><span>9–12 · Studienplanung</span></a><a class="blk rs3 re11 gs2 ge3" href="stundenplan-11.html" title="Sophie Klein · 9–13 · VR-Prototyp"><b>Sophie K.</b><span>9–13 · VR-Prototyp</span></a><a class="blk rs9 re17 gs1 ge2" href="stundenplan-12.html" title="Tim Schröder · 12–16 · Usability-Tests"><b>Tim S.</b><span>12–16 · Usability-Tests</span></a><a class="blk rs13 re21 gs2 ge3" href="stundenplan-13.html" title="Paul Richter · 14–18 · Kiosk-UI"><b>Paul R.</b><span>14–18 · Kiosk-UI</span></a>
+  </div>
+  <div class="day ln3" aria-label="Fr 27.11."><a class="blk rs1 re9 gs1 ge2" href="stundenplan-14.html" title="Mehmet Yilmaz · 8–12 · Lab-Dienst"><b>Mehmet Y.</b><span>8–12 · Lab-Dienst</span></a><a class="blk rs3 re19 gs2 ge3" href="stundenplan-15.html" title="Jonas Weber · 9–17 · Eye-Tracking"><b>Jonas W.</b><span>9–17 · Eye-Tracking</span></a><a class="blk rs5 re13 gs3 ge4" href="stundenplan-16.html" title="Lena Hoffmann · 10–14 · Schreiben"><b>Lena H.</b><span>10–14 · Schreiben</span></a>
+  </div>
+</div></div>
+
+
+</div>
+  </main>
+</div>
+</body>
+</html>
