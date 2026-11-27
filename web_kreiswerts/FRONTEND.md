@@ -174,10 +174,10 @@ A status is always written as a word (`Badge`), never shown by colour alone. Whi
 | My requests | `/my-requests` | `listMyRequests()`, `listResponses()` · `POST /api/my/requests/[id]/publish · /renew · /close` · `DELETE /api/my/requests/[id]` · `POST /api/my/responses/[id]/reply` |
 | Create / edit request | `/my-requests/new` · `/my-requests/[id]/edit` | `getCatalogue()`, `getMyRequest()` · `POST /api/my/requests` · `PUT /api/my/requests/[id]` |
 | Matches | `/matches` | `listMatches()` · `GET /api/matches` |
-| Individual match | `/matches/[requestId]/[offerId]` | `getMatch()` · `GET /api/matches/[requestId]/[offerId]` |
-| Negotiations | `/negotiations` · `/negotiations/new?offer=&request=` · `/negotiations/[id]` | `listNegotiations()`, `getNegotiationStart()`, `getNegotiation()` · `POST /api/my/negotiations` · `POST /api/my/negotiations/[id]/revisions · /accept · /decline · /withdraw · /exchange` |
+| Individual match | `/matches/[requestId]/[offerId]` | `getMatch()`, `getMatchAssessments()` · `GET /api/matches/[requestId]/[offerId]` · `PUT /api/my/assessments` · `POST /api/my/assessments/[id]/approve` |
+| Negotiations | `/negotiations` · `/negotiations/new?offer=&request=` · `/negotiations/[id]` | `listNegotiations()`, `getNegotiationStart()`, `getNegotiation()`, `getNegotiationFeasibility()` · `POST /api/my/negotiations` · `POST /api/my/negotiations/[id]/revisions · /accept · /decline · /withdraw · /exchange` |
 | Exchanges | `/exchanges` · `/exchanges/[id]` | `listExchanges()`, `getExchange()` · `PUT /api/my/exchanges/[id]` · `POST /api/my/exchanges/[id]/complete · /cancel` |
-| Circularity overview (impact) | – | Level 2, not built yet |
+| Circularity overview | `/impact` | `getImpactOverview()` · `GET /api/my/impact` · factors: `listFactors()` · `GET /api/impact-factors` |
 
 All endpoints with input and output: README “API” and the architecture page.
 

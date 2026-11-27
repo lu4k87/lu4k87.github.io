@@ -1,4 +1,4 @@
-# Features: Level 1 (built) and Level 2 (requests and matching built, the rest future)
+# Features: Level 1 and Level 2 (built)
 
 What the platform offers businesses and what the data model and backend do for it. Since 2026-11-26 the plan follows the working specification in `CONTENT/`:
 
@@ -9,7 +9,7 @@ What the platform offers businesses and what the data model and backend do for i
 | `CONTENT/KreiswertS_User_Scenarios.pdf` | 4 walkthroughs with the fictional sites A, B and C – the acceptance test of Level 1 |
 | 6 wireframes in `CONTENT/` (JPEG) | Structure of create offer, offer detail, material categories, data structure |
 
-**Level 1 is an offers-first clickable prototype:** a verified site publishes material offers, other verified sites find them in their own industrial park or in a wider radius, read the details and contact the supplier. Only **Plastics** is enabled; the material model is generic. Independent requests, matching, negotiation, exchanges and impact are **Level 2** (requests, matching, negotiations and exchanges are built since 2026-11-27, see below).
+**Level 1 is an offers-first clickable prototype:** a verified site publishes material offers, other verified sites find them in their own industrial park or in a wider radius, read the details and contact the supplier. Only **Plastics** is enabled; the material model is generic. Independent requests, matching, negotiation, exchanges, feasibility and impact are **Level 2** (built on 2026-11-27, see below).
 
 All company data is fictional demo data. Nothing in the prototype is a real offer, contract or saving.
 
@@ -369,9 +369,58 @@ Rules of the aggregation (`aggregation.ts`, D19):
 - Potential totals only: nothing is reserved, booked or routed. The page shows groups of two or more batches; the API returns every group.
 - Demo data: two HDPE sheet batches (80 kg at Site D, 200 kg at Site C) form a group of 280 kg.
 
-## Level 2, rest (not built)
+## Level 2, part 3 (built 2026-11-27): economic feasibility, environmental assessment, circularity overview
 
-Economic feasibility with freight sharing (L2-007), company circularity overview (PG-27) and environmental assessment (L2-008).
+Decided by the user on 2026-11-27: build directly in the style of the existing pages without a preview round; emission factors as demo factors, each one labelled "example value, not sourced"; the data model may be extended in this repository.
+
+| ID | Function | Pages | Backend |
+|---|---|---|---|
+| L2-007 | Economic feasibility: delivered cost for the requester and net proceeds for the offerer on one quantity and price, freight shared by percent, the viewer's own costs (fixed or per unit, each estimated / quoted / confirmed), processing yield, private baseline, contribution and break-even | "Economic feasibility" on `/matches/[requestId]/[offerId]`, "Commercial comparison" on `/negotiations/[id]` | `PUT /api/my/assessments` |
+| L2-008 | Comparative environmental assessment: existing route against the proposed one for the same quantity, reference displacement, transport-only apart from the lifecycle comparison, every factor with unit, version, geography, boundary and source | "Environmental assessment" on `/matches/[requestId]/[offerId]` | `PUT /api/my/assessments`, `POST /api/my/assessments/[id]/approve`, `GET /api/impact-factors` |
+| PG-27 | Company circularity overview: exchanges (realised apart from simulated) and the released environmental assessments, demo records summed apart | `/impact`, card on `/dashboard` | `GET /api/my/impact` |
+
+### Data model
+
+```text
+sites ──▶ assessments ──▶ offers, requests (match) or negotiations       impact_factors (key + version, example flag)
+            inputs (validated JSON), status draft | approved, revision, simulated
+```
+
+- **One private assessment per site, kind and subject** (unique `site_id, kind, subject_key`; subject = a match or a negotiation). Every query filters by the viewer's site: the other site never sees the baseline, the own costs or the result. Access to the subject uses the same rules as its page (`getMatch()`, `getNegotiation()`), so a site outside the pair gets a 404.
+- **Results are computed on every read**, never stored – the pure modules `feasibility.ts` and `environment.ts`. Saving needs the revision the page showed (409 `STALE` otherwise); at most 500 assessments per site.
+- **Factors** (`impact_factors`): a stored version never changes; a new value is a new version. The seed adds nine example factors (virgin PE/PP/PC/PVC, sorting, grinding, regranulation, incineration, truck transport), all `example = true` and shown as "example value, not sourced".
+
+### Rules (D17, D18, D13)
+
+| Topic | Rule |
+|---|---|
+| Common basis | Match: the viewer's assumptions, suggested from the listings (the need in the offer's unit, at most the batch; price and payment direction from the price mode; "delivered price" when the offer includes delivery). Negotiation: the current or agreed proposal – price quoted while open, confirmed once agreed |
+| Freight | One amount per shipment on top of the price, split by the offerer's share; a delivered price takes no extra freight (422 `FREIGHT_ALREADY_INCLUDED`, NT-L2-007). AT-L2-007: 500 kg at €400/t with €80 freight shared equally → offerer €160, requester €240 before other costs |
+| Unknown | A missing price, freight amount, cost, yield or baseline gives no total – never 0; a price per item against a quantity in kg is not comparable (no total) |
+| Contribution, break-even | Offerer: net proceeds after own costs + today's route cost; requester: today's material cost for the usable quantity − delivered cost. Break-even = fixed costs (incl. own freight share) ÷ margin per unit, **only for a positive contribution** |
+| Cost status | The weakest status of all inputs used: estimated < quoted < confirmed |
+| Environment | Existing = today's treatment + its transport + the virgin material bought instead (reference displacement = quantity × yield × substitution, AT-L2-008: 500 kg × 90 % × 80 % = 360 kg). Proposed = preparation + transport + treatment of the residue. Transport-only is shown apart |
+| No claim | Without the existing route (baseline) or a factor there is no comparative CO₂e result; a factor with the wrong unit or boundary for its step (422 `FACTOR_MISMATCH`) or a quantity that is not a mass (422 `UNIT_NOT_MASS`) is refused (NT-L2-008). Example factors make every result "illustrative" |
+| Release | Only a comparative result can be released for the overview (422 `INCOMPLETE`); every new save returns it to draft |
+| Overview | Realised = completed, non-simulated, not rejected exchanges (`countsAsVerifiedOutcome()`); released assessments are estimates, never a realised saving; assessments of demo listings are summed apart (D13) |
+
+### Security review of part 3 (2026-11-27)
+
+No finding: ownership per site, access to the subject, stale edits, the ceiling of 500 and the input bounds held. Two hardenings applied: the demo rule (D13) of an assessment also looks at both sites, like negotiations; stored inputs are read through their Zod schema again (a row that no longer fits counts as missing – check in `scripts/e2e-level2.mjs`), and the overview sums every released assessment instead of the newest 200. Found while testing: a request now records its closing time when the row really changes (`clock_timestamp()`), so a response written just before the close never shows a later time – the race check of part 1 had failed once on this. Accepted for the prototype: no daily limit for saves (a save overwrites, no history grows), no delete (the ceiling only affects the own site), quantities are self-declared – limit them to the batch before any result becomes public.
+
+### Decisions derived while building – open for review
+
+| Topic | Choice |
+|---|---|
+| Freight in the break-even | Counted as fixed (one shipment); preparation costs per unit scale with the quantity |
+| Combined chain benefit | Not shown: it needs the private inputs of both sites (the internal payment would cancel out) |
+| Pre-consumer vs post-consumer | The origin of the offer is shown as listed and never relabelled; the assessment does not change it |
+| Factor suggestion | Transport factor and the virgin material of the offer's polymer are preselected; "no preparation" when the match needs no step |
+| Navigation | `/impact` is reached through a card on the dashboard, like negotiations and exchanges |
+
+## Level 2: not built
+
+Signed payments and integrated payment, contract execution, sourced emission factors, combined chain benefit of both sites.
 
 Level 2 is not a dependency of Level 1: the four scenarios end without a demand record.
 
