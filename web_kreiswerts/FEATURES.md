@@ -190,10 +190,21 @@ A verified site sends a private enquiry about one active offer of another site: 
 ## Demo data and provenance (L1-021, D13)
 
 - `npm run db:seed` writes the reference data (catalogue, units, parks) and is safe to repeat. `npm run db:seed -- --demo` adds the fictional sites with logins, listings and the cases A–E; `--reset-demo` first removes the demo records and the test registrations made with the demo e-mail domain.
-- Demo logins: `site_a` … `site_e` share the password `DEMO_PASSWORD`, `admin_demo` has its own `DEMO_ADMIN_PASSWORD`. Put both into `.env.demo` (ignored by Git) to keep them across re-seeds; otherwise random ones are generated and printed once.
+- Demo logins: `site_a` … `site_l` share the password `DEMO_PASSWORD`, `admin_demo` has its own `DEMO_ADMIN_PASSWORD`. Put both into `.env.demo` (ignored by Git) to keep them across re-seeds; otherwise random ones are generated and printed once.
 - Every fictional site and listing carries `provenance = 'synthetic'` and shows the label on cards, detail, profile and map.
 - The cases A–E are **illustrative pathways**: A PC sheets (direct reuse), B PE film (pooled recycling), C PC residues (specialist recycling), D PVC profiles (sorting and grinding), E mixed packaging (unresolved). They are never counted as completed exchanges; the prototype has no counter for confirmed exchanges or savings at all.
 - Park positions are approximate centres taken from public descriptions and marked as such – verify them before real use.
+- **Eleven fictional companies, twelve sites** (project goal: at least ten documented companies, added 2026-11-28). Sites A–E carry the user scenarios; F–L add further sources, takers and processors around the cases A–E – a second stretch-film source and a film collector for the pooled recycling (B), PMMA offcuts and a PC sheet request (A), a builder with PVC pipe offcuts and a PVC regrind request (D), a compounder for ABS/PS, a packaging maker with PET skeletons, an appliance maker with ABS housings and unsorted dismantling parts (E), a sorting plant outside every park. Names end in "(fiktiv)", streets and VAT IDs are placeholders. The acceptance runs count on gaps in this data (no further HDPE sheet, LDPE or PVC regrind, no PP offer); `scripts/data/records.test.mjs` guards them.
+
+## Region data import and export (function 34, built 2026-11-28)
+
+Another region sets the platform up with its own data – guide: [`REPLICATION.md`](REPLICATION.html).
+
+- `npm run data:export [-- <folder>]` writes `parks.csv`, `categories.csv`, `materials.csv` (types and forms) and `sites.csv` (with company name and VAT ID) – spreadsheet CSV with byte order mark, `--delimiter ";"` for German Excel, `--skip-demo` leaves the synthetic sites out. Default folder `data-export/` is ignored by Git; files are created with mode 600 because `sites.csv` holds contact data.
+- `npm run data:import [-- <folder>]` reads the files that are there, checks every row against the value lists and bounds of the app (`scripts/data/records.mjs`, same lists as `domain/listing.ts`, same address rule as the registration – a unit test compares them) and references to parks and categories, and reports each problem as `file:line column`. One problem → nothing is saved (one transaction); `--dry-run` checks only.
+- Adds and updates, never deletes (exception `--prune-parks`: parks missing from `parks.csv` that no site uses). A site is the same when company (VAT ID, else name) and address match. New sites start `pending` without a login – the import never verifies; an existing site keeps its status and provenance. A category's `enabled` only counts when it is new, as in the seed.
+- Formula guard (CWE-1236): a text cell starting with `=`, `+`, `-` or `@` (not a number or phone number) is written with a leading `'` and read back without it.
+- Units, attributes and emission factors stay in `scripts/seed/reference.mjs`: they carry rules and sources, not just names.
 
 ## Decisions
 
@@ -201,7 +212,7 @@ Taken by the user on 2026-11-26:
 
 | No. | Decision |
 |---|---|
-| F1 | New sites are pending; a demo administrator verifies them. Pending sites may edit their profile and drafts only. Three verified demo sites are seeded |
+| F1 | New sites are pending; a demo administrator verifies them. Pending sites may edit their profile and drafts only. Eleven verified demo sites and one pending are seeded |
 | F2 | ~~An own drawn map, no tile server~~ – replaced on 2026-11-27 by the user: interactive MapLibre map with OpenFreeMap tiles, also on the start page |
 | F3 | Built in this repository; tests run against the database `kreiswerts_e2e` on an own port |
 | F4 | Evidence as metadata plus illustrations; no upload |
