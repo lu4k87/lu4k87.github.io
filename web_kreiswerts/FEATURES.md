@@ -33,6 +33,9 @@ All company data is fictional demo data. Nothing in the prototype is a real offe
 | L1-021 | Synthetic demo cases A–E, provenance labels | `/about`, all listing views | seed (`npm run db:seed -- --demo`) |
 | PG-16 | Reference data (catalogue, units, parks) | `/admin/reference-data` | `GET /api/catalogue`, `POST /api/admin/categories/[id]` |
 | PG-02, PG-28 | About, help, contact, legal placeholders | `/about`, `/help` | – |
+| Fn 41 | Deadline in the listing: label “urgent”, sort by deadline | `/offers`, `/map`, `/offers/[id]`, offer form | `GET /api/offers?sort=deadline` (card field `urgent`) |
+| Fn 46 | Guide: duties of both sides, by-product or waste, course of a cooperation, sources | `/guide` (footer) | – (static) |
+| Fn 19 | Saved search + in-app notice (bell) | `/offers`, `/notifications`, header | `GET/POST /api/my/saved-searches`, `DELETE …/[id]`, `GET /api/my/notifications`, `POST …/read` |
 
 ## Roles and the verification gate (D01, D03)
 
@@ -205,6 +208,23 @@ Another region sets the platform up with its own data – guide: [`REPLICATION.m
 - Adds and updates, never deletes (exception `--prune-parks`: parks missing from `parks.csv` that no site uses). A site is the same when company (VAT ID, else name) and address match. New sites start `pending` without a login – the import never verifies; an existing site keeps its status and provenance. A category's `enabled` only counts when it is new, as in the seed.
 - Formula guard (CWE-1236): a text cell starting with `=`, `+`, `-` or `@` (not a number or phone number) is written with a leading `'` and read back without it.
 - Units, attributes and emission factors stay in `scripts/seed/reference.mjs`: they carry rules and sources, not just names.
+
+## Deadline, guide, saved search (functions no. 41, 46, 19, built 2026-11-28)
+
+Numbers of the function list `CONTENT/Functions_KreiswertS_EN.docx`; acceptance and negative tests in `scripts/e2e-functions.mjs`.
+
+**No. 41 – deadline in the listing.** The list asked for a column `available_until`; the offer already had the field “Collection deadline” (`collection_until`) with the same meaning (“by when the material must be gone”), so it is reused – no second date that could contradict the first.
+- **Urgent** = deadline today or within the next 7 days (`isUrgent`, calendar day in Germany); a past deadline cannot be published (rule `DATE_PAST`). The server sets the card field `urgent`; list, map, detail page and “My offers” show the label “Urgent / Dringend”. The form explains the rule under the date field.
+- **Sort** `sort=deadline`: earliest deadline first, listings without a deadline last (newest first among them).
+
+**No. 46 – guide.** Public page `/guide`, link in every footer, static (no backend), DE/EN in `src/i18n/guide.ts`: waste, by-product, end of waste (KrWG §§ 3–5), waste hierarchy (§ 6), duties of the supplying and the receiving company (§§ 7, 22, 53–54), the six steps of a cooperation on the platform, what the platform does not do, and links to the original texts (gesetze-im-internet.de, EUR-Lex PPWR Art. 3, 7). Marked “no legal advice” with a date.
+
+**No. 19 – saved search + in-app notice.**
+- **Data:** `saved_searches` (site, author, name, filters as JSON) and `notifications` (site, saved search, offer, read at). Both belong to a **site**: every member of the site sees and manages them, no other site ever does (every query filters by the session's site; someone else's id answers 404, marking it as read changes nothing).
+- **Saving:** “Save search” under the filters of `/offers` sends the query string; the server parses it with the search schema itself (`savedSearchFilters` = search filters without sort and page size), so only filters the search knows are stored. Only a verified site can save; at most 20 per site (`TOO_MANY`, checked under a row lock).
+- **Check:** when an offer is published, `matchesSavedSearch` runs the same filters as the list (park or radius, category, type, form, origin, frequency, handover, minimum kg) for every saved search of the **other verified** sites. One notice per site and offer (unique key) – two matching searches or republishing after expiry do not notify twice. The check runs after the publish transaction and never fails or undoes the publication. Offers published before the search raise no notice.
+- **Showing:** the bell in the header shows the number of unread notices (server-side on every page load, no polling); `/notifications` lists the newest 50 with offer, matching search and time, “Mark all as read”, and the saved searches with “Show results” and “Delete” (deletes its notices too). A notice whose offer was closed or expired stays, labelled, without a link; offers of a site that lost its verification disappear.
+- **Not yet:** e-mail (no. 20) and a setting to switch notices off.
 
 ## Decisions
 

@@ -159,11 +159,13 @@ A status is always written as a word (`Badge`), never shown by colour alone. Whi
 |---|---|---|
 | Start page | `/` | `getPlatformStats()` (verified sites, active offers, industrial parks) · `publicMap()` for the interactive hero map |
 | About · help | `/about` · `/help` | `listDemoCases()`, `getCatalogue()` · legal sections are labelled placeholders |
+| Guide (function no. 46) | `/guide` | static, no backend · texts DE/EN in `src/i18n/guide.ts`, link in the footer |
 | Public regional map | `/regional-map` | `publicMap()` · `GET /api/public/map` |
 | Login · password recovery | `/login` · `/forgot-password` · `/reset-password` | Better Auth |
 | Registration | `/register` · `/register/site` | Better Auth · `POST /api/registration/site` |
 | Dashboard | `/dashboard` | `listMyOffers()`, `listEnquiries()`, `listMyRequests()`, `listResponses()`, `listNegotiations()`, `listExchanges()`, `getMySite()` · administrator: `listSitesForReview()` |
-| Material offers | `/offers` | `searchOffers()` · `GET /api/offers` |
+| Material offers | `/offers` | `searchOffers()` · `GET /api/offers` (`sort=deadline`, card field `urgent`) · “Save search”: `POST /api/my/saved-searches` |
+| Notifications (function no. 19) | `/notifications` · bell in the header | `listNotifications()`, `listSavedSearches()`, `unreadNotificationCount()` (layout) · `GET /api/my/notifications` · `POST /api/my/notifications/read` · `GET /api/my/saved-searches` · `DELETE /api/my/saved-searches/[id]` |
 | Individual offer | `/offers/[id]` | `getOffer()`, `ownRequestsForOffer()` · `POST /api/offers/[id]/enquiries` |
 | My offers | `/my-offers` | `listMyOffers()` · `POST /api/my/offers/[id]/publish · /renew · /close` · `DELETE /api/my/offers/[id]` |
 | Create / edit offer | `/my-offers/new` · `/my-offers/[id]/edit` | `getCatalogue()`, `getMyOffer()` · `POST /api/my/offers` · `PUT /api/my/offers/[id]` |
