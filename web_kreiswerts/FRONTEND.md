@@ -20,7 +20,7 @@ In short: **one Next.js project for everything.** Pages live in `src/app/`, comp
 | `src/components/ui/` | Building blocks: `elements.tsx` (page header, section card, notice, badge, facts list, buttons), `form.tsx` (field, input, select, checkbox), `icons.tsx` |
 | `src/components/layout/` | Headers, navigation, footer, language switch, `links.ts` (all routes) |
 | `src/components/offers/` | Offer card, detail view, form, live preview, search filters, formatting |
-| `src/components/map/` | The drawn region map and its projection |
+| `src/components/map/` | The interactive map (`live-map.tsx`, MapLibre + OpenFreeMap, client component), its geometry (`geo.ts`) and the marker look shared with legends (`marker-style.ts`) |
 | `src/i18n/` | UI texts: `messages.ts` (start, login, register), `platform.ts` (platform) |
 | `src/app/api/` | Endpoints (route handlers) |
 | `src/server/` | Login, access rules, validation, business rules, database |
@@ -153,7 +153,7 @@ A status is always written as a word (`Badge`), never shown by colour alone. Whi
 
 | Page | URL | Data from the backend |
 |---|---|---|
-| Start page | `/` | `getPlatformStats()` (verified sites, active offers, industrial parks) · the hero map is an illustration |
+| Start page | `/` | `getPlatformStats()` (verified sites, active offers, industrial parks) · `publicMap()` for the interactive hero map |
 | About · help | `/about` · `/help` | `listDemoCases()`, `getCatalogue()` · legal sections are labelled placeholders |
 | Public regional map | `/regional-map` | `publicMap()` · `GET /api/public/map` |
 | Login · password recovery | `/login` · `/forgot-password` · `/reset-password` | Better Auth |
@@ -165,7 +165,7 @@ A status is always written as a word (`Badge`), never shown by colour alone. Whi
 | Create / edit offer | `/my-offers/new` · `/my-offers/[id]/edit` | `getCatalogue()`, `getMyOffer()` · `POST /api/my/offers` · `PUT /api/my/offers/[id]` |
 | Preview before publishing | `/my-offers/[id]/preview` | `getOffer()`, `getPublishProblems()` |
 | Company directory · site profile | `/companies` · `/sites/[id]` | `listSites()`, `getSiteProfile()`, `listActiveOffersOfSite()` |
-| Industrial map | `/map` | `memberMap()` · `GET /api/map` |
+| Industrial map | `/map` | `memberMap()` · `GET /api/map` (offers, requests, collection groups) |
 | My account | `/account` | `getMySite()` · `PUT /api/my/site` · Better Auth (`changePassword`) |
 | Site verification | `/admin/verification` | `listSitesForReview()` · `POST /api/admin/sites/[id]/verification` |
 | Reference data | `/admin/reference-data` | `getCatalogue()`, `listParks()` · `POST /api/admin/categories/[id]` |

@@ -28,8 +28,8 @@ All company data is fictional demo data. Nothing in the prototype is a real offe
 | L1-016 | Offer detail | `/offers/[id]` | `GET /api/offers/[id]` |
 | L1-017 | Contact supplier (enquiry + one response) | `/offers/[id]`, `/dashboard` | `POST /api/offers/[id]/enquiries`, `POST /api/my/enquiries/[id]/response` |
 | L1-018 | Company directory and site profile | `/companies`, `/sites/[id]` | `GET /api/sites`, `GET /api/sites/[id]` |
-| L1-019 | Industrial map with the list filters | `/map` | `GET /api/map` |
-| L1-020 | Public regional map and overview | `/regional-map` | `GET /api/public/map` |
+| L1-019 | Interactive industrial map with the list filters | `/map` | `GET /api/map` |
+| L1-020 | Public interactive regional map and overview (also the start page map) | `/regional-map`, `/` | `GET /api/public/map` |
 | L1-021 | Synthetic demo cases A–E, provenance labels | `/about`, all listing views | seed (`npm run db:seed -- --demo`) |
 | PG-16 | Reference data (catalogue, units, parks) | `/admin/reference-data` | `GET /api/catalogue`, `POST /api/admin/categories/[id]` |
 | PG-02, PG-28 | About, help, contact, legal placeholders | `/about`, `/help` | – |
@@ -180,6 +180,7 @@ Each projection is built on the server as its own allow-list (`src/server/dal/of
 - **Search wider area** keeps every filter and adds sites within the chosen radius (5–100 km), sorted by distance. It is offered with zero, some or unsuitable local results. It never creates a request.
 - **Distance is the straight line** between the two sites (`distanceKm`) and labelled as such. Without coordinates the distance is unknown; those offers stay in the list, marked “no location”, and the map says how many are missing.
 - List and map use the same query and the same filters: category, type, form, origin, frequency, collection or delivery, minimum quantity.
+- **The map is a real, interactive map** (user decision 2026-11-27, replaces F2): MapLibre GL JS with the vector tiles and the "Positron" style of OpenFreeMap – zoom, pan, full screen, scale, popups; no key and no account. Park areas, the search radius and pathways are map layers; sites are focusable markers (`live-map.tsx`, geometry in `geo.ts`). Scroll-zoom needs Ctrl/⌘ (two fingers on touch), so the page keeps scrolling. Loading the map sends the viewer's IP address to the tile server – the pages say so. Without WebGL or tile server the page shows a notice; the list under the map always repeats what the map shows.
 - Ceiling: distances are computed in the application for up to 1,000 candidate offers. Beyond a few thousand active listings move the radius filter into SQL.
 
 ## Enquiries (L1-017, D11)
@@ -201,7 +202,7 @@ Taken by the user on 2026-11-26:
 | No. | Decision |
 |---|---|
 | F1 | New sites are pending; a demo administrator verifies them. Pending sites may edit their profile and drafts only. Three verified demo sites are seeded |
-| F2 | An own drawn map in the look of the start page, positions by coordinates; no Leaflet, no tile server |
+| F2 | ~~An own drawn map, no tile server~~ – replaced on 2026-11-27 by the user: interactive MapLibre map with OpenFreeMap tiles, also on the start page |
 | F3 | Built in this repository; tests run against the database `kreiswerts_e2e` on an own port |
 | F4 | Evidence as metadata plus illustrations; no upload |
 
@@ -239,8 +240,8 @@ Derived from the sources while building – open for review:
 
 | Check | Command | Covers |
 |---|---|---|
-| Unit tests | `npm run check` | Rules, validation, access, projections, form state, map geometry – named after the test register (AT-L1-…, NT-L1-…) |
-| Acceptance run | `node scripts/e2e-level1.mjs` and `node scripts/e2e-level2.mjs` (header of the files: how to start the test instance) | The four user scenarios, ownership, the verification gate, registration, password recovery, expiry, and one check per finding of the security review – against an own instance and the database `kreiswerts_e2e`; the script refuses any other target |
+| Unit tests | `npm run check` | Rules, validation, access, projections, form state, map geometry, volume aggregation – named after the test register (AT-L1-…, NT-L1-…, AT-L2-…) |
+| Acceptance run | `node scripts/e2e-level1.mjs`, `node scripts/e2e-level2.mjs` and `node scripts/e2e-map.mjs` (header of the files: how to start the test instance) | The four user scenarios, ownership, the verification gate, registration, password recovery, expiry, and one check per finding of the security review – against an own instance and the database `kreiswerts_e2e`; the script refuses any other target |
 | Layout | `layout_audit.py` per page at 1440, 768 and 360 px | Overlap, overflow, type scale, spacing |
 
 ### Security review of 2026-11-27
@@ -350,9 +351,27 @@ offers ◀── negotiations ──▶ requests (optional)          sites ─�
 | German terms | “Fassung” for a revision, “Austausch” for an exchange |
 | Demo data | Two simulated negotiations: C and D still negotiating (HDPE offcuts), B and A agreed with a planned exchange (stretch film) |
 
+## Level 2: requests on the map and volume aggregation (built 2026-11-27)
+
+Decided by the user on 2026-11-27 together with the interactive map: build the rest of Level 2; this part belongs to the industrial map (PG-13).
+
+| ID | Function | Pages | Backend |
+|---|---|---|---|
+| L2-002 (map) | Open requests of other sites on the industrial map: same area, category, type, form and frequency as the offer search; origin, delivery and minimum quantity are offer fields and filter offers only | `/map` (square markers, list per site) | `GET /api/map` → `requests` |
+| L2-010 | Feedstock volume aggregation: compatible batches of the current search added up as a potential collection group | `/map` → "Collection groups", highlight on the map (`?group=`) | `GET /api/map` → `aggregation` |
+
+Rules of the aggregation (`aggregation.ts`, D19):
+
+- **Compatible** = same material type and same form; mixed types or forms are never grouped (counted as excluded).
+- Only active listings; closed and expired ones drop out; an offer counts once.
+- **Current stock and recurring supply stay apart:** the expected quantity per period is shown next to the total, never added to it.
+- Only masses are summed (kg); a batch in items or without a quantity stays in the group but outside the total.
+- Potential totals only: nothing is reserved, booked or routed. The page shows groups of two or more batches; the API returns every group.
+- Demo data: two HDPE sheet batches (80 kg at Site D, 200 kg at Site C) form a group of 280 kg.
+
 ## Level 2, rest (not built)
 
-Economic feasibility with freight sharing (L2-007), company circularity overview (PG-27), environmental assessment (L2-008), volume aggregation (L2-010) and requests on the industrial map.
+Economic feasibility with freight sharing (L2-007), company circularity overview (PG-27) and environmental assessment (L2-008).
 
 Level 2 is not a dependency of Level 1: the four scenarios end without a demand record.
 
