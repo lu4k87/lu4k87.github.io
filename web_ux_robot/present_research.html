@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Look, Speak, Confirm: A Human-Factors evaluation of complementary multimodal interaction and intent safety for low-barrier robot manipulation on the UX Robot platform.">
+<meta name="description" content="Towards RobotUX: a holistic Human Factors approach for diagnosing and improving human-robot interaction, with the configurable multimodal UX Robot platform and an exploratory palletising study.">
 <title data-en="Research · UX Robot">Forschung · UX Robot</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="css/doc_path.css">
@@ -191,6 +191,49 @@ td span { color: var(--fg-2); font-size: 14px; }
   .card { padding: 18px 16px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* RobotUX-Fassung (Entwurf 26.11.2026) */
+.cycle { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.cycle .node b { font-size: 17px; }
+.cycle .node span { line-height: 1.45; }
+.prose { display: grid; gap: .75em; max-inline-size: 36em; margin-bottom: 32px; }  /* ≈ 65–75 Zeichen in DE und EN */
+.prose p { font-size: 17px; line-height: 1.6; text-wrap: pretty; }
+.prose-justify { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+.abstract .prose { margin-bottom: 24px; }
+.tiles { margin-bottom: 8px; }
+.tile { display: grid; justify-items: center; gap: 8px; padding: 20px 16px; text-align: center; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.tile .ico { width: 34px; height: 34px; color: var(--hue, var(--accent)); }
+.tile small { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue, var(--accent)); }
+.tile b { font-size: 16px; line-height: 1.35; text-wrap: balance; color: var(--fg); }
+.principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.principles li { display: grid; gap: 6px; align-content: start; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.principles b { font-size: 16px; color: var(--fg); }
+.principles span, .rq span, .steps-list p { font-size: 15px; line-height: 1.5; color: var(--fg-2); }
+.rq { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; max-inline-size: 80ch; }
+.rq li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.rq b { font: 700 14px/1.2 var(--mono); color: var(--accent); }
+.rq span { font-size: 16px; color: var(--fg); }
+.steps-list { display: grid; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.steps-list li { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 8px 24px; padding-block: 16px; border-bottom: 1px solid var(--line); }
+.steps-list small { display: block; font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--hue, var(--accent)); }
+.steps-list b { display: block; margin-top: 4px; font-size: 17px; color: var(--fg); }
+.steps-list p { max-inline-size: 72ch; color: var(--fg); }
+.shot { display: grid; gap: 10px; margin-top: 32px; }
+.shot img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.shot figcaption { font-size: 14px; color: var(--fg-2); }
+.study-tables { margin-top: 16px; align-items: start; }
+.study-tables .table-wrap table { min-width: 0; }
+td.sym { white-space: nowrap; }
+tr.own td { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.aside-note { margin-top: 16px; max-inline-size: 80ch; font-size: 15px; line-height: 1.5; color: var(--fg-2); }
+.empty-state { display: flex; gap: 12px; align-items: flex-start; padding: 18px 20px; border: 1px dashed var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.empty-state .ico { color: var(--gold); margin-top: 2px; }
+.empty-state p { font-size: 16px; line-height: 1.5; }
+h2, h3 { text-wrap: balance; }
+.sec h3 { margin-bottom: 16px; }
+.sec.alt .eyebrow { color: color-mix(in srgb, var(--hue, var(--accent)) 82%, var(--fg)); }  /* Kontrast ≥ 4,5:1 auf dem getönten Band */
+@media (max-width: 980px) { .cycle, .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .cycle, .principles { grid-template-columns: minmax(0, 1fr); } .steps-list li { grid-template-columns: minmax(0, 1fr); } .study-tables { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 30em) { .prose-justify { text-align: start; } }
 </style>
 </head>
 <body>
@@ -219,12 +262,14 @@ td span { color: var(--fg-2); font-size: 14px; }
   <div class="wrap">
     <a class="brand" href="#top"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg><span data-en="UX Robot · Research">UX Robot · Forschung</span></a>
     <nav aria-label="Abschnitte" data-en-aria="Sections">
-      <a href="#abstract" data-en="Abstract">Kurzfassung</a>
-      <a href="#foundations" data-en="Foundations">Grundlagen</a>
-      <a href="#architecture" data-en="Architecture">Architektur</a>
-      <a href="#testbed" data-en="Measurement Suite">Messinstrumentarium</a>
-      <a href="#study" data-en="Study Design">Studiendesign</a>
-      <a href="#guidelines" data-en="Guidelines">Richtlinien</a>
+      <a href="#intro" data-en="1 Introduction">1 Einleitung</a>
+      <a href="#related" data-en="2 Related Work">2 Verwandte Arbeiten</a>
+      <a href="#approach" data-en="3 Approach">3 Ansatz</a>
+      <a href="#platform" data-en="4 Platform">4 Plattform</a>
+      <a href="#study" data-en="5 Study">5 Studie</a>
+      <a href="#results" data-en="6 Results">6 Ergebnisse</a>
+      <a href="#discussion" data-en="7 Discussion">7 Diskussion</a>
+      <a href="#outlook" data-en="8 Conclusion">8 Fazit</a>
       <a href="#literature" data-en="Literature">Literatur</a>
     </nav>
     <div class="tools">
@@ -242,13 +287,13 @@ td span { color: var(--fg-2); font-size: 14px; }
   
   <section class="title" aria-labelledby="t">
     <div class="wrap">
-      <span class="status"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span data-en="Working Paper · Draft 8 · Empirical Study in Preparation">Arbeitspapier · Entwurf 8 · Empirische Studie in Vorbereitung</span></span>
-      <h1 id="t"><em>Look, Speak, Confirm:</em> <span data-en="A Human-Factors Evaluation of Complementary Multimodal Interaction for Robot Manipulation">Eine Human-Factors-Evaluierung komplementärer multimodaler Interaktion zur Robotermanipulation</span></h1>
-      <p class="wt" data-en="Working Title &amp;amp; Empirical Framework · UX Lab">Arbeitstitel &amp; empirischer Rahmen · UX Lab</p>
+      <span class="status"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span data-en="Working Paper · Draft of 26 Nov 2026 · Exploratory Study in Preparation">Arbeitspapier · Entwurf vom 26.11.2026 · Explorative Studie in Vorbereitung</span></span>
+      <h1 id="t"><em>Towards RobotUX:</em> <span data-en="A Holistic Human Factors Approach for Diagnosing and Improving Human-Robot Interaction">Ein ganzheitlicher Human-Factors-Ansatz zur Diagnose und Verbesserung der Mensch-Roboter-Interaktion</span></h1>
+      <p class="wt" data-en="A Configurable Multimodal Platform and Exploratory Design Study · UX Lab">Konfigurierbare multimodale Plattform und explorative Gestaltungsstudie · UX Lab</p>
       <p class="authors"><b>Marius Kaul</b><span>·</span><b data-en="HCI &amp;amp; Usability Research Group">Forschungsgruppe HCI &amp; Usability</b></p>
       <p class="affil" data-en="UX Lab · Rhine-Waal University of Applied Sciences">UX Lab · Hochschule Rhein-Waal</p>
       <div class="btns">
-        <span class="btn" aria-disabled="true"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg><span data-en="Paper Draft 8">Paper-Entwurf 8</span> <small data-en="in preparation">in Vorbereitung</small></span>
+        <span class="btn" aria-disabled="true"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg><span data-en="Paper draft">Paper-Entwurf</span> <small data-en="in preparation">in Vorbereitung</small></span>
         <span class="btn" role="img" aria-label="Code nicht öffentlich; Veröffentlichung unter Apache 2.0 geplant" data-en-aria="Code private; publication planned under Apache 2.0"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span data-en="Code private">Code nicht öffentlich</span> <small data-en="publication planned">Veröffentlichung geplant</small></span>
         <a class="btn" href="project_docs.html"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span data-en="Platform UX Robot">Plattform UX Robot</span></a>
       </div>
@@ -256,45 +301,22 @@ td span { color: var(--fg-2); font-size: 14px; }
   </section>
 
   
-  <section class="teaser" aria-label="Abbildung 1: Konzeptueller Informationsfluss" data-en-aria="Figure 1: Conceptual Information Flow">
+  <section class="teaser" aria-label="Abbildung 1: Der RobotUX-Prozess" data-en-aria="Figure 1: The RobotUX process">
     <div class="wrap">
       <figure class="fig">
-        <div class="fig-row" role="list">
-          <div class="node" role="listitem" style="--hue: var(--blue)">
-            <small data-en="Human Operator">Bedienperson</small>
-            <b data-en="Gaze · Speech · Controller">Blick · Sprache · Controller</b>
-            <span data-en="Complementary functional allocation across sensory-motor channels">Komplementäre Funktionszuordnung über sensomotorische Kanäle</span>
-          </div>
-          <div class="node" role="listitem" style="--hue: var(--violet)">
-            <small data-en="Intent-Safety Layer">Intent-Safety-Schicht</small>
-            <b>Attention → Candidate → Armed → Confirmed</b>
-            <span data-en="State-based buffer meant to prevent Midas Touch errors (planned)">Zustandsbasierter Puffer zur Vermeidung von Midas-Touch-Fehlern (geplant)</span>
-          </div>
-          <div class="node" role="listitem" style="--hue: var(--indigo)">
-            <small data-en="Task Planning">Aufgabenplanung</small>
-            <b>ROS 2 Humble · MoveIt 2</b>
-            <span data-en="Deterministic skill execution &amp;amp; collision-checked trajectory generation">Deterministische Skill-Ausführung &amp; kollisionsgeprüfte Bahnplanung</span>
-          </div>
-          <div class="node" role="listitem" style="--hue: var(--green)">
-            <small data-en="Robotic Hardware">Roboter-Hardware</small>
-            <b data-en="xArm Lite 6 · Vacuum Gripper">xArm Lite 6 · Vakuumgreifer</b>
-            <span data-en="Assistive manipulation in shared workspace">Assistive Manipulation im gemeinsamen Arbeitsraum</span>
-          </div>
-        </div>
+        <ol class="cycle">
+          <li class="node" style="--hue: var(--blue)"><small data-en="Step 1">Schritt 1</small><b data-en="Configure">Konfigurieren</b><span data-en="Derive the research question; select interface variant, modalities, task scenario and complementary methods.">Forschungsfrage ableiten; Interface-Variante, Modalitäten, Aufgabe und komplementäre Methoden wählen.</span></li>
+          <li class="node" style="--hue: var(--indigo)"><small data-en="Step 2">Schritt 2</small><b data-en="Evaluate">Evaluieren</b><span data-en="Run task-based sessions; record logs, observation, gaze, questionnaires and interviews on a common timeline.">Aufgaben durchführen; Protokolle, Beobachtung, Blick, Fragebögen und Interviews auf einer Zeitachse erfassen.</span></li>
+          <li class="node" style="--hue: var(--violet)"><small data-en="Step 3">Schritt 3</small><b data-en="Diagnose">Diagnostizieren</b><span data-en="Triangulate evidence per difficulty; attribute perceptual, cognitive, behavioural, technical and contextual causes.">Evidenz je Schwierigkeit triangulieren; perzeptive, kognitive, behaviorale, technische und kontextuelle Ursachen zuordnen.</span></li>
+          <li class="node" style="--hue: var(--pink)"><small data-en="Step 4">Schritt 4</small><b data-en="Recommend">Empfehlen</b><span data-en="Translate diagnoses into prioritised design requirements and user-preparation measures.">Diagnosen in priorisierte Gestaltungsanforderungen und Maßnahmen zur Vorbereitung der Nutzenden übersetzen.</span></li>
+          <li class="node" style="--hue: var(--gold)"><small data-en="Step 5">Schritt 5</small><b data-en="Implement">Umsetzen</b><span data-en="Adapt the configurable interface (layout, feedback, guidance, modality mapping) without changing robot behaviour.">Konfigurierbares Interface anpassen (Layout, Rückmeldung, Führung, Modalitäten), Roboterverhalten bleibt gleich.</span></li>
+          <li class="node" style="--hue: var(--green)"><small data-en="Step 6">Schritt 6</small><b data-en="Re-evaluate">Re-Evaluieren</b><span data-en="Repeat comparable tasks and measures; check whether difficulties are resolved and whether new ones emerge.">Vergleichbare Aufgaben und Maße wiederholen; prüfen, ob Schwierigkeiten behoben sind und neue entstehen.</span></li>
+        </ol>
         <div class="feedback-loop">
-          <svg class="ico ico-s" aria-hidden="true"><use href="#i-shield"/></svg>
-          <div><b data-en="Closed-Loop Feedback:">Geschlossener Rückmeldekreis:</b> <span data-en="Continuous visual bounding, dwell indicators, and audio confirmations return to the user at every state transition before any arm movement.">Bei jedem Zustandsübergang erhält die Bedienperson vor jeder Armbewegung Rückmeldung durch visuelle Markierung, Verweilanzeigen und akustische Bestätigungen.</span></div>
+          <svg class="ico ico-s" aria-hidden="true"><use href="#i-clock"/></svg>
+          <div><b data-en="Iterative:">Iterativ:</b> <span data-en="The findings of step 6 feed the next configuration (step 1). Each step produces an artefact the next one builds on.">Die Ergebnisse von Schritt 6 fließen in die nächste Konfiguration (Schritt 1). Jeder Schritt erzeugt ein Artefakt, auf dem der nächste aufbaut.</span></div>
         </div>
-        <div class="log">
-          <b data-en="Synchronized HF Event Logger (planned):">Synchronisierter HF-Ereignislogger (geplant):</b>
-          <span class="chip">Eye-Tracking (Tobii)</span>
-          <span class="chip" data-en="Sympathetic Tone (EDA) · planned">Sympathikotonus (EDA) · geplant</span>
-          <span class="chip" data-en="Parasympathetic Tone (HRV) · planned">Parasympathikotonus (HRV) · geplant</span>
-          <span class="chip">NASA-TLX</span>
-          <span class="chip">SUS &amp; TAM</span>
-          <span class="chip" data-en="SDA-M (BACs) · planned">SDA-M (BACs) · geplant</span>
-        </div>
-        <figcaption><b data-en="Figure 1.">Abbildung 1.</b> <span data-en="Information flow architecture: each modality is strictly dedicated to a single complementary role. Feedback returns to the operator at every transition stage, and every interaction event is timestamped to correlate system events with objective biosignals and psychometrics (event logger and biosignal sensors planned, not yet implemented).">Architektur des Informationsflusses: Jede Modalität übernimmt genau eine komplementäre Rolle. Die Bedienperson erhält bei jedem Übergang Rückmeldung; jedes Interaktionsereignis wird mit einem Zeitstempel versehen, um Systemereignisse mit objektiven Biosignalen und psychometrischen Daten zu korrelieren (Ereignislogger und Biosignal-Sensorik geplant, noch nicht umgesetzt).</span></figcaption>
+        <figcaption><b data-en="Figure 1.">Abbildung 1.</b> <span data-en="The RobotUX process: an iterative, evidence-driven research and design cycle.">Der RobotUX-Prozess: ein iterativer, evidenzgeleiteter Forschungs- und Gestaltungszyklus.</span></figcaption>
       </figure>
     </div>
   </section>
@@ -303,363 +325,268 @@ td span { color: var(--fg-2); font-size: 14px; }
   <section class="sec alt abstract" id="abstract" aria-labelledby="h-abs">
     <div class="wrap narrow">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--accent)"><span class="n">01</span><span data-en="Abstract">Kurzfassung</span></span>
-        <h2 id="h-abs" data-en="Problem and approach">Problemstellung und Ansatz</h2>
-        <p class="lede" data-en="Why novices struggle to control a robot arm, and how complementary input could help.">Warum Laien die Steuerung eines Roboterarms schwerfällt und wie komplementäre Eingaben helfen könnten.</p>
+        <span class="eyebrow" style="--hue: var(--accent)"><span data-en="Abstract">Kurzfassung</span></span>
+        <h2 id="h-abs" data-en="Explaining, not only measuring">Erklären statt nur messen</h2>
       </div>
-      <p data-en="Robot manipulation remains challenging for non-experts, who frequently stay passive steerers that trigger pre-defined scripts. Conventional teach pendants and nested menus add extraneous cognitive load and interaction cost.">Robotermanipulation bleibt für Laien anspruchsvoll: Sie verbleiben häufig in der Rolle passiver Bedienender, die vordefinierte Skripte auslösen. Konventionelle Teach-Pendants und verschachtelte Menüs erhöhen die extrinsische kognitive Belastung und die Interaktionskosten.</p>
-      <p data-en="We propose a complementary architecture where gaze references space, speech communicates task intent, and controllers confirm execution. The robot serves as a human-factors testbed to study this, including the gap between reported and measured strain (the &quot;physiological paradox&quot;).">Wir schlagen eine komplementäre Architektur vor, in der der Blick den Raum referenziert, die Sprache die Aufgabenintention übermittelt und der Controller die Ausführung bestätigt. Der Roboter dient dabei als Human-Factors-Testumgebung, auch für die Diskrepanz zwischen berichteter und gemessener Beanspruchung („physiologisches Paradoxon“).</p>
+      <div class="prose">
+        <p class="prose-justify" data-en="Multimodal robot interfaces, simulation environments and human-centred evaluation frameworks have advanced considerably. Yet HRI research often examines interaction from a single perspective – technological, behavioural, cognitive or experiential – and shows that and where problems occur, but rarely why.">Multimodale Roboter-Interfaces, Simulationsumgebungen und menschzentrierte Evaluationsansätze sind weit entwickelt. Studien betrachten die Interaktion aber meist aus einer Perspektive – technisch, behavioral, kognitiv oder erlebnisbezogen – und zeigen damit, dass und wo etwas schiefgeht, selten warum.</p>
+        <p class="prose-justify" data-en="RobotUX is a holistic, interdisciplinary Human Factors approach: methods are selected per research question, evidence is integrated per interaction episode, and every difficulty is attributed to an explanatory level before a design change follows. The approach is put into practice with the configurable multimodal platform UX Robot and demonstrated in an exploratory design study on robotic palletising.">RobotUX ist ein ganzheitlicher, interdisziplinärer Human-Factors-Ansatz: Methoden werden je Forschungsfrage gewählt, Evidenz wird je Interaktionsepisode zusammengeführt, und jede Schwierigkeit wird einer Erklärungsebene zugeordnet, bevor eine Gestaltungsänderung folgt. Umgesetzt wird der Ansatz mit der konfigurierbaren multimodalen Plattform UX Robot, gezeigt an einer explorativen Gestaltungsstudie zum robotischen Palettieren.</p>
+      </div>
+      <div class="log">
+        <b data-en="Keywords:">Schlagworte:</b>
+        <span class="chip">Human-Robot Interaction</span>
+        <span class="chip">Human Factors</span>
+        <span class="chip">RobotUX</span>
+        <span class="chip" data-en="Multimodal Interaction">Multimodale Interaktion</span>
+        <span class="chip" data-en="Interaction Problem Diagnosis">Diagnose von Interaktionsproblemen</span>
+        <span class="chip" data-en="Simulation-Based Evaluation">Simulationsbasierte Evaluation</span>
+        <span class="chip" data-en="Evidence-Based Design">Evidenzbasierte Gestaltung</span>
+      </div>
     </div>
   </section>
 
   
-  <section class="sec" id="foundations" aria-labelledby="h-foundations">
+  <section class="sec" id="intro" aria-labelledby="h-intro">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--blue)"><span class="n">02</span><span data-en="Theoretical Foundations">Theoretische Grundlagen</span></span>
-        <h2 id="h-foundations" data-en="The Human Cost of Human-Robot Collaboration">Die menschlichen Kosten der Mensch-Roboter-Kollaboration</h2>
-        <p class="lede" data-en="The theories behind the design: cognitive load, gaze interaction, physiological strain and mental models.">Die theoretische Basis des Designs: kognitive Belastung, blickbasierte Interaktion, physiologische Beanspruchung und mentale Modelle.</p>
+        <span class="eyebrow" style="--hue: var(--blue)"><span class="n">1</span><span data-en="Introduction">Einleitung</span></span>
+        <h2 id="h-intro" data-en="One long task time – four explanations">Eine lange Aufgabenzeit – vier Erklärungen</h2>
+        <p class="lede" data-en="Interaction difficulties emerge from the interplay of user, interface, robot behaviour and task.">Interaktionsschwierigkeiten entstehen aus dem Zusammenspiel von Mensch, Interface, Roboterverhalten und Aufgabe.</p>
+      </div>
+      <div class="prose">
+        <p class="prose-justify" data-en="Robotic manipulators are increasingly operated by workers, technicians and service staff with limited robotics expertise. They translate a task goal into spatial targets, motion commands and confirmations while monitoring a system whose internal state is only partly visible (Endsley, 1995).">Roboterarme werden zunehmend von Beschäftigten, Technikerinnen und Servicekräften ohne Robotik-Ausbildung bedient. Sie übersetzen ein Aufgabenziel in räumliche Ziele, Bewegungsbefehle und Bestätigungen und überwachen dabei ein System, dessen innerer Zustand nur teilweise sichtbar ist (Endsley, 1995).</p>
+        <p class="prose-justify" data-en="Every input channel brings its own failure modes: the Midas Touch problem of gaze selection (Jacob, 1990), recognition errors in speech, hidden modes in graphical interfaces.">Jeder Eingabekanal bringt eigene Fehlerquellen mit: das Midas-Touch-Problem der Blickauswahl (Jacob, 1990), Erkennungsfehler der Sprache, verdeckte Modi im grafischen Interface.</p>
+        <p class="prose-justify" data-en="A single measure shows that and where something goes wrong. A long task time, for example, has at least four competing explanations – and each calls for a different improvement.">Ein einzelnes Maß zeigt, dass und wo etwas schiefgeht. Eine lange Aufgabenzeit etwa hat mindestens vier konkurrierende Erklärungen – und jede verlangt eine andere Verbesserung.</p>
+      </div>
+      <div class="grid4 tiles">
+        <div class="tile" style="--hue: var(--blue)"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><small data-en="Perceptual">Perzeptiv</small><b data-en="Status display not noticed">Statusanzeige nicht gesehen</b></div>
+        <div class="tile" style="--hue: var(--violet)"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg><small data-en="Cognitive">Kognitiv</small><b data-en="Robot behaviour misunderstood">Roboterverhalten falsch verstanden</b></div>
+        <div class="tile" style="--hue: var(--gold)"><svg class="ico" aria-hidden="true"><use href="#i-code"/></svg><small data-en="Technical">Technisch</small><b data-en="Motion planning took long">Bahnplanung dauerte lange</b></div>
+        <div class="tile" style="--hue: var(--green)"><svg class="ico" aria-hidden="true"><use href="#i-doc"/></svg><small data-en="Contextual">Kontextuell</small><b data-en="Task description unclear">Aufgabe unklar beschrieben</b></div>
+      </div>
+      <h3 data-en="Three contributions">Drei Beiträge</h3>
+      <div class="grid3">
+        <div class="card" style="--hue: var(--blue)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg><span data-en="C1 · Method">C1 · Methodik</span></span><b data-en="Research and design process">Forschungs- und Gestaltungsprozess</b><p data-en="System-independent: question before method, evidence per episode and an explicit diagnosis step (section 3).">Systemunabhängig: Frage vor Methode, Evidenz je Episode und ein expliziter Diagnoseschritt (Abschnitt 3).</p></div>
+        <div class="card" style="--hue: var(--violet)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="C2 · Platform">C2 · Plattform</span></span><b>UX Robot</b><p data-en="Controller, speech and gaze, an adaptable interface, simulation and a study module – re-test diagnosed changes under comparable conditions (section 4).">Controller, Sprache und Blick, anpassbare Oberfläche, Simulation und Studienmodul – diagnostizierte Änderungen unter vergleichbaren Bedingungen neu testen (Abschnitt 4).</p></div>
+        <div class="card" style="--hue: var(--green)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="C3 · Study">C3 · Studie</span></span><b data-en="Exploratory design study">Explorative Gestaltungsstudie</b><p data-en="One complete RobotUX cycle in a simulated palletising scenario, from initial evaluation to formative re-evaluation (sections 5 and 6).">Ein vollständiger RobotUX-Zyklus im simulierten Palettierszenario, von der Erstevaluation bis zur formativen Re-Evaluation (Abschnitte 5 und 6).</p></div>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="sec alt" id="related" aria-labelledby="h-related">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--indigo)"><span class="n">2</span><span data-en="Related Work">Verwandte Arbeiten</span></span>
+        <h2 id="h-related" data-en="Positioning RobotUX">Positionierung von RobotUX</h2>
+        <p class="lede" data-en="Existing work supplies instruments, heuristics, frameworks and platforms. RobotUX builds on them and couples episode-level diagnosis to redesign.">Bestehende Arbeiten liefern Instrumente, Heuristiken, Frameworks und Plattformen. RobotUX baut darauf auf und koppelt die Diagnose je Episode an die Neugestaltung.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col" data-en="Approach">Ansatz</th>
+              <th scope="col" data-en="Main aim">Hauptziel</th>
+              <th scope="col" data-en="Episode-level diagnosis">Diagnose je Episode</th>
+              <th scope="col" data-en="Configurable platform">Konfigurierbare Plattform</th>
+              <th scope="col" data-en="Redesign + re-evaluation">Neugestaltung + Re-Evaluation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Steinfeld et al. (2006)</b></td><td data-en="Common task-oriented HRI metrics">Gängige aufgabenbezogene HRI-Metriken</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="○ no focus">○ kein Fokus</td></tr>
+            <tr><td><b>Marvel et al. (2020)</b></td><td data-en="Metrics and HMI guidelines for collaborative manufacturing">Metriken und HMI-Richtlinien für kollaborative Fertigung</td><td class="sym" data-en="◐ partly">◐ teilweise</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="◐ partly">◐ teilweise</td></tr>
+            <tr><td><b>HEUROBOX (2023)</b></td><td data-en="Heuristic evaluation of industrial HRI">Heuristische Evaluation industrieller HRI</td><td class="sym" data-en="◐ partly">◐ teilweise</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="○ no focus">○ kein Fokus</td></tr>
+            <tr><td><b>USUS (2009)</b></td><td data-en="Multi-factor HRI evaluation">Mehrfaktorielle HRI-Evaluation</td><td class="sym" data-en="◐ partly">◐ teilweise</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="○ no focus">○ kein Fokus</td></tr>
+            <tr><td><b>ANEMONE (2020)</b></td><td data-en="UX evaluation of action and intention recognition">UX-Evaluation der Handlungs- und Intentionserkennung</td><td class="sym" data-en="● main focus">● Hauptfokus</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="◐ partly">◐ teilweise</td></tr>
+            <tr><td><b>Prati et al. (2021)</b></td><td data-en="UX-oriented design requirements for HRI">UX-orientierte Gestaltungsanforderungen</td><td class="sym" data-en="◐ partly">◐ teilweise</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="◐ partly">◐ teilweise</td></tr>
+            <tr><td><b>RISE (2023)</b></td><td data-en="Reproducible, interdisciplinary HRI studies">Reproduzierbare, interdisziplinäre HRI-Studien</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="● main focus">● Hauptfokus</td><td class="sym" data-en="○ no focus">○ kein Fokus</td></tr>
+            <tr><td><b>M4Bench (2025)</b></td><td data-en="Benchmark of multi-user, multi-device control">Benchmark für Mehrpersonen- und Mehrgerätesteuerung</td><td class="sym" data-en="○ no focus">○ kein Fokus</td><td class="sym" data-en="● main focus">● Hauptfokus</td><td class="sym" data-en="○ no focus">○ kein Fokus</td></tr>
+            <tr class="own"><td><b data-en="RobotUX + UX Robot">RobotUX + UX Robot</b></td><td data-en="Diagnose and resolve interaction difficulties">Interaktionsschwierigkeiten diagnostizieren und beheben</td><td class="sym" data-en="◇ design goal">◇ Gestaltungsziel</td><td class="sym" data-en="● platform">● Plattform</td><td class="sym" data-en="◇ design goal">◇ Gestaltungsziel</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="aside-note" data-en="Simplified from Table 1 of the paper draft. ◇ = design goal of this work, evidence follows with the study results (section 6).">Vereinfacht aus Tabelle 1 des Paper-Entwurfs. ◇ = Gestaltungsziel dieser Arbeit, der Beleg folgt mit den Studienergebnissen (Abschnitt 6).</p>
+    </div>
+  </section>
+
+  
+  <section class="sec" id="approach" aria-labelledby="h-approach">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--violet)"><span class="n">3</span><span data-en="Approach">Ansatz</span></span>
+        <h2 id="h-approach" data-en="RobotUX: an integrated Human Factors approach">RobotUX: ein integrierter Human-Factors-Ansatz</h2>
+        <p class="lede" data-en="Built on human-centred design (ISO 9241-210) and ISO 9241-11 – shifting the focus from measuring interaction quality to explaining it.">Aufbauend auf menschzentrierter Gestaltung (ISO 9241-210) und ISO 9241-11 – mit dem Schwerpunkt auf dem Erklären statt dem Messen der Interaktionsqualität.</p>
+      </div>
+      <ol class="principles">
+        <li><b data-en="P1 Question before method">P1 Frage vor Methode</b><span data-en="Methods are chosen for the research question, not applied as a fixed battery.">Methoden werden für die Forschungsfrage gewählt, nicht als feste Batterie angewendet.</span></li>
+        <li><b data-en="P2 Complementarity">P2 Komplementarität</b><span data-en="Each method supplies evidence the others cannot: behaviour, ratings, attention or verbal explanations.">Jede Methode liefert Evidenz, die die anderen nicht liefern: Verhalten, Bewertungen, Aufmerksamkeit oder verbale Erklärungen.</span></li>
+        <li><b data-en="P3 Episode as unit of analysis">P3 Episode als Analyseeinheit</b><span data-en="Evidence is integrated per interaction episode on a common timeline.">Evidenz wird je Interaktionsepisode auf einer gemeinsamen Zeitachse zusammengeführt.</span></li>
+        <li><b data-en="P4 Explain before optimising">P4 Erklären vor Optimieren</b><span data-en="A design change follows only after competing explanations have been weighed.">Eine Gestaltungsänderung folgt erst, nachdem konkurrierende Erklärungen abgewogen wurden.</span></li>
+        <li><b data-en="P5 Traceability">P5 Nachvollziehbarkeit</b><span data-en="Each recommendation points to the evidence and diagnosis it rests on.">Jede Empfehlung verweist auf die Evidenz und die Diagnose, auf der sie beruht.</span></li>
+        <li><b data-en="P6 System independence">P6 Systemunabhängigkeit</b><span data-en="No specific robot, interface or modality is assumed; platform-specific parts are limited to steps 1 and 5.">Kein bestimmter Roboter, kein bestimmtes Interface, keine bestimmte Modalität; plattformspezifisch sind nur die Schritte 1 und 5.</span></li>
+      </ol>
+      <h3 data-en="Methods follow the diagnostic question">Methoden folgen der diagnostischen Frage</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col" data-en="Diagnostic question">Diagnostische Frage</th>
+              <th scope="col" data-en="Behaviour / technology">Verhalten / Technik</th>
+              <th scope="col" data-en="Subjective / verbal">Subjektiv / verbal</th>
+              <th scope="col" data-en="Attention">Aufmerksamkeit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><b data-en="Is the task completed, and how efficiently?">Gelingt die Aufgabe, und wie effizient?</b></td><td data-en="Task success, time, number of interactions">Aufgabenerfolg, Bearbeitungszeit, Anzahl der Interaktionen</td><td>Single Ease Question</td><td>–</td></tr>
+            <tr><td><b data-en="Where do errors and hesitation occur?">Wo treten Fehler und Zögern auf?</b></td><td data-en="Event logs, structured observation">Ereignisprotokolle, strukturierte Beobachtung</td><td>Cued Retrospective Report</td><td data-en="Gaze on areas of interest">Blick auf Areas of Interest</td></tr>
+            <tr><td><b data-en="Is a system state noticed?">Wird ein Systemzustand wahrgenommen?</b></td><td data-en="Time to correct action after the state change">Zeit bis zur richtigen Handlung nach dem Zustandswechsel</td><td>Interview</td><td data-en="Fixations on status elements">Fixationen auf Statuselementen</td></tr>
+            <tr><td><b data-en="Does the mental model match the system?">Passt das mentale Modell zum System?</b></td><td data-en="Wrong or repeated actions">Falsche oder wiederholte Handlungen</td><td data-en="Think-aloud or retrospective report, interview">Lautes Denken oder retrospektiver Bericht, Interview</td><td>–</td></tr>
+            <tr><td><b data-en="How demanding is the interaction?">Wie beanspruchend ist die Interaktion?</b></td><td data-en="Error and correction rate">Fehler- und Korrekturrate</td><td>NASA-TLX</td><td>–</td></tr>
+            <tr><td><b data-en="How is the overall experience rated?">Wie wird das Gesamterlebnis bewertet?</b></td><td>–</td><td>SUS, UEQ-S, Interview</td><td>–</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="sec alt" id="platform" aria-labelledby="h-platform">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--gold)"><span class="n">4</span><span data-en="Platform">Plattform</span></span>
+        <h2 id="h-platform" data-en="The configurable research platform UX Robot">Die konfigurierbare Forschungsplattform UX&nbsp;Robot</h2>
+        <p class="lede" data-en="UFACTORY xArm Lite 6 with vacuum gripper, ROS 2 Humble and MoveIt 2 on a single workstation.">UFACTORY xArm&nbsp;Lite&nbsp;6 mit Vakuumgreifer, ROS&nbsp;2 Humble und MoveIt&nbsp;2 auf einer Workstation.</p>
       </div>
       <div class="grid4">
-        <div class="card" style="--hue: var(--blue)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg><span data-en="Cognitive Load Theory">Cognitive-Load-Theorie</span></span>
-          <b data-en="Extraneous Load &amp;amp; Interaction Cost">Extrinsische Belastung &amp; Interaktionskosten</b>
-          <p data-en="Indirect menu hierarchies overload working memory (Sweller, 1988; Nielsen, 1994). Multiple Resource Theory (Wickens, 2002) dictates distributing demands across sensory channels.">Indirekte Menühierarchien überlasten das Arbeitsgedächtnis (Sweller, 1988; Nielsen, 1994). Die Multiple-Resource-Theorie (Wickens, 2002) legt nahe, Anforderungen auf mehrere sensorische Kanäle zu verteilen.</p>
-        </div>
-        <div class="card" style="--hue: var(--gold)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Gaze &amp;amp; Midas Touch">Blick &amp; Midas Touch</span></span>
-          <b data-en="Decoupling Perception from Triggering">Entkopplung von Wahrnehmung und Auslösung</b>
-          <p data-en="Eye-tracking offers rapid deictic spatial referencing. Treating fixations as direct triggers causes dangerous accidental executions (Jones et al., 2018).">Eye-Tracking ermöglicht eine schnelle deiktische Referenzierung im Raum. Werden Fixationen direkt als Auslöser gewertet, kommt es zu gefährlichen unbeabsichtigten Ausführungen (Jones et al., 2018).</p>
-        </div>
-        <div class="card" style="--hue: var(--pink)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg><span data-en="Physiological Paradox">Physiologisches Paradoxon</span></span>
-          <b data-en="Subjective Reports vs. Sympathetic Arousal">Subjektive Angaben vs. sympathische Aktivierung</b>
-          <p data-en="Collaborative operators often report low subjective stress despite high galvanic skin response arousal (Su et al., 2026). Objective biosignals reveal hidden strain.">Bedienpersonen in kollaborativen Szenarien berichten oft geringen subjektiven Stress, obwohl die elektrodermale Aktivität eine hohe Aktivierung anzeigt (Su et al., 2026). Objektive Biosignale machen verdeckte Beanspruchung sichtbar.</p>
-        </div>
-        <div class="card" style="--hue: var(--green)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Mental Models (SDA-M)">Mentale Modelle (SDA-M)</span></span>
-          <b data-en="Conceptual Structure vs. Tool Shortcut">Begriffliche Struktur vs. Abkürzung durch das Werkzeug</b>
-          <p data-en="Experts possess structured cognitive action networks (Schack et al., 2014). Structural Dimensional Analysis reveals whether assistance aids understanding or bypasses learning.">Expertinnen und Experten verfügen über strukturierte kognitive Handlungsnetzwerke (Schack et al., 2014). Die Strukturdimensionale Analyse zeigt, ob Assistenz das Verständnis fördert oder das Lernen umgeht.</p>
-        </div>
+        <div class="card" style="--hue: var(--blue)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg><span>Controller</span></span><b data-en="Gamepad · MoveIt Servo">Gamepad · MoveIt Servo</b><p data-en="Continuous Cartesian control with predictive collision protection and haptic feedback.">Kontinuierliche kartesische Steuerung mit vorausschauendem Kollisionsschutz und haptischer Rückmeldung.</p></div>
+        <div class="card" style="--hue: var(--violet)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Speech">Sprache</span></span><b data-en="Whisper · local">Whisper · lokal</b><p data-en="Push-to-talk, restricted command grammar in German and English.">Push-to-Talk, eingeschränkte Befehlsgrammatik auf Deutsch und Englisch.</p></div>
+        <div class="card" style="--hue: var(--indigo)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span>Eye-Tracking</span></span><b>Tobii Pro Glasses 3</b><p data-en="Gaze control is available on the platform; in the study gaze serves only as a measurement instrument.">Blicksteuerung ist auf der Plattform vorhanden; in der Studie dient der Blick nur als Messinstrument.</p></div>
+        <div class="card" style="--hue: var(--green)"><span class="k"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg><span data-en="Interface &amp;amp; simulation">Interface &amp; Simulation</span></span><b data-en="Adaptable GUI · digital twin">Anpassbare GUI · digitaler Zwilling</b><p data-en="Layout templates, themes and languages; task-oriented scenes for reproducible studies.">Layout-Vorlagen, Designs und Sprachen; aufgabenorientierte Szenen für reproduzierbare Studien.</p></div>
       </div>
-
-      <h3 data-en="The Critical Research Gap">Die zentrale Forschungslücke</h3>
-      <div class="card" style="margin-top: 16px; --hue: var(--indigo)">
-        <b data-en="Where Engineering Fusion Meets Human Factors:">Wo technische Fusion auf Human Factors trifft:</b>
-        <p data-en="Multimodal technical fusion and human-factors evaluations rarely intersect systematically. Prior literature lacks evidence on how complementary allocation simultaneously influences performance, physiological strain, and novice mental representations.">Technische multimodale Fusion und Human-Factors-Evaluierungen werden selten systematisch zusammengeführt. Bisher fehlt Evidenz dazu, wie komplementäre Funktionszuordnung zugleich Leistung, physiologische Beanspruchung und die mentalen Repräsentationen von Laien beeinflusst.</p>
-      </div>
+      <p class="aside-note" data-en="Further modalities – VR teleoperation (Meta Quest 3), hand tracking (Leap Motion) and an LLM-based assistant – belong to the platform but are not used in the study reported here.">Weitere Modalitäten – VR-Teleoperation (Meta Quest&nbsp;3), Hand-Tracking (Leap Motion) und ein sprachmodellbasierter Assistent – gehören zur Plattform, werden in der hier beschriebenen Studie aber nicht genutzt.</p>
     </div>
   </section>
 
   
-  <section class="sec alt" id="architecture" aria-labelledby="h-arch">
+  <section class="sec" id="study" aria-labelledby="h-study">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--violet)"><span class="n">03</span><span data-en="Interaction Architecture">Interaktionsarchitektur</span></span>
-        <h2 id="h-arch" data-en="One Role per Modality: Look, Speak, Confirm">Eine Rolle je Modalität: Look, Speak, Confirm</h2>
-        <p class="lede" data-en="Each input channel has exactly one job.">Jeder Eingabekanal erfüllt genau eine Aufgabe.</p>
+        <span class="eyebrow" style="--hue: var(--green)"><span class="n">5</span><span data-en="Study">Studie</span></span>
+        <h2 id="h-study" data-en="Exploratory design study: robotic palletising">Explorative Gestaltungsstudie: robotisches Palettieren</h2>
+        <p class="lede" data-en="Deliberately formative, no hypotheses on effect sizes; 8–10 new robotics novices per iteration.">Bewusst formativ, keine Hypothesen über Effektstärken; je Iteration 8–10 neue Robotik-Neulinge.</p>
       </div>
-      <div class="grid3">
-        <div class="card" style="--hue: var(--blue)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Spatial Reference (Where)">Räumliche Referenz (Wo)</span></span>
-          <b data-en="Eye Gaze · Tobii Pro Glasses 3">Blick · Tobii Pro Glasses 3</b>
-          <p data-en="Identifies target objects in 3D space via raycasting (RGB-D + YOLOv8). In the planned study design, gaze only selects targets; motion starts only after a separate confirmation.">Identifiziert Zielobjekte im 3D-Raum per Raycasting (RGB-D + YOLOv8). Im geplanten Studiendesign wählt der Blick nur Ziele aus; eine Bewegung beginnt erst nach separater Bestätigung.</p>
-        </div>
-        <div class="card" style="--hue: var(--violet)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Task Intent (What)">Aufgabenintention (Was)</span></span>
-          <b data-en="Speech · Offline Whisper">Sprache · Whisper (offline)</b>
-          <p data-en="Communicates high-level semantic intentions (&quot;Pick&quot;, &quot;Place&quot;) without menu traversal. Grounded by temporal lead-lag synchronization where gaze precedes speech (Khan et al., 2026).">Übermittelt übergeordnete semantische Intentionen („Pick“, „Place“) ohne Menünavigation. Die Verankerung erfolgt über eine zeitliche Lead-Lag-Synchronisation, bei der der Blick der Sprache vorausgeht (Khan et al., 2026).</p>
-        </div>
-        <div class="card" style="--hue: var(--green)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Confirmation &amp;amp; Override">Bestätigung &amp; Eingriff</span></span>
-          <b data-en="Physical Controller &amp;amp; Low-Latency GUI">Physischer Controller &amp; latenzarme GUI</b>
-          <p data-en="A fixed channel for confirmation, emergency stop and error recovery, so the arm only moves on a human command.">Ein fester Kanal für Bestätigung, E-STOP und Fehlerbehebung: Der Arm bewegt sich nur auf Befehl des Menschen.</p>
-        </div>
-      </div>
-
-      <h3 data-en="Intent-Safety State Machine: The Cognitive Buffer">Intent-Safety-Zustandsautomat: der kognitive Puffer</h3>
-      <p style="margin-top: 8px; color: var(--fg-2); max-width: 72ch; font-size: 15px;" data-en="To solve the Midas Touch without introducing latency bottlenecks, the proposed Intent-Safety Layer (planned, not yet implemented) enforces a 4-stage deterministic transition:">Um das Midas-Touch-Problem ohne zusätzliche Latenzengpässe zu lösen, erzwingt die vorgeschlagene Intent-Safety-Schicht (geplant, noch nicht umgesetzt) einen deterministischen Übergang in vier Stufen:</p>
-      <ol class="steps" aria-label="Intent-Safety-Zustände" data-en-aria="Intent-safety states">
-        <li data-k="ATTENTION">
-          <b data-en="Visual Exploration">Visuelle Exploration</b>
-          <span data-en="Continuous gaze monitoring. Looking around the workspace triggers nothing.">Kontinuierliche Blickerfassung. Das Umherblicken im Arbeitsraum löst nichts aus.</span>
-        </li>
-        <li data-k="CANDIDATE">
-          <b data-en="Target Raycast">Ziel-Raycast</b>
-          <span data-en="The object nearest to the 3D gaze vector is identified via YOLOv8 and highlighted with a subtle visual bounding cue.">Das dem 3D-Blickvektor nächstgelegene Objekt wird per YOLOv8 identifiziert und durch eine dezente visuelle Umrandung hervorgehoben.</span>
-        </li>
-        <li data-k="ARMED">
-          <b data-en="Dwell Buffer (≈ 300 ms)">Verweilpuffer (≈ 300 ms)</b>
-          <span data-en="Prolonged gaze on the candidate arms the selection with clear visual feedback. Resolves gaze-shift conflicts before movement.">Ein anhaltender Blick auf den Kandidaten schaltet die Auswahl mit deutlicher visueller Rückmeldung scharf. Blickwechsel-Konflikte werden vor der Bewegung aufgelöst.</span>
-        </li>
-        <li data-k="CONFIRMED">
-          <b data-en="Explicit Execution">Explizite Ausführung</b>
-          <span data-en="The arm starts moving only on a verbal command or controller press. Cancellation remains possible at any time.">Der Arm bewegt sich erst nach einem Sprachbefehl oder Tastendruck am Controller. Ein Abbruch ist jederzeit möglich.</span>
-        </li>
+      <ul class="rq">
+        <li><b>RQ1</b><span data-en="Which interaction difficulties arise when robotics novices perform palletising tasks with the baseline interface?">Welche Interaktionsschwierigkeiten treten auf, wenn Robotik-Neulinge Palettieraufgaben mit der Ausgangskonfiguration bearbeiten?</span></li>
+        <li><b>RQ2</b><span data-en="Can each difficulty be attributed to an explanatory level with at least medium confidence – and how often does this require agreeing evidence from two or more types of data source?">Lässt sich jeder Schwierigkeit eine Erklärungsebene mit mindestens mittlerer Sicherheit zuordnen – und wie oft braucht es dafür übereinstimmende Evidenz aus zwei oder mehr Arten von Datenquellen?</span></li>
+        <li><b>RQ3</b><span data-en="Which interface adaptations follow from the diagnoses, and do the addressed difficulties decrease in a formative re-evaluation without new ones emerging?">Welche Interface-Anpassungen folgen aus den Diagnosen, und verringern sich die adressierten Schwierigkeiten in der Re-Evaluation, ohne dass neue entstehen?</span></li>
+      </ul>
+      <h3 data-en="One RobotUX cycle in the palletising scenario">Ein RobotUX-Zyklus im Palettierszenario</h3>
+      <ol class="steps-list">
+        <li style="--hue: var(--blue)"><div><small data-en="Step 1">Schritt 1</small><b data-en="Configure">Konfigurieren</b></div><p data-en="Layout template Operate, light theme, mouse and gamepad; eye tracking only as a measurement. The configuration is frozen and versioned before data collection.">Layout-Vorlage Operate, helles Design, Maus und Gamepad; Eye-Tracking nur als Messung. Die Konfiguration wird vor der Datenerhebung eingefroren und versioniert.</p></li>
+        <li style="--hue: var(--indigo)"><div><small data-en="Step 2">Schritt 2</small><b data-en="Evaluate">Evaluieren</b></div><p data-en="Tasks T1–T4 with written instructions, success criterion and target time; logs, observation, gaze, questionnaires and interviews.">Aufgaben T1–T4 mit schriftlicher Anleitung, Erfolgskriterium und Zielzeit; Protokolle, Beobachtung, Blick, Fragebögen und Interviews.</p></li>
+        <li style="--hue: var(--violet)"><div><small data-en="Step 3">Schritt 3</small><b data-en="Diagnose">Diagnostizieren</b></div><p data-en="First a blinded diagnosis from performance and logs only, then with all data – this shows what the additional sources contribute (RQ2).">Zuerst eine verblindete Diagnose nur aus Leistung und Protokollen, dann mit allen Daten – so wird sichtbar, was die zusätzlichen Quellen beitragen (RQ2).</p></li>
+        <li style="--hue: var(--pink)"><div><small data-en="Step 4">Schritt 4</small><b data-en="Recommend">Empfehlen</b></div><p data-en="One testable requirement per diagnosis, e.g. “the confirmation state is noticed within two seconds without searching”.">Je Diagnose eine prüfbare Anforderung, z.&nbsp;B. „der Bestätigungszustand wird innerhalb von zwei Sekunden ohne Suchen bemerkt“.</p></li>
+        <li style="--hue: var(--gold)"><div><small data-en="Step 5">Schritt 5</small><b data-en="Implement">Umsetzen</b></div><p data-en="Only targeted interface changes; robot behaviour, tasks and measures stay constant.">Nur gezielte Interface-Änderungen; Roboterverhalten, Aufgaben und Maße bleiben konstant.</p></li>
+        <li style="--hue: var(--green)"><div><small data-en="Step 6">Schritt 6</small><b data-en="Re-evaluate">Re-Evaluieren</b></div><p data-en="New sample, same tasks: each difficulty is rated resolved, reduced, persisting or new (RQ3).">Neue Stichprobe, gleiche Aufgaben: Jede Schwierigkeit gilt als behoben, verringert, fortbestehend oder neu (RQ3).</p></li>
       </ol>
-    </div>
-  </section>
-
-  
-  <section class="sec" id="testbed" aria-labelledby="h-testbed">
-    <div class="wrap">
-      <div class="head">
-        <span class="eyebrow" style="--hue: var(--gold)"><span class="n">04</span><span data-en="Measurement Suite">Messinstrumentarium</span></span>
-        <h2 id="h-testbed" data-en="Measurement suite">Messinstrumentarium</h2>
-        <p class="lede" data-en="Synchronizing ROS 2 machine state with high-frequency ocular, autonomic, and psychometric metrics.">Synchronisation des ROS-2-Maschinenzustands mit hochfrequenten okulären, autonomen und psychometrischen Messgrößen.</p>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col" data-en="Measurement Layer">Messebene</th>
-              <th scope="col" data-en="Sensors &amp;amp; Instruments">Sensorik &amp; Instrumente</th>
-              <th scope="col" data-en="Metrics &amp;amp; Variables">Kennwerte &amp; Variablen</th>
-              <th scope="col" data-en="Human-Factors Construct">Human-Factors-Konstrukt</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><b data-en="Behavioral Performance">Verhaltensleistung</b></td>
-              <td data-en="ROS 2 Event Logger (planned) &amp;amp; UX | Monitoring">ROS-2-Ereignislogger (geplant) &amp; UX | Monitoring</td>
-              <td data-en="Task Completion Time (s), Task Success Rate (%), Wrong Target Errors, Interaction Steps">Bearbeitungszeit (s), Erfolgsquote (%), Fehlauswahlen (falsches Ziel), Interaktionsschritte</td>
-              <td data-en="Operational efficiency, execution fluency, and error rates">Effizienz, Flüssigkeit der Ausführung und Fehlerraten</td>
-            </tr>
-            <tr>
-              <td><b data-en="Ocular Dynamics">Blickdynamik</b></td>
-              <td data-en="Tobii Pro Glasses 3 (50 Hz / scene camera)">Tobii Pro Glasses 3 (50 Hz / Szenenkamera)</td>
-              <td data-en="Fixation Duration, Target Acquisition Latency, Candidate Transitions, Gaze-Shift Conflicts">Fixationsdauer, Latenz der Zielerfassung, Kandidatenwechsel, Blickwechsel-Konflikte</td>
-              <td data-en="Visual attention allocation, target searching efficiency, and Midas-Touch friction">Verteilung der visuellen Aufmerksamkeit, Effizienz der Zielsuche und Midas-Touch-Reibung</td>
-            </tr>
-            <tr>
-              <td><b data-en="Sympathetic Arousal">Sympathische Aktivierung</b></td>
-              <td data-en="EDA / Galvanic Skin Response Sensors (planned)">EDA-Sensorik / Hautleitfähigkeit (geplant)</td>
-              <td data-en="Tonic Skin Conductance Level (SCL), Phasic Skin Conductance Responses (SCR amplitude &amp;amp; frequency)">Tonisches Hautleitfähigkeitsniveau (SCL), phasische Hautleitfähigkeitsreaktionen (SCR: Amplitude &amp; Frequenz)</td>
-              <td data-en="Acute physiological stress, arousal spikes during errors, and internal effort">Akuter physiologischer Stress, Aktivierungsspitzen bei Fehlern und innere Anstrengung</td>
-            </tr>
-            <tr>
-              <td><b data-en="Parasympathetic Tone">Parasympathikotonus</b></td>
-              <td data-en="PPG / ECG Heart Rate Monitor (planned)">PPG-/EKG-Herzfrequenzmessung (geplant)</td>
-              <td data-en="Heart Rate (HR), Heart Rate Variability: RMSSD (ms) &amp;amp; SDNN baseline-normalized">Herzfrequenz (HR), Herzratenvariabilität: RMSSD (ms) &amp; SDNN, baseline-normalisiert</td>
-              <td data-en="Autonomic nervous system recovery, cognitive strain, and mental workload cost">Erholung des autonomen Nervensystems, kognitive Beanspruchung und Kosten mentaler Belastung</td>
-            </tr>
-            <tr>
-              <td><b data-en="Psychometrics (ISO 9241-11)">Psychometrie (ISO 9241-11)</b></td>
-              <td data-en="Standardized Digital Survey Battery">Standardisierte digitale Fragebogenbatterie</td>
-              <td data-en="NASA-TLX (6 subscales), System Usability Scale (SUS 0–100), TAM (PU &amp;amp; PEOU), Perceived Control Scale">NASA-TLX (6 Subskalen), System Usability Scale (SUS 0–100), TAM (PU &amp; PEOU), Skala wahrgenommener Kontrolle</td>
-              <td data-en="Subjective mental/physical workload, perceived agency, usability, and system acceptance">Subjektive mentale/physische Beanspruchung, wahrgenommene Handlungskontrolle (Agency), Gebrauchstauglichkeit und Systemakzeptanz</td>
-            </tr>
-            <tr>
-              <td><b data-en="Cognitive Representation">Kognitive Repräsentation</b></td>
-              <td data-en="SDA-M (Structural Dimensional Analysis, planned)">SDA-M (Strukturdimensionale Analyse, geplant)</td>
-              <td data-en="Pre- &amp;amp; Post-experiment hierarchical clustering of 8–12 Basic Action Concepts (BACs) vs. expert network">Hierarchische Clusteranalyse von 8–12 Basic Action Concepts (BACs) vor und nach dem Experiment im Vergleich zum Expertennetz</td>
-              <td data-en="Conceptual learning: novice structural mental model formation vs. operational shortcut">Konzeptuelles Lernen: Aufbau strukturierter mentaler Modelle bei Laien vs. operative Abkürzung</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="grid2" style="margin-top: 24px;">
-        <div class="card" style="--hue: var(--pink)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg><span data-en="Resolving Arousal Ambiguity">Mehrdeutigkeit der Aktivierung auflösen</span></span>
-          <b data-en="Multimodal Sensor Convergence">Konvergenz multimodaler Sensorik</b>
-          <p data-en="Neither heart rate nor skin conductance alone distinguishes between positive engagement and cognitive distress (Tesch et al., 2021). Correlating EDA peaks with armed states maps internal strain.">Weder Herzfrequenz noch Hautleitfähigkeit allein unterscheiden zwischen positivem Engagement und kognitivem Distress (Tesch et al., 2021). Die Korrelation von EDA-Spitzen mit Armed-Zuständen bildet die innere Beanspruchung ab.</p>
+      <figure class="shot">
+        <img src="img/rcu_palletizing.png" alt="Simuliertes Palettierszenario: Aufgabenfenster mit Lastbalken und Lagenplan, Palettierzelle im digitalen Zwilling, Verfahrfeld">
+        <figcaption><b data-en="Figure 2.">Abbildung 2.</b> <span data-en="Simulated logistics scenario “Auto palletising”: euro pallet, 80 kg load limit, 900 mm stacking height.">Simuliertes Logistikszenario „Auto palletising“: Europalette, Lastgrenze 80&nbsp;kg, Ladehöhe 900&nbsp;mm.</span></figcaption>
+      </figure>
+      <div class="grid2 study-tables">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col" data-en="Task">Aufgabe</th><th scope="col" data-en="Content">Inhalt</th></tr></thead>
+            <tbody>
+              <tr><td><b>T1</b></td><td data-en="Familiarisation: Pick &amp;amp; Place with the built-in guide (not analysed)">Eingewöhnung: Pick &amp; Place mit eingebauter Anleitung (nicht ausgewertet)</td></tr>
+              <tr><td><b>T2</b></td><td data-en="Manual transfer: carton from the conveyor to a marked pallet position">Manuelles Umsetzen: Karton vom Band auf eine markierte Palettenposition</td></tr>
+              <tr><td><b>T3</b></td><td data-en="Planned palletising: plan and run an order while respecting the load limit">Geplantes Palettieren: Auftrag planen und ausführen, Lastgrenze einhalten</td></tr>
+              <tr><td><b>T4</b></td><td data-en="Exception handling: react to a rejected carton during a running order">Ausnahmebehandlung: auf einen ausgeschleusten Karton im laufenden Auftrag reagieren</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="card" style="--hue: var(--green)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg><span data-en="Ability-Based Design Lens">Perspektive Ability-Based Design</span></span>
-          <b data-en="Accessibility Beyond Robotic Expertise">Zugänglichkeit jenseits von Robotik-Expertise</b>
-          <p data-en="Grounded in Ability-Based Design (Wobbrock et al., 2011), the testbed isolates individual sensory-motor requirements. Evaluating novice users provides empirical baselines for assistive adaptation.">Gestützt auf Ability-Based Design (Wobbrock et al., 2011) isoliert die Testumgebung individuelle sensomotorische Anforderungen. Die Evaluierung mit Laien liefert empirische Ausgangswerte für assistive Anpassungen.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col" data-en="Method">Methode</th><th scope="col" data-en="Diagnostic purpose">Diagnostischer Zweck</th></tr></thead>
+            <tbody>
+              <tr><td><b data-en="Logs &amp;amp; performance">Protokolle &amp; Leistung</b></td><td data-en="Locate episodes, detect technical errors">Episoden verorten, technische Fehler erkennen</td></tr>
+              <tr><td><b data-en="Observation">Beobachtung</b></td><td data-en="Hesitation, help requests, wrong actions">Zögern, Hilfeanfragen, falsche Handlungen</td></tr>
+              <tr><td><b>Eye-Tracking</b></td><td data-en="Was relevant information looked at?">Wurde relevante Information angesehen?</td></tr>
+              <tr><td><b>SEQ · NASA-TLX · SUS</b></td><td data-en="Difficulty, workload, usability per iteration">Schwierigkeit, Beanspruchung, Usability je Iteration</td></tr>
+              <tr><td><b>Interview</b></td><td data-en="Reasoning and mental models (cued retrospective)">Überlegungen und mentale Modelle (Cued Retrospective)</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </section>
 
   
-  <section class="sec alt" id="study" aria-labelledby="h-study">
-    <div class="wrap">
+  <section class="sec alt" id="results" aria-labelledby="h-results">
+    <div class="wrap narrow">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--green)"><span class="n">05</span><span data-en="Experimental Design">Versuchsplan</span></span>
-        <h2 id="h-study" data-en="Controlled Within-Subjects Evaluation">Kontrollierte Evaluierung mit Messwiederholung</h2>
-        <p class="lede" data-en="Isolating the effects of complementary allocation under identical task autonomy and increasing spatial ambiguity.">Isolierung der Effekte komplementärer Funktionszuordnung bei identischer Aufgabenautonomie und zunehmender räumlicher Mehrdeutigkeit.</p>
+        <span class="eyebrow" style="--hue: var(--pink)"><span class="n">6</span><span data-en="Results">Ergebnisse</span></span>
+        <h2 id="h-results" data-en="No results yet">Noch keine Ergebnisse</h2>
       </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col" data-en="Condition">Bedingung</th>
-              <th scope="col" data-en="Spatial Reference (&quot;Where&quot;)">Räumliche Referenz („Wo“)</th>
-              <th scope="col" data-en="Task Intent (&quot;What&quot;)">Aufgabenintention („Was“)</th>
-              <th scope="col" data-en="Confirmation &amp;amp; Fallback">Bestätigung &amp; Rückfallebene</th>
-              <th scope="col" data-en="Scientific Comparison">Wissenschaftlicher Vergleich</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><b data-en="C1 Conventional">C1 Konventionell</b> (Baseline)</td>
-              <td data-en="GUI / Controller selection">Auswahl per GUI / Controller</td>
-              <td data-en="GUI / Teach pendant command">Befehl per GUI / Teach-Pendant</td>
-              <td data-en="Manual button confirm">Manuelle Bestätigung per Taste</td>
-              <td data-en="Establishes industrial baseline; assesses standard extraneous menu overhead">Bildet die industrielle Baseline; erfasst den üblichen extrinsischen Menüaufwand</td>
-            </tr>
-            <tr>
-              <td><b data-en="C2 Gaze-Assisted">C2 Blickgestützt</b></td>
-              <td data-en="Gaze dwell (Armed state)">Blickverweilen (Armed-Zustand)</td>
-              <td data-en="GUI / Controller command">Befehl per GUI / Controller</td>
-              <td data-en="Manual button confirm">Manuelle Bestätigung per Taste</td>
-              <td data-en="Isolates the specific contribution of ocular target referencing (Contrast C2 vs. C1)">Isoliert den spezifischen Beitrag der blickbasierten Zielreferenzierung (Kontrast C2 vs. C1)</td>
-            </tr>
-            <tr>
-              <td><b data-en="C3 Complementary">C3 Komplementär</b></td>
-              <td data-en="Gaze dwell (Armed state)">Blickverweilen (Armed-Zustand)</td>
-              <td data-en="Spoken natural language (&quot;Pick&quot;)">Gesprochene natürliche Sprache („Pick“)</td>
-              <td data-en="Controller confirmation &amp;amp; fallback">Bestätigung &amp; Rückfallebene per Controller</td>
-              <td data-en="Tests complete Look, Speak, Confirm paradigm (Contrasts C3 vs. C2 and C3 vs. C1)">Prüft das vollständige Paradigma Look, Speak, Confirm (Kontraste C3 vs. C2 und C3 vs. C1)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="two" style="margin-top: 32px;">
-        <div>
-          <h3 data-en="Draft Hypotheses (not yet frozen)">Hypothesenentwurf (noch nicht festgelegt)</h3>
-          <ol class="list" style="margin-top: 14px;">
-            <li><b data-en="H1 (Efficiency):">H1 (Effizienz):</b> <span data-en="Condition C3 (Complementary) will yield significantly shorter task completion times and fewer discrete interaction steps compared to C1 (Conventional).">Bedingung C3 (komplementär) führt im Vergleich zu C1 (konventionell) zu signifikant kürzeren Bearbeitungszeiten und weniger diskreten Interaktionsschritten.</span></li>
-            <li><b data-en="H2 (Workload):">H2 (Beanspruchung):</b> <span data-en="Condition C3 will result in significantly lower overall NASA-TLX workload scores compared to C1 and C2, while maintaining or improving task success rates.">Bedingung C3 führt im Vergleich zu C1 und C2 zu signifikant niedrigeren NASA-TLX-Gesamtwerten bei gleichbleibender oder höherer Erfolgsquote.</span></li>
-            <li><b>H3 (Intent-Safety):</b> <span data-en="The multi-stage Armed state mechanism is expected to keep unintended activations (Midas Touch errors) rare across C2 and C3, reported descriptively against a pre-registered threshold (upper 95% bound).">Der mehrstufige Armed-Mechanismus hält unbeabsichtigte Aktivierungen (Midas-Touch-Fehler) in C2 und C3 erwartungsgemäß selten; berichtet wird deskriptiv gegenüber einem präregistrierten Schwellenwert (obere 95-%-Grenze).</span></li>
-            <li><b data-en="H4 (Physiological Convergence):">H4 (Physiologische Konvergenz):</b> <span data-en="Conditions exhibiting lower subjective workload will demonstrate converging reductions in autonomic physiological strain (increased HRV/RMSSD and reduced phasic EDA arousal).">Bedingungen mit geringerer subjektiver Beanspruchung zeigen übereinstimmend eine geringere autonome physiologische Beanspruchung (höhere HRV/RMSSD, geringere phasische EDA-Aktivierung).</span></li>
-          </ol>
-        </div>
-        <div>
-          <h3 data-en="Methodological Rigor">Methodische Strenge</h3>
-          <ul class="list" style="margin-top: 14px;">
-            <li><b data-en="Constant Autonomy:">Konstante Autonomie:</b> <span data-en="Robot motion planning, collision avoidance, and trajectory speeds are held strictly identical across all conditions to prevent algorithmic confounds.">Bewegungsplanung, Kollisionsvermeidung und Bahngeschwindigkeiten des Roboters sind in allen Bedingungen strikt identisch, um algorithmische Konfundierungen auszuschließen.</span></li>
-            <li><b data-en="Task Ambiguity:">Aufgabenmehrdeutigkeit:</b> <span data-en="Novice participants perform pick-and-place trials with systematically escalating clutter, distractor objects, and spatial density.">Laien führen Pick-and-Place-Durchgänge mit systematisch zunehmender Unordnung, mehr Distraktorobjekten und höherer räumlicher Dichte durch.</span></li>
-            <li><b data-en="Counterbalancing:">Ausbalancierung:</b> <span data-en="Condition presentation order is systematically balanced across subjects using a Balanced Latin Square design to mitigate learning and fatigue effects.">Die Reihenfolge der Bedingungen wird über ein balanciertes lateinisches Quadrat zwischen den Versuchspersonen ausbalanciert, um Lern- und Ermüdungseffekte zu kontrollieren.</span></li>
-            <li><b data-en="Planned Contrasts:">Geplante Kontraste:</b> <span data-en="Hypotheses are tested using directional Wilcoxon signed-rank tests with Holm-Bonferroni correction and linear mixed-effects modeling.">Die Hypothesen werden mit gerichteten Wilcoxon-Vorzeichen-Rang-Tests mit Holm-Bonferroni-Korrektur sowie mit linearen gemischten Modellen geprüft.</span></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="note">
-        <svg class="ico ico-s" aria-hidden="true"><use href="#i-alert"/></svg>
-        <div><b data-en="Empirical Status Notice:">Hinweis zum empirischen Stand:</b> <span data-en="In line with research integrity standards, hypotheses, measurement pipelines, and condition designs are formalized prior to participant testing. No empirical conclusions are reported until ethical clearance and experimental trials have concluded.">Gemäß den Standards guter wissenschaftlicher Praxis werden Hypothesen, Messpipelines und Versuchsbedingungen vor der Datenerhebung festgelegt. Empirische Schlussfolgerungen werden erst nach positivem Ethikvotum und Abschluss der Versuche berichtet.</span></div>
+      <div class="empty-state">
+        <svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>
+        <p data-en="The study has not been conducted yet. Section 6 follows after the initial evaluation and the formative re-evaluation; until then this page contains no figures.">Die Studie ist noch nicht durchgeführt. Abschnitt 6 folgt nach der Erstevaluation und der formativen Re-Evaluation; bis dahin enthält diese Seite keine Zahlen.</p>
       </div>
     </div>
   </section>
 
   
-  <section class="sec" id="guidelines" aria-labelledby="h-guide">
-    <div class="wrap">
+  <section class="sec" id="discussion" aria-labelledby="h-discussion">
+    <div class="wrap narrow">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--indigo)"><span class="n">06</span><span data-en="Contributions &amp;amp; Guidelines">Beiträge &amp; Richtlinien</span></span>
-        <h2 id="h-guide" data-en="Generalizable Design Knowledge for Low-Barrier HRI">Generalisierbares Gestaltungswissen für barrierearme Mensch-Roboter-Interaktion</h2>
-        <p class="lede" data-en="Proposed design principles for assistive and industrial manipulation, to be checked against the study results.">Vorgeschlagene Gestaltungsprinzipien für assistive und industrielle Manipulation, die anhand der Studienergebnisse zu prüfen sind.</p>
+        <span class="eyebrow" style="--hue: var(--indigo)"><span class="n">7</span><span data-en="Discussion">Diskussion</span></span>
+        <h2 id="h-discussion" data-en="Contribution and limitations">Beitrag und Grenzen</h2>
       </div>
-
-      <div class="grid3">
-        <div class="card" style="--hue: var(--blue)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg><span data-en="Guideline 1">Richtlinie 1</span></span>
-          <b data-en="Spatiality → Gaze">Räumlichkeit → Blick</b>
-          <p data-en="Reserve eye gaze strictly for spatial deictic referencing. In the study design, gaze is not coupled directly to irreversible mechanical motions without an explicit decoupling state.">Den Blick ausschließlich für die räumlich-deiktische Referenzierung nutzen. Im Studiendesign ist der Blick ohne expliziten Entkopplungszustand nicht direkt an irreversible mechanische Bewegungen gekoppelt.</p>
-        </div>
-        <div class="card" style="--hue: var(--violet)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg><span data-en="Guideline 2">Richtlinie 2</span></span>
-          <b data-en="Intent → Speech">Intention → Sprache</b>
-          <p data-en="Employ spoken natural language for high-level semantic intentions (&quot;what should happen&quot;) so users skip menu navigation and do not have to enter coordinates.">Gesprochene natürliche Sprache für übergeordnete semantische Intentionen („was geschehen soll“) einsetzen, damit Nutzende weder Menüs durchlaufen noch Koordinaten eingeben müssen.</p>
-        </div>
-        <div class="card" style="--hue: var(--green)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span data-en="Guideline 3">Richtlinie 3</span></span>
-          <b data-en="Control → Explicit">Kontrolle → Explizit</b>
-          <p data-en="Preserve a dedicated, low-latency, deterministic channel (controller/button) for confirmation, instantaneous cancellation, and continuous override.">Einen dedizierten, latenzarmen und deterministischen Kanal (Controller/Taste) für Bestätigung, sofortigen Abbruch und jederzeitigen Eingriff beibehalten.</p>
-        </div>
-        <div class="card" style="--hue: var(--gold)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span data-en="Guideline 4">Richtlinie 4</span></span>
-          <b data-en="Safety → State-Based">Sicherheit → Zustandsbasiert</b>
-          <p data-en="Implement a multi-stage transition (Attention → Candidate → Armed → Confirmed). The Armed state gives the user time to correct a gaze shift before anything moves.">Einen mehrstufigen Übergang umsetzen (Attention → Candidate → Armed → Confirmed). Der Armed-Zustand verschafft der Bedienperson Zeit, einen Blickwechsel zu korrigieren, bevor sich etwas bewegt.</p>
-        </div>
-        <div class="card" style="--hue: var(--pink)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg><span data-en="Guideline 5">Richtlinie 5</span></span>
-          <b data-en="Evaluation → Converging">Evaluierung → Konvergent</b>
-          <p data-en="Never rely on subjective surveys (NASA-TLX) alone. Synchronize objective behavioral telemetry with autonomic biomarkers (EDA/HRV) to detect hidden internal strain.">Sich nie allein auf subjektive Fragebögen (NASA-TLX) stützen. Objektive Verhaltenstelemetrie mit autonomen Biomarkern (EDA/HRV) synchronisieren, um verdeckte innere Beanspruchung zu erkennen.</p>
-        </div>
-        <div class="card" style="--hue: var(--accent)">
-          <span class="k"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg><span data-en="Guideline 6">Richtlinie 6</span></span>
-          <b data-en="Architecture → Modular">Architektur → Modular</b>
-          <p data-en="Architect multimodal platforms modularly so individual channels can be dynamically enabled, weighted, or substituted based on operator motor abilities and acoustic environment.">Multimodale Plattformen modular aufbauen, sodass sich einzelne Kanäle je nach motorischen Fähigkeiten der Bedienperson und akustischer Umgebung dynamisch aktivieren, gewichten oder ersetzen lassen.</p>
-        </div>
+      <div class="prose">
+        <p class="prose-justify" data-en="The intended added value of RobotUX lies less in new instruments than in the way existing instruments are combined and used. The redesign-and-re-evaluation loop itself is standard human-centred design practice; the contribution lies in coupling it to episode-level diagnosis.">Der angestrebte Mehrwert von RobotUX liegt weniger in neuen Instrumenten als in der Art, wie bestehende Instrumente kombiniert und genutzt werden. Die Schleife aus Neugestaltung und Re-Evaluation ist gängige Praxis menschzentrierter Gestaltung; der Beitrag liegt in ihrer Kopplung an die Diagnose je Episode.</p>
+        <p class="prose-justify" data-en="RobotUX does not claim superiority over other approaches. Small university samples, a purely simulated setting and the lack of a control condition limit the conclusions; whether the approach yields more or better explanations than a standard usability test must be examined in a controlled comparison.">RobotUX beansprucht keine Überlegenheit gegenüber anderen Ansätzen. Kleine Stichproben aus dem Hochschulumfeld, eine reine Simulation und die fehlende Kontrollbedingung begrenzen die Aussagen; ob der Ansatz mehr oder bessere Erklärungen liefert als ein üblicher Usability-Test, muss ein kontrollierter Vergleich zeigen.</p>
       </div>
-
-      <h3 data-en="Core Academic Contributions of the Paper">Zentrale wissenschaftliche Beiträge des Papers</h3>
-      <ol class="list" style="margin-top: 16px;">
-        <li><b data-en="Complementary Interaction Architecture:">Komplementäre Interaktionsarchitektur:</b> <span data-en="A human-factors-driven HRI framework that partitions spatial reference (gaze), semantic intent (speech), and confirmation/recovery (controller) to reduce cognitive bottlenecks.">Ein Human-Factors-basiertes Framework für die Mensch-Roboter-Interaktion, das räumliche Referenz (Blick), semantische Intention (Sprache) sowie Bestätigung und Fehlerbehebung (Controller) trennt, um kognitive Engpässe zu verringern.</span></li>
-        <li><b data-en="Intent-Safety Mechanism:">Intent-Safety-Mechanismus:</b> <span data-en="A deterministic state machine with calibrated dwell arming (≈300 ms) and real-time visual feedback whose evaluation will test whether it reduces unintended Midas Touch activations while keeping added interaction latency acceptable.">Ein deterministischer Zustandsautomat mit kalibrierter Verweil-Scharfschaltung (≈ 300 ms) und visueller Echtzeit-Rückmeldung; die Evaluierung prüft, ob er unbeabsichtigte Midas-Touch-Aktivierungen verringert und die zusätzliche Interaktionslatenz akzeptabel bleibt.</span></li>
-        <li><b data-en="Multidimensional Evaluation Suite:">Mehrdimensionales Evaluierungsinstrumentarium:</b> <span data-en="A testbed that synchronizes ROS 2 machine states, eye tracking, EDA, HRV and questionnaires to compare reported and measured strain (event logger and biosignal pipeline planned).">Eine Testumgebung, die ROS-2-Maschinenzustände, Eye-Tracking, EDA, HRV und Fragebögen synchronisiert, um berichtete und gemessene Beanspruchung zu vergleichen (Ereignislogger und Biosignal-Pipeline geplant).</span></li>
-        <li><b data-en="Cognitive Mental Model Investigation:">Untersuchung mentaler Modelle:</b> <span data-en="An exploratory SDA-M protocol (planned) revealing whether multimodal assistance supports novice development of structured Basic Action Concepts.">Ein exploratives SDA-M-Protokoll (geplant), das zeigt, ob multimodale Assistenz Laien beim Aufbau strukturierter Basic Action Concepts unterstützt.</span></li>
-        <li><b data-en="Design Guidelines for Adaptive HRI:">Gestaltungsrichtlinien für adaptive Mensch-Roboter-Interaktion:</b> <span data-en="A set of generalizable principles for configuring low-barrier robotic interfaces across industrial and future assistive scenarios.">Generalisierbare Prinzipien zur Gestaltung barrierearmer Roboterschnittstellen in industriellen und künftigen assistiven Szenarien.</span></li>
-      </ol>
     </div>
   </section>
 
   
-  <section class="sec alt" id="literature" aria-labelledby="h-lit">
+  <section class="sec alt" id="outlook" aria-labelledby="h-outlook">
+    <div class="wrap narrow">
+      <div class="head">
+        <span class="eyebrow" style="--hue: var(--green)"><span class="n">8</span><span data-en="Conclusion">Fazit</span></span>
+        <h2 id="h-outlook" data-en="Towards transferable guidelines">Auf dem Weg zu übertragbaren Leitlinien</h2>
+      </div>
+      <div class="prose">
+        <p class="prose-justify" data-en="Each RobotUX cycle produces diagnoses that are specific to a user group, task and interface. Accumulated across studies, systems and domains, recurring diagnoses and effective changes can be condensed into transferable design and evaluation guidelines for human-centred robot interfaces.">Jeder RobotUX-Zyklus erzeugt Diagnosen, die für eine Nutzergruppe, eine Aufgabe und ein Interface gelten. Über Studien, Systeme und Anwendungsfelder hinweg lassen sich wiederkehrende Diagnosen und wirksame Änderungen zu übertragbaren Gestaltungs- und Evaluationsleitlinien für menschzentrierte Roboter-Interfaces verdichten.</p>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="sec" id="literature" aria-labelledby="h-lit">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow" style="--hue: var(--accent)"><span class="n">07</span><span data-en="Literature">Literatur</span></span>
-        <h2 id="h-lit" data-en="Academic References &amp;amp; Foundations">Wissenschaftliche Quellen &amp; Grundlagen</h2>
-        <p class="lede" data-en="Key literature grounding the theoretical framework and empirical methodology of Draft 8.">Zentrale Literatur, auf der der theoretische Rahmen und die empirische Methodik von Entwurf 8 beruhen.</p>
+        <span class="eyebrow" style="--hue: var(--accent)"><span data-en="Literature">Literatur</span></span>
+        <h2 id="h-lit" data-en="Selected references">Ausgewählte Quellen</h2>
+        <p class="lede" data-en="Selection from the paper draft; the complete list is in the manuscript.">Auswahl aus dem Paper-Entwurf; die vollständige Liste steht im Manuskript.</p>
       </div>
-
       <div class="bib-grid">
-        <div class="bib-item">
-          <b>Coronado, E., et al. (2022).</b> Evaluating quality in human-robot interaction: A systematic search and classification of performance and human-centered factors, measures and metrics towards an industry 5.0. <em>Journal of Manufacturing Systems</em>, 63, 392–410. <a href="https://doi.org/10.1016/j.jmsy.2022.04.007">doi:10.1016/j.jmsy.2022.04.007</a>
-        </div>
-        <div class="bib-item">
-          <b>Hopko, S., Wang, J., &amp; Mehta, R. (2022).</b> Human Factors Considerations and Metrics in Shared Space Human-Robot Collaboration: A Systematic Review. <em>Frontiers in Robotics and AI</em>, 9, 873426.
-        </div>
-        <div class="bib-item">
-          <b>Jones, E. R., et al. (2018).</b> Symmetric Evaluation of Multimodal Human–Robot Interaction with Gaze and Standard Control. <em>Symmetry</em>, 10(12), 744.
-        </div>
-        <div class="bib-item">
-          <b>Khan, A. A., et al. (2026).</b> Gaze and Speech in Multimodal Human-Computer Interaction: A Scoping Review. In <em>Proceedings of the CHI Conference on Human Factors in Computing Systems</em>.
-        </div>
-        <div class="bib-item">
-          <b>Lai, Y., et al. (2026).</b> FAM-HRI: Foundation-Model Assisted Multimodal Human-Robot Interaction Combining Gaze and Speech. <em>IEEE Transactions on Automation Science and Engineering</em>.
-        </div>
-        <div class="bib-item">
-          <b>Nielsen, J. (1994).</b> <em>Usability Engineering</em>. Morgan Kaufmann Publishers.
-        </div>
-        <div class="bib-item">
-          <b>Norman, D. A. (1988).</b> <em>The Psychology of Everyday Things</em>. Basic Books.
-        </div>
-        <div class="bib-item">
-          <b>Picard, R. W. (2000).</b> <em>Affective Computing</em>. MIT Press.
-        </div>
-        <div class="bib-item">
-          <b>Schack, T., Essig, K., Frank, C., &amp; Koester, D. (2014).</b> Mental representation and motor imagery training. <em>Frontiers in Human Neuroscience</em>, 8, 328.
-        </div>
-        <div class="bib-item">
-          <b>Shneiderman, B. (1983).</b> Direct Manipulation: A Step Beyond Programming Languages. <em>IEEE Computer</em>, 16(8), 57–69. <a href="https://doi.org/10.1109/MC.1983.1654471">doi:10.1109/MC.1983.1654471</a>
-        </div>
-        <div class="bib-item">
-          <b>Steinmetz, F. J. (2022).</b> <em>Intuitive robot programming for novice and expert users</em>. <span data-en="Doctoral dissertation">Dissertation</span>, RWTH Aachen University.
-        </div>
-        <div class="bib-item">
-          <b>Su, B., et al. (2026).</b> Exploring the integration of large language models in human-robot collaboration: Effects on performance, mental stress, and trust. <em>Applied Ergonomics</em>, 134, 104736. <a href="https://doi.org/10.1016/j.apergo.2026.104736">doi:10.1016/j.apergo.2026.104736</a>
-        </div>
-        <div class="bib-item">
-          <b>Sweller, J. (1988).</b> Cognitive load during problem solving: Effects on learning. <em>Cognitive Science</em>, 12(2), 257–285.
-        </div>
-        <div class="bib-item">
-          <b>Tesch, S., et al. (2021).</b> Multimodal Assessment of Cognitive Load in Human-Robot Collaboration: Integrating Physiological and Behavioral Markers. In <em>IEEE International Conference on Robot and Human Interactive Communication (RO-MAN)</em>.
-        </div>
-        <div class="bib-item">
-          <b>Wickens, C. D. (2002).</b> Multiple Resources and Performance Prediction. <em>Theoretical Issues in Ergonomics Science</em>, 3(2), 159–177.
-        </div>
-        <div class="bib-item">
-          <b>Wobbrock, J. O., Kane, S. K., Gajos, K. Z., Harada, S., &amp; Froehlich, J. (2011).</b> Ability-Based Design: Concept, principles and examples. <em>ACM Transactions on Accessible Computing</em>, 3(3), 1–27.
-        </div>
+        <div class="bib-item"><b>Apraiz, A., Mulet Alberola, J. A., Lasa, G., Mazmela, M., &amp; Nguyen, H. N. (2023).</b> Development of a new set of heuristics for the evaluation of human-robot interaction in industrial settings: Heuristics Robots Experience (HEUROBOX). <em>Frontiers in Robotics and AI</em>, 10, 1227082. <a href="https://doi.org/10.3389/frobt.2023.1227082">doi:10.3389/frobt.2023.1227082</a></div>
+        <div class="bib-item"><b>Endsley, M. R. (1995).</b> Toward a theory of situation awareness in dynamic systems. <em>Human Factors</em>, 37(1), 32–64. <a href="https://doi.org/10.1518/001872095779049543">doi:10.1518/001872095779049543</a></div>
+        <div class="bib-item"><b>Fischer-Janzen, A., Wendt, T. M., &amp; Van Laerhoven, K. (2024).</b> A scoping review of gaze and eye tracking-based control methods for assistive robotic arms. <em>Frontiers in Robotics and AI</em>, 11, 1326670. <a href="https://doi.org/10.3389/frobt.2024.1326670">doi:10.3389/frobt.2024.1326670</a></div>
+        <div class="bib-item"><b>Groß, A., Schütze, C., Brandt, M., Wrede, B., &amp; Richter, B. (2023).</b> RISE: An open-source architecture for interdisciplinary and reproducible human-robot interaction research. <em>Frontiers in Robotics and AI</em>, 10, 1245501. <a href="https://doi.org/10.3389/frobt.2023.1245501">doi:10.3389/frobt.2023.1245501</a></div>
+        <div class="bib-item"><b>Hwang, W., &amp; Salvendy, G. (2010).</b> Number of people required for usability evaluation: The 10±2 rule. <em>Communications of the ACM</em>, 53(5), 130–133. <a href="https://doi.org/10.1145/1735223.1735255">doi:10.1145/1735223.1735255</a></div>
+        <div class="bib-item"><b>International Organization for Standardization (2019).</b> <em>ISO 9241-210:2019 – Ergonomics of human-system interaction – Human-centred design for interactive systems.</em></div>
+        <div class="bib-item"><b>Jacob, R. J. K. (1990).</b> What you look at is what you get: Eye movement-based interaction techniques. In <em>Proceedings of CHI ’90</em> (pp. 11–18). ACM. <a href="https://doi.org/10.1145/97243.97246">doi:10.1145/97243.97246</a></div>
+        <div class="bib-item"><b>Lindblom, J., &amp; Alenljung, B. (2020).</b> The ANEMONE: Theoretical foundations for UX evaluation of action and intention recognition in human-robot interaction. <em>Sensors</em>, 20(15), 4284. <a href="https://doi.org/10.3390/s20154284">doi:10.3390/s20154284</a></div>
+        <div class="bib-item"><b>Macenski, S., Foote, T., Gerkey, B., Lalancette, C., &amp; Woodall, W. (2022).</b> Robot Operating System 2: Design, architecture, and uses in the wild. <em>Science Robotics</em>, 7(66), eabm6074. <a href="https://doi.org/10.1126/scirobotics.abm6074">doi:10.1126/scirobotics.abm6074</a></div>
+        <div class="bib-item"><b>Marvel, J. A., Bagchi, S., Zimmerman, M. L., &amp; Antonishek, B. (2020).</b> Towards effective interface designs for collaborative HRI in manufacturing: Metrics and measures. <em>ACM Transactions on Human-Robot Interaction</em>, 9, 1–55. <a href="https://doi.org/10.1145/3385009">doi:10.1145/3385009</a></div>
+        <div class="bib-item"><b>Nick, A., Damm, N., Reiser, J. E., Baumann, M., &amp; Deml, B. (2025).</b> Understanding teleoperation: A human-centered framework for workplace design. <em>Zeitschrift für Arbeitswissenschaft</em>. <a href="https://doi.org/10.1007/s41449-025-00492-3">doi:10.1007/s41449-025-00492-3</a></div>
+        <div class="bib-item"><b>Prati, E., Peruzzini, M., Pellicciari, M., &amp; Raffaeli, R. (2021).</b> How to include User eXperience in the design of human-robot interaction. <em>Robotics and Computer-Integrated Manufacturing</em>, 68, 102072. <a href="https://doi.org/10.1016/j.rcim.2020.102072">doi:10.1016/j.rcim.2020.102072</a></div>
+        <div class="bib-item"><b>Steinfeld, A., Fong, T., Kaber, D., Lewis, M., Scholtz, J., Schultz, A., &amp; Goodrich, M. (2006).</b> Common metrics for human-robot interaction. In <em>Proceedings of the 1st ACM SIGCHI/SIGART Conference on Human-Robot Interaction</em> (pp. 33–40). <a href="https://doi.org/10.1145/1121241.1121249">doi:10.1145/1121241.1121249</a></div>
+        <div class="bib-item"><b>van Gog, T., Paas, F., van Merriënboer, J. J. G., &amp; Witte, P. (2005).</b> Uncovering the problem-solving process: Cued retrospective reporting versus concurrent and retrospective reporting. <em>Journal of Experimental Psychology: Applied</em>, 11(4), 237–244. <a href="https://doi.org/10.1037/1076-898X.11.4.237">doi:10.1037/1076-898X.11.4.237</a></div>
+        <div class="bib-item"><b>Weiss, A., Bernhaupt, R., Lankes, M., &amp; Tscheligi, M. (2009).</b> The USUS evaluation framework for human-robot interaction. In <em>Proceedings of the AISB 2009 Symposium on New Frontiers in Human-Robot Interaction</em> (pp. 158–165).</div>
+        <div class="bib-item"><b>Yoshida, A., Dossa, R. F. J., Di Vincenzo, M., Sujit, S., Douglas, H., &amp; Arulkumaran, K. (2025).</b> A multi-user multi-robot multi-goal multi-device human-robot interaction manipulation benchmark. <em>Frontiers in Robotics and AI</em>. <a href="https://doi.org/10.3389/frobt.2025.1528754">doi:10.3389/frobt.2025.1528754</a></div>
       </div>
     </div>
   </section>
