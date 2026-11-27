@@ -241,7 +241,7 @@ Derived from the sources while building – open for review:
 | Check | Command | Covers |
 |---|---|---|
 | Unit tests | `npm run check` | Rules, validation, access, projections, form state, map geometry, volume aggregation – named after the test register (AT-L1-…, NT-L1-…, AT-L2-…) |
-| Acceptance run | `node scripts/e2e-level1.mjs`, `node scripts/e2e-level2.mjs` and `node scripts/e2e-map.mjs` (header of the files: how to start the test instance) | The four user scenarios, ownership, the verification gate, registration, password recovery, expiry, and one check per finding of the security review – against an own instance and the database `kreiswerts_e2e`; the script refuses any other target |
+| Acceptance run | `node scripts/e2e-level1.mjs`, `node scripts/e2e-level2.mjs` (with `PAYMENT_WEBHOOK_SECRET` set for server and script) and `node scripts/e2e-map.mjs` (header of the files: how to start the test instance) | The four user scenarios, ownership, the verification gate, registration, password recovery, expiry, and one check per finding of the security review – against an own instance and the database `kreiswerts_e2e`; the script refuses any other target |
 | Layout | `layout_audit.py` per page at 1440, 768 and 360 px | Overlap, overflow, type scale, spacing |
 
 ### Security review of 2026-11-27
@@ -388,7 +388,7 @@ sites ──▶ assessments ──▶ offers, requests (match) or negotiations  
 
 - **One private assessment per site, kind and subject** (unique `site_id, kind, subject_key`; subject = a match or a negotiation). Every query filters by the viewer's site: the other site never sees the baseline, the own costs or the result. Access to the subject uses the same rules as its page (`getMatch()`, `getNegotiation()`), so a site outside the pair gets a 404.
 - **Results are computed on every read**, never stored – the pure modules `feasibility.ts` and `environment.ts`. Saving needs the revision the page showed (409 `STALE` otherwise); at most 500 assessments per site.
-- **Factors** (`impact_factors`): a stored version never changes; a new value is a new version. The seed adds nine example factors (virgin PE/PP/PC/PVC, sorting, grinding, regranulation, incineration, truck transport), all `example = true` and shown as "example value, not sourced".
+- **Factors** (`impact_factors`): a stored version never changes; a new value is a new version. The seed adds nine example factors (virgin PE/PP/PC/PVC, sorting, grinding, regranulation, incineration, truck transport), all `example = true` and shown as "example value, not sourced" – and, since part 4, four sourced factors (see below).
 
 ### Rules (D17, D18, D13)
 
@@ -413,14 +413,83 @@ No finding: ownership per site, access to the subject, stale edits, the ceiling 
 | Topic | Choice |
 |---|---|
 | Freight in the break-even | Counted as fixed (one shipment); preparation costs per unit scale with the quantity |
-| Combined chain benefit | Not shown: it needs the private inputs of both sites (the internal payment would cancel out) |
+| Combined chain benefit | ~~Not shown~~ – built on 2026-11-27 with the explicit release of both sites (Level 2, part 4) |
 | Pre-consumer vs post-consumer | The origin of the offer is shown as listed and never relabelled; the assessment does not change it |
 | Factor suggestion | Transport factor and the virgin material of the offer's polymer are preselected; "no preparation" when the match needs no step |
 | Navigation | `/impact` is reached through a card on the dashboard, like negotiations and exchanges |
 
-## Level 2: not built
+## Level 2, part 4 (built 2026-11-27): contract, simulated payment, sourced factors, combined chain benefit
 
-Signed payments and integrated payment, contract execution, sourced emission factors, combined chain benefit of both sites.
+Decided by the user on 2026-11-27: build the rest of Level 2. No real payment provider – the payment is simulated but built like a real integration; a prototype first.
+
+| ID | Function | Pages | Backend |
+|---|---|---|---|
+| L2-012 | Contract of an agreed negotiation: immutable snapshot of the accepted revision with a SHA-256 fingerprint, both sites sign (who and when recorded), void while a signature is missing, execution derived from delivery and payment | `/contracts/[id]`, "Contract" on `/negotiations/[id]` | `POST /api/my/negotiations/[id]/contract`, `GET /api/my/contracts/[id]`, `POST …/sign`, `…/void` |
+| L2-013 | Simulated payment per exchange: amount from the signed terms, pending → authorised → captured / failed / cancelled / refunded, idempotency keys, signed provider confirmation, audit trail | "Payment (simulated)" on `/exchanges/[id]` | `GET`/`POST /api/my/exchanges/[id]/payments`, `POST /api/my/payments/[id]/checkout`, `…/capture`, `…/cancel`, `…/refund`, `POST /api/payments/webhook` |
+| L2-008 (sources) | Sourced emission factors: source document, version, geography, boundary; a result loses "illustrative" only when every factor used is sourced | "Environmental assessment" on `/matches/[requestId]/[offerId]` | `GET /api/impact-factors` (`sourceUrl`, `example`) |
+| L2-014 | Combined chain benefit: the offerer's and the requester's contribution added up, only from comparisons both sites released | "Combined chain benefit" on `/negotiations/[id]`, `/impact` | `GET`/`POST /api/my/negotiations/[id]/chain-consent`, `GET /api/my/impact` → `chain` |
+
+### Data model
+
+```text
+negotiations ──▶ contracts (snapshot + hash, signatures) ──▶ contract_events
+exchanges ──▶ payments (amount, lines, provider ref, keys) ──▶ payment_events (site or provider, event id once)
+negotiations ──▶ chain_consents (site, assessment + revision, proposal revision)
+impact_factors + source_url (required unless example)
+```
+
+### Contract
+
+- **Snapshot:** built from the database when the contract is created – accepted revision, terms, offer, request, both parties, agreement time, demo flag. Stored once as JSON with the SHA-256 of its canonical form (sorted keys); the page recomputes it and shows whether the content is unchanged. One contract per negotiation that is not voided (partial unique index).
+- **Signing:** each site once, with the fingerprint the page showed and an explicit confirmation – another fingerprint is a 409 `SNAPSHOT_CHANGED`, a stored snapshot that no longer matches its fingerprint a 409 `SNAPSHOT_DAMAGED`. User and time are recorded; the second signature makes it `signed` (final). Before that either site can void it with a reason; a new contract can then be created.
+- **Status flow** `contractFlow` in `status.ts`: awaiting signatures → signed or voided. **Execution** is derived on every read (`contract.ts`): fulfilled = material arrived and not rejected + payment captured (or none due); ended without fulfilment = payment refunded, or delivery failed with nothing captured; otherwise in execution.
+- **Not binding:** a confirmation inside the platform, not a qualified electronic signature – the pages say so.
+
+### Simulated payment
+
+- **Amount** (`payment.ts`) from the terms of the signed contract: material = price × agreed quantity (converted to the price unit; per item against kg gives no amount), plus the freight share the other site owes the transport organiser (a third-party carrier is paid directly and stays outside); both netted into one payment, so the payer can be either site. Stored in cents with its lines. The VAT basis is carried as agreed – the platform determines no tax (reverse charge is possible for plastic waste).
+- **Flow** `paymentFlow`: pending → authorised (provider confirmation) or failed or cancelled; authorised → captured (only after the material arrived and was not rejected) or cancelled (by the payer, only before the receipt is recorded); captured → refunded (by the payee, with a reason). Only the payer starts and authorises. Either site captures – except a payee that recorded the receipt itself: then the payer captures, so nobody confirms their own claim.
+- **Provider port** (`src/server/payments/`): `PaymentProvider` interface, `SimulatedProvider` adapter. The simulated checkout produces the signed confirmation a provider would send; it runs through the same check as one from outside.
+- **Confirmation endpoint** `POST /api/payments/webhook`: no session and no Origin (server to server), instead HMAC-SHA256 over `<timestamp>.<raw body>` in `KW-Signature`, constant-time comparison, 5 minutes tolerance, 8 KB body limit, event id stored once (a replay changes nothing), amount and currency must match. Secret `PAYMENT_WEBHOOK_SECRET` (≥ 32 characters); without it a random secret per server process – the simulated checkout still works, nobody outside can sign.
+- **Idempotency:** create, capture, cancel and refund carry a key the browser generates once per form; the same key returns the earlier result instead of a second operation, a key of another exchange is refused. At most one live payment per exchange (partial unique index), 20 attempts per exchange.
+- **Audit trail** `payment_events`: every change with its source (site + user, or provider + event id). Every payment is `simulated`; every place in the UI says "simulated" (DE/EN).
+
+### Sourced emission factors (D18)
+
+Only values read from a public document on 2026-11-27; a factor without a reliable public value stays an example. The database refuses a non-example factor without an https source.
+
+| Factor | Value | Geography · boundary | Source |
+|---|---|---|---|
+| Truck, all trucks ≥ 3.5 t | 0.118 kg CO₂e/tkm | Germany 2024 · transport (incl. energy supply) | UBA, "Vergleich der durchschnittlichen Emissionen einzelner Verkehrsmittel im Güterverkehr 2024", TREMOD 6.71B (10/2025) |
+| Truck, articulated and road trains | 0.101 kg CO₂e/tkm | Germany 2024 · transport | same table |
+| Incineration of plastic waste | 2.75 kg CO₂/kg | IPCC default · end of life | IPCC 2006 Guidelines Vol. 5, Eq. 5.1 with Table 2.4 (plastics: dry matter 100 %, carbon 75 %, fossil 100 %) and Table 5.2 (oxidation 100 %): 0.75 × 44/12; combustion CO₂ only, no energy credit |
+| Virgin suspension PVC | 2.08 kg CO₂e/kg | Europe · cradle to gate | Plastics Europe / ECVM Eco-profile VCM and PVC, rev. January 2026, Table 14 (EF 3.1) |
+
+Still examples: virgin PE, PP and PC (the eco-profiles are only available as download packages that could not be read), sorting, grinding, regranulation. A result is "illustrative" as long as one example factor is used; the forms mark each factor "sourced" or "example value" and suggest sourced ones first.
+
+### Combined chain benefit
+
+- **Consent:** each site releases its saved commercial comparison of the negotiation (`chain.ts`). A release names the assessment revision and the proposal revision – a new save or a counterproposal ends it (409 `STALE` / `STALE_TERMS` on an outdated release); withdrawing deletes it.
+- **Result:** only when both releases are valid: offerer's contribution + requester's contribution (the payment between them cancels out), with the weaker cost status; unknown on either side gives no total, never 0. The other site sees the total, never the inputs – the release text says that it can work out the other contribution by subtracting its own.
+- **Overview:** `/impact` lists the negotiations with a combined benefit (newest 20), demo pairs summed apart.
+
+### Security review of part 4 (2026-11-27)
+
+No critical or high finding: no IDOR, no way to `handleProviderEvent()` without a valid signature, the `external` option weakens no other route. Fixed, each with a check in `scripts/e2e-level2.mjs` or a unit test: the payer could cancel an authorised payment after the receipt was recorded, and a payee that recorded the receipt itself could capture without anyone else confirming it (CWE-841 – now `paymentActions()` and a share lock on the exchange row); contracts per negotiation were unbounded through create/void loops (now 5, counted under the negotiation lock, CWE-770); the chain overview loaded up to 50 negotiations one by one (now 20, CWE-400). Hardened: a `PAYMENT_WEBHOOK_SECRET` shorter than 32 characters stops the server instead of being replaced silently; an outdated release of the other site is shown as none (it would reveal a new private save). Found by the acceptance run while building: the database rule "a sourced factor needs a source" passed for a missing URL (NULL in a CHECK counts as passed – now `coalesce`), and the demo reset failed once payments existed.
+
+Open for later: the snapshot is immutable by the application only – a database trigger and the hash in the `signed` event would also guard against direct database edits; `external` could require a verify function in the route frame itself.
+
+### Decisions derived while building – open for review
+
+| Topic | Choice |
+|---|---|
+| Contract per | Negotiation (one exchange per negotiation exists anyway); the payment refers to both |
+| Payment timing | Can start once both signed, even after delivery; capture only after delivery |
+| Netting | Material price and freight share are settled as one net payment |
+| Amount basis | Agreed quantity of the signed terms, not the received quantity |
+| Who captures | Either site once the delivery is recorded as accepted – not the payee if it recorded the receipt itself (security review) |
+| Disputes | No automatic capture after a deadline – a payee whose payer does not capture has to ask; open for the team |
+| Demo | No contract or payment is seeded; the click-through creates them on the agreed demo negotiation |
 
 Level 2 is not a dependency of Level 1: the four scenarios end without a demand record.
 
