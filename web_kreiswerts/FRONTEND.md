@@ -158,7 +158,7 @@ A status is always written as a word (`Badge`), never shown by colour alone. Whi
 | Public regional map | `/regional-map` | `publicMap()` · `GET /api/public/map` |
 | Login · password recovery | `/login` · `/forgot-password` · `/reset-password` | Better Auth |
 | Registration | `/register` · `/register/site` | Better Auth · `POST /api/registration/site` |
-| Dashboard | `/dashboard` | `listMyOffers()`, `listEnquiries()`, `listMyRequests()`, `listResponses()`, `getMySite()` · administrator: `listSitesForReview()` |
+| Dashboard | `/dashboard` | `listMyOffers()`, `listEnquiries()`, `listMyRequests()`, `listResponses()`, `listNegotiations()`, `listExchanges()`, `getMySite()` · administrator: `listSitesForReview()` |
 | Material offers | `/offers` | `searchOffers()` · `GET /api/offers` |
 | Individual offer | `/offers/[id]` | `getOffer()`, `ownRequestsForOffer()` · `POST /api/offers/[id]/enquiries` |
 | My offers | `/my-offers` | `listMyOffers()` · `POST /api/my/offers/[id]/publish · /renew · /close` · `DELETE /api/my/offers/[id]` |
@@ -175,7 +175,9 @@ A status is always written as a word (`Badge`), never shown by colour alone. Whi
 | Create / edit request | `/my-requests/new` · `/my-requests/[id]/edit` | `getCatalogue()`, `getMyRequest()` · `POST /api/my/requests` · `PUT /api/my/requests/[id]` |
 | Matches | `/matches` | `listMatches()` · `GET /api/matches` |
 | Individual match | `/matches/[requestId]/[offerId]` | `getMatch()` · `GET /api/matches/[requestId]/[offerId]` |
-| Negotiations, exchanges, impact | – | Level 2, not built yet |
+| Negotiations | `/negotiations` · `/negotiations/new?offer=&request=` · `/negotiations/[id]` | `listNegotiations()`, `getNegotiationStart()`, `getNegotiation()` · `POST /api/my/negotiations` · `POST /api/my/negotiations/[id]/revisions · /accept · /decline · /withdraw · /exchange` |
+| Exchanges | `/exchanges` · `/exchanges/[id]` | `listExchanges()`, `getExchange()` · `PUT /api/my/exchanges/[id]` · `POST /api/my/exchanges/[id]/complete · /cancel` |
+| Circularity overview (impact) | – | Level 2, not built yet |
 
 All endpoints with input and output: README “API” and the architecture page.
 

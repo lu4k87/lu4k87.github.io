@@ -9,7 +9,7 @@ What the platform offers businesses and what the data model and backend do for i
 | `CONTENT/KreiswertS_User_Scenarios.pdf` | 4 walkthroughs with the fictional sites A, B and C – the acceptance test of Level 1 |
 | 6 wireframes in `CONTENT/` (JPEG) | Structure of create offer, offer detail, material categories, data structure |
 
-**Level 1 is an offers-first clickable prototype:** a verified site publishes material offers, other verified sites find them in their own industrial park or in a wider radius, read the details and contact the supplier. Only **Plastics** is enabled; the material model is generic. Independent requests, matching, negotiation, exchanges and impact are **Level 2** and not built.
+**Level 1 is an offers-first clickable prototype:** a verified site publishes material offers, other verified sites find them in their own industrial park or in a wider radius, read the details and contact the supplier. Only **Plastics** is enabled; the material model is generic. Independent requests, matching, negotiation, exchanges and impact are **Level 2** (requests, matching, negotiations and exchanges are built since 2026-11-27, see below).
 
 All company data is fictional demo data. Nothing in the prototype is a real offer, contract or saving.
 
@@ -310,14 +310,49 @@ Result: any failed requirement → **incompatible**; else any processing → **p
 | Processors | Verified sites that declare the capability, nearest to the offer first – candidates, not acceptances |
 | Ceiling | Matching compares up to 1,000 candidates per own listing in the application |
 
-## Level 2, rest (not built)
+## Level 2, part 2 (built 2026-11-27): negotiations and exchanges
 
-Negotiations with proposal revisions (PG-23, PG-24), exchanges (PG-25, PG-26), company circularity overview (PG-27), economic feasibility (L2-007), environmental assessment (L2-008), volume aggregation (L2-010) and requests on the industrial map. The status flow prepared earlier for cooperations stays in `status.ts` for that step:
+Decided by the user on 2026-11-27: build PG-23 – PG-26 now; the freight-adjusted comparison (L2-007) and the circularity overview (PG-27) come later; the data model may be extended in this repository.
+
+| ID | Function | Pages | Backend |
+|---|---|---|---|
+| L2-006 | Proposals with immutable revisions: quantity, payment direction, price, VAT basis, delivery arrangement with named place (Incoterms® 2020 for formal terms), transport organiser, freight (amount, estimated / quoted / confirmed, who pays, offerer's share when shared), delivery window, technical acceptance conditions, validity. Counterproposal, accept, decline, withdraw | `/negotiations`, `/negotiations/new`, `/negotiations/[id]`; “Propose terms” on `/matches/[requestId]/[offerId]` and on responses that name an offer | `GET`/`POST /api/my/negotiations`, `GET /api/my/negotiations/[id]`, `POST …/revisions`, `…/accept`, `…/decline`, `…/withdraw` |
+| L2-011 | Exchange of an agreed negotiation: planned → completed or cancelled, planned date, received quantity and date, quality check, history | `/exchanges`, `/exchanges/[id]`, “Exchange” on `/negotiations/[id]`, counts on `/dashboard` | `POST /api/my/negotiations/[id]/exchange`, `GET /api/my/exchanges`, `GET`/`PUT /api/my/exchanges/[id]`, `POST …/complete`, `…/cancel` |
+
+### Data model
 
 ```text
-requested ──▶ negotiation ──▶ agreed ──▶ in_progress ──▶ completed
-    └──────────────┴─▶ rejected  └────────────┴─▶ cancelled
+offers ◀── negotiations ──▶ requests (optional)          sites ──▶ negotiations (offerer, requester)
+              ├─▶ proposal_revisions (insert only: one row per proposal, terms + validity)
+              └─▶ exchanges ──▶ proposal_revisions (the accepted one)
+                     └─▶ exchange_events (history)
 ```
+
+- **Parties come from the server:** the owner of the offer is the offerer. If the viewer owns the offer, the request names the requester (an open request of another verified site); otherwise the viewer is the requester and a request given must be its own open one. A site never negotiates with itself. At most one **open** negotiation per offer and requesting site (partial unique index).
+- **Revisions are only inserted** – a counterproposal is a new row, the earlier one stays as it was (AT-L2-006). Pending, superseded, accepted, declined, withdrawn and expired follow from the negotiation row; the page marks the terms each revision changed.
+- **Who may do what (D16):** only the counterpart of the current revision accepts, declines or counters; its author can withdraw. Every decision carries the revision the page showed – an outdated one is a 409 `STALE`. An expired proposal cannot be accepted (409 `PROPOSAL_EXPIRED`); either site may then propose anew or withdraw. Accepting locks the terms (`agreed` is final). The negotiation row is locked during each change, so an accept and a counter at the same moment cannot both win.
+- **Exchange (L2-011):** only for an agreed negotiation (409 `NOT_AGREED`), one per negotiation, linked to the accepted revision by a foreign key. Both sites can move the date or cancel with a reason; only the receiving site (the requester) records received quantity, date and quality check, which completes it. Cancelling records no delivery.
+- **Simulated records (D13, X-05):** a negotiation is `simulated` when the offer, the request or either site (the viewer's own included) is demo data; the exchange copies the flag. Only a completed, non-simulated exchange whose material was not rejected counts as a verified outcome (`countsAsVerifiedOutcome()`); the exchange list counts simulated completions separately. Closing a listing or contacting a supplier never creates an exchange.
+- **Not binding:** accepting records agreed terms only – no contract, no payment, no technical approval of the material, no collection. The pages say so.
+- **Receipt:** an accepted receipt needs a quantity above 0 and a date between the agreement and today; only a completion with received material counts as an outcome.
+- **Limits:** 20 new negotiations per site and day (checked before and inside the transaction), 40 revisions per negotiation, 50 changes per exchange, lists show the newest 200, the exchange history the newest 100 entries.
+- Status flows: `negotiationFlow` and `exchangeFlow` in `status.ts` (they replace the cooperation flow prepared earlier); rules in `negotiation.ts`.
+
+### Decisions derived while building – open for review
+
+| Topic | Choice |
+|---|---|
+| Navigation | As in the page tree: negotiations and exchanges are reached through the dashboard (counts and two cards) with tabs Negotiations · Exchanges; no new item in the main navigation |
+| Entry points | “Propose terms” on the match comparison and on responses that name an offer; an open negotiation of the same pair is linked instead |
+| Decline | Ends the negotiation; a counterproposal is the way to keep talking |
+| Expiry | No background job: an open negotiation whose current proposal ran out shows as expired |
+| Listing closed later | Accepting, countering and proposing anew need the offer (and the request) still open and the other site still verified (security review 2026-11-27); declining and withdrawing stay possible; an exchange of terms already agreed continues |
+| German terms | “Fassung” for a revision, “Austausch” for an exchange |
+| Demo data | Two simulated negotiations: C and D still negotiating (HDPE offcuts), B and A agreed with a planned exchange (stretch film) |
+
+## Level 2, rest (not built)
+
+Economic feasibility with freight sharing (L2-007), company circularity overview (PG-27), environmental assessment (L2-008), volume aggregation (L2-010) and requests on the industrial map.
 
 Level 2 is not a dependency of Level 1: the four scenarios end without a demand record.
 
